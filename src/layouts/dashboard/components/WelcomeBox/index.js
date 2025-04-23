@@ -65,9 +65,9 @@ const WelcomeBox = () => {
             rel="noreferrer"
             variant="gradient"
             color={sidenavColor}
-            onClick={() => navigate("/create-event")}
+            onClick={() => navigate("/my-events")}
           >
-            Create Event
+            Participated Events
           </MDButton>
         </MDBox>
       </MDBox>

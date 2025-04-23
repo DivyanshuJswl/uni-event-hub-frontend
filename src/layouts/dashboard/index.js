@@ -24,8 +24,10 @@ import LeaderboardTable from "./components/Leaderboard";
 import hack1 from "assets/images/hackathon/1.jpg";
 import hack2 from "assets/images/hackathon/2.jpg";
 import hack3 from "assets/images/hackathon/3.jpg";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+  const navigate = useNavigate();
   const events = [
     {
       date: {
@@ -75,7 +77,12 @@ function Dashboard() {
               </MDBox>
             </Grid>
             <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
+              <MDBox
+                mb={1.5}
+                onClick={() => {
+                  navigate("/my-certificate");
+                }}
+              >
                 <ComplexStatisticsCard
                   icon="redeem"
                   title="Certificates"

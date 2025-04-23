@@ -153,7 +153,7 @@ const routes = [
     name: "Demo Test Page",
     key: "test-page",
     icon: <TipsAndUpdates fontSize="small" />,
-    route: "/authentication/test-page",
+    route: "/test-page",
     component: <ComponentTestPage />,
     public: true,
   },
