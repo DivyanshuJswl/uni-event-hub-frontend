@@ -13,7 +13,7 @@ import {
   InputLabel,
   Select,
 } from "@mui/material";
-import EventCard from "examples/Cards/ProjectCards/indexProject";
+import EventCard from "examples/Cards/EventCard/indexProject";
 import { useMaterialUIController } from "context";
 import MDTypography from "components/MDTypography";
 import CategoryFilter from "./components/Category";

@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { format } from "date-fns";
 import {
   Card,
   Divider,
@@ -9,7 +8,6 @@ import {
   Modal,
   Box,
   IconButton,
-  Typography,
   useMediaQuery,
   Grid,
   Fade,
@@ -50,7 +48,7 @@ function EventCard({
     registerBtn === "Register Now" ? setRegisterBn("Unenroll") : setRegisterBn("Register Now");
     try {
       const token = localStorage.getItem("token");
-      const res = await await axios.post(
+      const res = await axios.post(
         `${BASE_URL}/api/events/enroll/${_id}`,
         {},
         {
@@ -111,7 +109,7 @@ function EventCard({
               textTransform="capitalize"
               color={darkMode ? "white" : "dark"}
             >
-              {title}
+              {title}..
             </MDTypography>
             <MDTypography
               component="div"
@@ -268,7 +266,7 @@ function EventCard({
                     variant="body1"
                     ml={1}
                     color={darkMode ? "white" : "text"}
-                    fontWeight="heavy"
+                    fontWeight="medium"
                   >
                     Event Details
                   </MDTypography>
@@ -306,7 +304,7 @@ EventCard.propTypes = {
   image: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  category: PropTypes.string.isRequired,
+  category: PropTypes.string,
 };
 
 export default EventCard;

@@ -35,6 +35,8 @@ import ExplorePage from "layouts/explorepage";
 import Icon from "@mui/material/Icon";
 import GoogleFormData from "layouts/getcertificate";
 import DashboardOrg from "layouts/dashboardorganizer";
+import ComponentTestPage from "layouts/component-testpage";
+import { TipsAndUpdates } from "@mui/icons-material";
 
 // ... (previous imports remain the same)
 
@@ -145,6 +147,15 @@ const routes = [
     component: <SignUp />,
     public: true,
     // hideWhenAuthenticated: true,
+  },
+  {
+    type: "collapse",
+    name: "Demo Test Page",
+    key: "test-page",
+    icon: <TipsAndUpdates fontSize="small" />,
+    route: "/authentication/test-page",
+    component: <ComponentTestPage />,
+    public: true,
   },
 ];
 

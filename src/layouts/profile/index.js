@@ -16,7 +16,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
-import DefaultProjectCard from "examples/Cards/ProjectCards/DefaultProjectCard";
+import DefaultProjectCard from "examples/Cards/EventCard/DefaultProjectCard";
 
 // Overview page components
 import Header from "layouts/profile/components/Header";

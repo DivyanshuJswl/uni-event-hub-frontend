@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 
 // Data
 import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
-import EventCard from "examples/Cards/ProjectCards/indexProject";
+import EventCard from "examples/Cards/EventCard/indexProject";
 
 // Dashboard components
 import Projects from "layouts/dashboard/components/Projects";
