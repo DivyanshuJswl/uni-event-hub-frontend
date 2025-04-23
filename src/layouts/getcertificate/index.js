@@ -73,7 +73,7 @@ const GoogleFormData = () => {
       <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
         <Alert severity="error" sx={{ mb: 3, color: "white" }}>
           <AlertTitle sx={{ color: "white" }}>Error</AlertTitle>
-          {error}
+          {error && <div className="error">Error: {error.message}</div>}
         </Alert>
         {!apiKey && (
           <Alert severity="warning" sx={{ color: "white" }}>

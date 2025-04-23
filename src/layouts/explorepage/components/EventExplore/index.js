@@ -224,7 +224,7 @@ const Explore = () => {
             }}
           />
         </Box>
-        <p>{error}</p>
+        {error && <div className="error">Error: {error.message}</div>}
       </Container>
     </Box>
   );

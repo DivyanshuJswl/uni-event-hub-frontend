@@ -73,7 +73,7 @@ const MetaMaskIntegration = () => {
             frameBorder={0}
           ></iframe>
         </MDBox>
-        {/* <p>{error}</p> */}
+        {error && <div className="error">Error: {error.message}</div>}
         <MDTypography variant="button" color="text">
           Watch our guide on how to create and set up a MetaMask wallet
         </MDTypography>
