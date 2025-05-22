@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 import React from "react";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-
+import { motion } from "framer-motion";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -169,19 +169,26 @@ Are you ready to push boundaries, innovate, and compete with the best?"
             </Grid>
           </Grid>
         </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-              <Projects />
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <MDBox>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={8}>
+                <Projects />
+              </Grid>
+              <Grid item xs={12} md={6} lg={4}>
+                <OrdersOverview events={events} />
+              </Grid>
+              <Grid item xs={12} md={6} lg={12}>
+                <LeaderboardTable />
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <OrdersOverview events={events} />
-            </Grid>
-            <Grid item xs={12} md={6} lg={12}>
-              <LeaderboardTable />
-            </Grid>
-          </Grid>
-        </MDBox>
+          </MDBox>
+        </motion.div>
       </MDBox>
       <Footer />
     </DashboardLayout>
