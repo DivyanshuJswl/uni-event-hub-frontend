@@ -121,7 +121,7 @@ Bill.propTypes = {
   description: PropTypes.string.isRequired,
   link: PropTypes.string,
   email: PropTypes.string,
-  vat: PropTypes.string,
+  vat: PropTypes.string.isRequired,
   noGutter: PropTypes.bool,
 };
 
