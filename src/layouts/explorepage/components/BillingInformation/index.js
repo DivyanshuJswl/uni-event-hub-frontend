@@ -64,7 +64,7 @@ function BillingInformation() {
         setLoading(true);
         const apiKey = process.env.NEWS_API_KEY || ""; // Fallback to hardcoded key if env variable is not set
         const response = await fetch(
-          "https://newsapi.org/v2/top-headlines?category=technology&pageSize=5&apiKey={apiKey}"
+          "https://newsapi.org/v2/top-headlines?category=technology&pageSize=8&apiKey=" + apiKey
         );
 
         if (!response.ok) {
@@ -89,7 +89,7 @@ function BillingInformation() {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        "https://newsapi.org/v2/top-headlines?category=technology&pageSize=8&apiKey=020706d65e584d8f9310823fd9fe573e"
+        "https://newsapi.org/v2/top-headlines?category=technology&pageSize=8&apiKey=" + apiKey
       );
       const data = await response.json();
       setNews(data.articles);
