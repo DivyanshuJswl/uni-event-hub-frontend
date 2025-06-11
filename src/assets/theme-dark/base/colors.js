@@ -6,14 +6,14 @@
 
 const colors = {
   background: {
-    default: "#1a2035",
-    sidenav: "#1f283e",
-    card: "#202940",
+    default: "#12161f", // almost black-blue
+    sidenav: "#1a1f2b",
+    card: "#1e2432",
   },
 
   text: {
-    main: "#ffffffcc",
-    focus: "#ffffffcc",
+    main: "rgba(255, 255, 255, 0.87)",
+    focus: "rgba(255, 255, 255, 1)",
   },
 
   transparent: {
@@ -21,19 +21,18 @@ const colors = {
   },
 
   white: {
-    main: "#ffffff",
+    main: "#e4e6eb",
     focus: "#ffffff",
   },
 
   black: {
-    light: "#000000",
+    light: "#121212",
     main: "#000000",
     focus: "#000000",
   },
-
   primary: {
-    main: "#e91e63",
-    focus: "#e91e63",
+    main: "#1A73E8",
+    focus: "#1A73E8",
   },
 
   secondary: {

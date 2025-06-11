@@ -1,17 +1,11 @@
-/**
- * The base colors for the Material Dashboard 2 React.
- * You can add new color using this file.
- * You can customized the colors for the entire Material Dashboard 2 React using thie file.
- */
-
 const colors = {
   background: {
-    default: "#f0f2f5",
+    default: "#f8f4e9", // Light gray for soft background
   },
 
   text: {
-    main: "#7b809a",
-    focus: "#7b809a",
+    main: "#212121", // Strong dark text
+    focus: "#424242", // Slightly lighter for focused state
   },
 
   transparent: {
@@ -19,226 +13,177 @@ const colors = {
   },
 
   white: {
-    main: "#ffffff",
-    focus: "#ffffff",
+    main: "#fffcf5", // Creamy white shade
+    focus: "#f5f0e4", // Subtle focus white
   },
 
   black: {
-    light: "#000000",
+    light: "#2e2e2e",
     main: "#000000",
-    focus: "#000000",
+    focus: "#1a1a1a",
   },
 
   primary: {
-    main: "#e91e63",
-    focus: "#e91e63",
+    main: "#8c6a56", // Warm taupe
+    focus: "#7a5a47", // Darker taupe
   },
 
   secondary: {
-    main: "#7b809a",
-    focus: "#8f93a9",
+    main: "#a8b6a0", // Soft sage green
+    focus: "#95a38b", // Darker sage
   },
 
   info: {
-    main: "#1A73E8",
-    focus: "#1662C4",
+    main: "#0288d1",
+    focus: "#0277bd",
   },
 
   success: {
-    main: "#4CAF50",
-    focus: "#67bb6a",
+    main: "#388e3c",
+    focus: "#2e7d32",
   },
 
   warning: {
-    main: "#fb8c00",
-    focus: "#fc9d26",
+    main: "#f57c00",
+    focus: "#ef6c00",
   },
 
   error: {
-    main: "#F44335",
-    focus: "#f65f53",
+    main: "#d32f2f",
+    focus: "#c62828",
   },
 
   light: {
-    main: "#f0f2f5",
-    focus: "#f0f2f5",
+    main: "#f9f9f9",
+    focus: "#f1f1f1",
   },
 
   dark: {
-    main: "#344767",
-    focus: "#2c3c58",
+    main: "#333333",
+    focus: "#1e1e1e",
   },
 
   grey: {
-    100: "#f8f9fa",
-    200: "#f0f2f5",
-    300: "#dee2e6",
-    400: "#ced4da",
-    500: "#adb5bd",
-    600: "#6c757d",
-    700: "#495057",
-    800: "#343a40",
-    900: "#212529",
+    100: "#f5f5f5",
+    200: "#eeeeee",
+    300: "#e0e0e0",
+    400: "#bdbdbd",
+    500: "#9e9e9e",
+    600: "#757575",
+    700: "#616161",
+    800: "#424242",
+    900: "#212121",
   },
 
   gradients: {
     primary: {
-      main: "#EC407A",
-      state: "#D81B60",
+      main: "#42a5f5",
+      state: "#1976d2",
     },
-
     secondary: {
-      main: "#747b8a",
-      state: "#495361",
+      main: "#ba68c8",
+      state: "#9c27b0",
     },
-
     info: {
-      main: "#49a3f1",
-      state: "#1A73E8",
+      main: "#4fc3f7",
+      state: "#0288d1",
     },
-
     success: {
-      main: "#66BB6A",
-      state: "#43A047",
+      main: "#81c784",
+      state: "#388e3c",
     },
-
     warning: {
-      main: "#FFA726",
-      state: "#FB8C00",
+      main: "#ffb74d",
+      state: "#f57c00",
     },
-
     error: {
-      main: "#EF5350",
-      state: "#E53935",
+      main: "#e57373",
+      state: "#d32f2f",
     },
-
     light: {
-      main: "#EBEFF4",
-      state: "#CED4DA",
+      main: "#ffffff",
+      state: "#f5f5f5",
     },
-
     dark: {
-      main: "#42424a",
-      state: "#191919",
+      main: "#4f4f4f",
+      state: "#212121",
     },
   },
 
   socialMediaColors: {
     facebook: {
       main: "#3b5998",
-      dark: "#344e86",
+      dark: "#2d4373",
     },
-
     twitter: {
       main: "#55acee",
-      dark: "#3ea1ec",
+      dark: "#2795e9",
     },
-
     instagram: {
-      main: "#125688",
-      dark: "#0e456d",
+      main: "#e1306c",
+      dark: "#c72e5e",
     },
-
     linkedin: {
       main: "#0077b5",
-      dark: "#00669c",
+      dark: "#005983",
     },
-
-    pinterest: {
-      main: "#cc2127",
-      dark: "#b21d22",
-    },
-
     youtube: {
-      main: "#e52d27",
-      dark: "#d41f1a",
+      main: "#ff0000",
+      dark: "#cc0000",
     },
-
-    vimeo: {
-      main: "#1ab7ea",
-      dark: "#13a3d2",
-    },
-
-    slack: {
-      main: "#3aaf85",
-      dark: "#329874",
-    },
-
-    dribbble: {
-      main: "#ea4c89",
-      dark: "#e73177",
-    },
-
     github: {
       main: "#24292e",
       dark: "#171a1d",
-    },
-
-    reddit: {
-      main: "#ff4500",
-      dark: "#e03d00",
-    },
-
-    tumblr: {
-      main: "#35465c",
-      dark: "#2a3749",
     },
   },
 
   badgeColors: {
     primary: {
-      background: "#f8b3ca",
-      text: "#cc084b",
+      background: "#e3f2fd",
+      text: "#1565c0",
     },
-
     secondary: {
-      background: "#d7d9e1",
-      text: "#6c757d",
+      background: "#f3e5f5",
+      text: "#7b1fa2",
     },
-
     info: {
-      background: "#aecef7",
-      text: "#095bc6",
+      background: "#b3e5fc",
+      text: "#0288d1",
     },
-
     success: {
-      background: "#bce2be",
-      text: "#339537",
+      background: "#c8e6c9",
+      text: "#2e7d32",
     },
-
     warning: {
-      background: "#ffd59f",
-      text: "#c87000",
+      background: "#ffe0b2",
+      text: "#ef6c00",
     },
-
     error: {
-      background: "#fcd3d0",
-      text: "#f61200",
+      background: "#ffcdd2",
+      text: "#c62828",
     },
-
     light: {
       background: "#ffffff",
-      text: "#c7d3de",
+      text: "#9e9e9e",
     },
-
     dark: {
-      background: "#8097bf",
-      text: "#1e2e4a",
+      background: "#eeeeee",
+      text: "#212121",
     },
   },
 
   coloredShadows: {
-    primary: "#e91e62",
-    secondary: "#110e0e",
-    info: "#00bbd4",
-    success: "#4caf4f",
-    warning: "#ff9900",
-    error: "#f44336",
-    light: "#adb5bd",
-    dark: "#404040",
+    primary: "#42a5f5",
+    secondary: "#ba68c8",
+    info: "#29b6f6",
+    success: "#66bb6a",
+    warning: "#ffa726",
+    error: "#ef5350",
+    light: "#cfd8dc",
+    dark: "#607d8b",
   },
 
-  inputBorderColor: "#d2d6da",
+  inputBorderColor: "#d0d7de",
 
   tabs: {
     indicator: { boxShadow: "#ddd" },
