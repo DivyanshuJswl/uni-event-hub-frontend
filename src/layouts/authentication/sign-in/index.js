@@ -23,19 +23,35 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-
+import { useMaterialUIController } from "context";
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+import { Icon, InputAdornment } from "@mui/material";
 
 function Basic() {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(
+    localStorage.getItem("rememberMe") === "true" || false
+  );
+  // Load saved credentials if rememberMe was checked
+  useState(() => {
+    if (rememberMe) {
+      const savedEmail = localStorage.getItem("savedEmail");
+      const savedPassword = localStorage.getItem("savedPassword");
+      if (savedEmail) setEmail(savedEmail);
+      if (savedPassword) setPassword(savedPassword);
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -48,6 +64,17 @@ function Basic() {
         draggable: true,
       });
       return;
+    }
+
+    // Save credentials if rememberMe is checked
+    if (rememberMe) {
+      localStorage.setItem("savedEmail", email);
+      localStorage.setItem("savedPassword", password);
+      localStorage.setItem("rememberMe", "true");
+    } else {
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+      localStorage.removeItem("rememberMe");
     }
 
     setIsLoading(true);
@@ -74,15 +101,9 @@ function Basic() {
         draggable: true,
       });
 
-      if (localStorage.getItem("role") === "participant") {
-        setTimeout(() => {
-          navigate("/user-dashboard");
-        }, 2000);
-      } else {
-        setTimeout(() => {
-          navigate("/organizer-dashboard");
-        }, 2000);
-      }
+      setTimeout(() => {
+        navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
+      }, 2000);
     } catch (err) {
       console.log(err);
       let errorMessage = "Login failed";
@@ -112,8 +133,18 @@ function Basic() {
     }
   };
 
-  const [rememberMe, setRememberMe] = useState(false);
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleSetRememberMe = () => {
+    const newRememberMe = !rememberMe;
+    setRememberMe(newRememberMe);
+    if (!newRememberMe) {
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+    }
+  };
 
   return (
     <BasicLayout image={bgImage}>
@@ -171,18 +202,32 @@ function Basic() {
                 type="email"
                 label="Email"
                 fullWidth
+                value={email}
               />
             </MDBox>
             <MDBox mb={2}>
               <MDInput
                 onChange={(e) => setPassword(e.target.value)}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 label="Password"
                 fullWidth
+                value={password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Icon
+                        sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}
+                        onClick={togglePasswordVisibility}
+                      >
+                        {showPassword ? "visibility_off" : "visibility"}
+                      </Icon>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} />
+              <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />
               <MDTypography
                 variant="button"
                 fontWeight="regular"

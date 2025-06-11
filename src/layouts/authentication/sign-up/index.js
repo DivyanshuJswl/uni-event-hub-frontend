@@ -15,15 +15,18 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-
+import { useMaterialUIController } from "context";
 // Authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
 import zIndex from "@mui/material/styles/zIndex";
+import { Icon, InputAdornment } from "@mui/material";
 
 function Cover() {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +36,11 @@ function Cover() {
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   const handleSubmit = async () => {
     // Validate required fields
     if (!name || !email || !password || !year || !branch) {
@@ -188,10 +195,23 @@ function Cover() {
             <MDBox mb={2}>
               <MDInput
                 onChange={(e) => setPassword(e.target.value)}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 label="Password"
                 variant="standard"
                 fullWidth
+                value={password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Icon
+                        sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}
+                        onClick={togglePasswordVisibility}
+                      >
+                        {showPassword ? "visibility_off" : "visibility"}
+                      </Icon>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useLocation, NavLink } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, NavLink, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
@@ -11,6 +11,9 @@ import MDButton from "components/MDButton";
 import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   useMaterialUIController,
   setMiniSidenav,
@@ -23,6 +26,32 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
+
+  const navigate = useNavigate();
+
+  // Logout function
+  const handleLogout = () => {
+    // Remove user data from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
+    if (!localStorage.getItem("token")) {
+      // Update toast to success
+      toast.success("Logout successful!", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Redirect after toast closes
+      setTimeout(() => {
+        navigate("/authentication/sign-in");
+      }, 1000);
+    }
+  };
 
   // Get user authentication status and role
   const isAuthenticated = !!localStorage.getItem("token");
@@ -171,7 +200,20 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         }
       />
       <List>{renderRoutes}</List>
-      <MDBox p={2} mt="auto">
+      <MDBox p={2} mt="auto" display="flex" flexDirection="column">
+        {/* Logout Button - Only shown when authenticated */}
+        {isAuthenticated && (
+          <MDButton
+            variant="gradient"
+            color="error"
+            fullWidth
+            onClick={handleLogout}
+            sx={{ mb: 1 }} // Add margin bottom to separate from Contact Us button
+          >
+            <Icon sx={{ mr: 1 }}>logout</Icon>
+            LOG OUT
+          </MDButton>
+        )}
         <MDButton
           component="a"
           href="https://www.linkedin.com/in/divyanshujswl/"
