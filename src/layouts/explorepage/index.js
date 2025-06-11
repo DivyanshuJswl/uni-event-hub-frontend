@@ -11,7 +11,7 @@ import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import BillingInformation from "./components/BillingInformation";
+import NewsSection from "./components/NewsSection";
 import Transactions from "./components/Transactions";
 import Explore from "./components/EventExplore";
 
@@ -26,7 +26,7 @@ function ExplorePage() {
         <MDBox mb={3}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={7}>
-              <BillingInformation />
+              <NewsSection />
             </Grid>
             <Grid item xs={12} md={5}>
               <Transactions />
