@@ -5,6 +5,7 @@ import Card from "@mui/material/Card";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import Bill from "../Bill";
+import SkillCard from "../SkillCard";
 
 function BillingInformation() {
   return (
@@ -16,25 +17,28 @@ function BillingInformation() {
       </MDBox>
       <MDBox pt={1} px={2}>
         <MDBox component="ul" display="flex" flexDirection="column" p={0} m={0}>
-          <Bill
-            name="Generative AI (ChatGPT, Midjourney, etc.)"
+          <SkillCard
+            title="Generative AI (ChatGPT, Midjourney, etc.)"
             description="Leverage AI to create text, images, code, and more. Used in automation, content creation, and enhancing productivity."
+            url="#generative-ai"
           />
-          <Bill
-            name="Data Science & Machine Learning"
+
+          <SkillCard
+            title="Data Science & Machine Learning"
             description="Extract insights from large datasets using Python/R. Build predictive models for business, healthcare, and finance."
+            url="#data-science"
           />
-          <Bill
-            name="Cybersecurity (Ethical Hacking, Zero Trust)"
+
+          <SkillCard
+            title="Cybersecurity (Ethical Hacking, Zero Trust)"
             description="Protect systems from cyber threats with penetration testing and secure frameworks. High demand due to increasing digital risks."
+            url="#cybersecurity"
           />
-          <Bill
-            name=" Blockchain & Web3 Development"
+
+          <SkillCard
+            title="Blockchain & Web3 Development"
             description="Build decentralized apps (dApps) and smart contracts. Growing demand in finance, NFTs, and decentralized systems."
-          />
-          <Bill
-            name="Generative AI (ChatGPT, Midjourney, etc.)"
-            description="Leverage AI to create text, images, code, and more. Used in automation, content creation, and enhancing productivity."
+            url="#blockchain"
           />
         </MDBox>
       </MDBox>
