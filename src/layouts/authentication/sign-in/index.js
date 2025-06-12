@@ -30,7 +30,7 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
-import { Icon, InputAdornment } from "@mui/material";
+import { Divider, Icon, InputAdornment } from "@mui/material";
 
 function Basic() {
   const [controller] = useMaterialUIController();
@@ -189,79 +189,9 @@ function Basic() {
               </MDTypography>
             </Grid>
             <Grid item xs={2}>
-              <GoogleLogin
-                onSuccess={async (credentialResponse) => {
-                  // console.log("Google credential response:", credentialResponse);
-                  if (!credentialResponse || !credentialResponse.credential) {
-                    console.error("No credential received from Google");
-                    return;
-                  }
-                  // This is the ID token (JWT)
-                  const idToken = credentialResponse.credential;
-                  // Send to backend
-                  // console.log("ID Token:", idToken);
-                  const res = await axios.post(`${BASE_URL}/api/auth/google`, {
-                    credential: idToken,
-                  });
-                  // console.log("Google login response:", res);
-                  if (!res?.data || !res.data.token) {
-                    throw new Error("Invalid response from Google login");
-                  }
-                  const { token, data, isNewUser } = res?.data; // Add isNewUser flag from backend
-                  const { student } = data;
-                  const role = student?.role;
-                  localStorage.setItem("token", token);
-                  localStorage.setItem("role", role);
-                  toast.success(
-                    isNewUser
-                      ? "Welcome! Account created successfully."
-                      : "Login successful! Redirecting...",
-                    {
-                      position: "top-right",
-                      autoClose: 2000,
-                      hideProgressBar: false,
-                      closeOnClick: true,
-                      pauseOnHover: true,
-                      draggable: true,
-                    }
-                  );
-                  setTimeout(() => {
-                    navigate(
-                      isNewUser && role === "participant"
-                        ? "/complete-profile" // Redirect new users to profile completion
-                        : role === "participant"
-                        ? "/user-dashboard"
-                        : "/organizer-dashboard"
-                    );
-                  }, 2000);
-                }}
-                onError={() => {
-                  toast.error("Google login failed. Please try again.", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                  });
-                }}
-                useOneTap={false}
-                render={(renderProps) => (
-                  <MDTypography
-                    component={MuiLink}
-                    href="#"
-                    variant="body1"
-                    color="white"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      renderProps.onClick();
-                    }}
-                    sx={{ cursor: "pointer", bgcolor: "transparent" }}
-                  >
-                    <GoogleIcon color="inherit" />
-                  </MDTypography>
-                )}
-              />
+              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
+                <GoogleIcon color="inherit" />
+              </MDTypography>
             </Grid>
           </Grid>
         </MDBox>
@@ -320,9 +250,23 @@ function Basic() {
                 {isLoading ? "Signing in..." : "Sign in"}
               </MDButton>
             </MDBox>
-            <MDBox mt={2} mb={1} textAlign="center">
+            <Divider />
+            <MDBox
+              mt={2}
+              mb={1}
+              textAlign="center"
+              width="100%"
+              style={{
+                width: "100%",
+                background: "transparent",
+                color: "#000",
+                borderRadius: "4px",
+                boxShadow: "none",
+              }}
+            >
               <GoogleLogin
-                style={{ backgroundColor: "#4285F4", color: "#000", borderRadius: "4px" }}
+                width="100%"
+                ux_mode="popup"
                 onSuccess={async (credentialResponse) => {
                   // console.log("Google credential response:", credentialResponse);
                   if (!credentialResponse || !credentialResponse.credential) {

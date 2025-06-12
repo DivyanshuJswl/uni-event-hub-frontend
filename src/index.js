@@ -9,7 +9,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
-console.log("Google Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
+// console.log("Google Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
 
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 if (!clientId) {
