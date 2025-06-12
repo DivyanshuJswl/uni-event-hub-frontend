@@ -8,11 +8,9 @@ import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import Typography from "@mui/material/Typography";
 
 // Data
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import EventCard from "examples/Cards/EventCard/indexProject";
 
 // Dashboard components
@@ -58,67 +56,6 @@ function DashboardOrg() {
       <MDBox py={3}>
         <MDBox mb={3}>
           <WelcomeBox />
-          {/* <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
-                  color="dark"
-                  icon="weekend"
-                  title="Events Attended"
-                  count={281}
-                  percentage={{
-                    color: "success",
-                    amount: "+5%",
-                    label: "than lask week",
-                  }}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
-                  icon="redeem"
-                  title="Certificates"
-                  count="12"
-                  percentage={{
-                    color: "success",
-                    amount: "+3%",
-                    label: "than last month",
-                  }}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
-                  color="success"
-                  icon="store"
-                  title="Points Earned"
-                  count="340"
-                  percentage={{
-                    color: "success",
-                    amount: "+1%",
-                    label: "than yesterday",
-                  }}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="people"
-                  title="Communities Joined"
-                  count="+9"
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "Just updated",
-                  }}
-                />
-              </MDBox>
-            </Grid>
-          </Grid> */}
         </MDBox>
         {/* mAIN */}
         <MDBox mt={4.5}>
@@ -141,7 +78,7 @@ function DashboardOrg() {
               <MDBox mb={3}>
                 <EventCard
                   image={hack2}
-                  title="What The Hack: 24 hour hackathon In collaboration with C Square & CyberLock 🤝"
+                  title="What The Hack: 24 hour hackathon In collaboration with C Square & CyberLock"
                   description="The ultimate 24-hour national-level hackathon is calling YOU! 💻⚡
 Are you ready to push boundaries, innovate, and compete with the best?"
                   date="April 4-5, 2025"

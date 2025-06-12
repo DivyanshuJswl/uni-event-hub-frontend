@@ -12,7 +12,6 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import Typography from "@mui/material/Typography";
 
 // Data
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import EventCard from "examples/Cards/EventCard/indexProject";
 
 // Dashboard components
@@ -148,7 +147,7 @@ function Dashboard() {
               <MDBox mb={3}>
                 <EventCard
                   image={hack2}
-                  title="What The Hack: 24 hour hackathon In collaboration with C Square & CyberLock 🤝"
+                  title="What The Hack: 24 hour hackathon In collaboration with C Square & CyberLock"
                   description="The ultimate 24-hour national-level hackathon is calling YOU! 💻⚡
 Are you ready to push boundaries, innovate, and compete with the best?"
                   date="April 4-5, 2025"

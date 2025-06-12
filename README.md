@@ -1,140 +1,151 @@
-    "@mui/icons-material": "5.11.16",
-    "@mui/material": "5.12.3",
-    "@mui/x-date-pickers": "^7.28.2",
-# [Material Dashboard 2 React]
-![Image](https://s3.amazonaws.com/creativetim_bucket/products/71/original/material-dashboard-react.jpg?1638950990)
+# University Event Management Platform
 
-**Fully Coded Elements**
-Material Dashboard 2 React is built with over 70 frontend individual elements, like buttons, inputs, navbars, nav tabs, cards, or alerts, giving you the freedom of choosing and combining. All components can take variations in color, which you can easily modify using MUI styled() API and sx prop. You will save a lot of time going from prototyping to full-functional code because all elements are implemented.
+A modern, full-featured university event management dashboard built with React and Material UI, based on Material Dashboard 2 React.
 
-This free MUI & React Dashboard is coming with prebuilt design blocks, so the development process is seamless,
-switching from our pages to the real website is very easy to be done.
+Light Mode
+![Dashboard Screenshot](./src/assets/images/homepage/sshome.png)
+Dark Mode
+![Dashboard Screenshot](./src/assets/images/homepage/sshomeblack.png)
 
-**Documentation built by Developers**
+---
 
-Each element is well presented in very complex documentation.
+## Features
 
-You can read more about the [documentation here](https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/).
+- **Role-based Dashboards**
+  - **Participants:** Browse/register for events, track certificates, view leaderboards.
+  - **Organizers:** Create/manage events, view participants, issue digital certificates.
 
+- **Event Management**
+  - Explore upcoming, ongoing, and past events.
+  - Register/unregister for events.
+  - View event details in modals/cards.
 
-#### Special thanks
+- **Certificate Issuance**
+  - Organizers can mint digital certificates (stored on IPFS, verifiable on-chain).
+  - Participants can view and verify certificates.
 
-During the development of this dashboard, we have used many existing resources from awesome developers. We want to thank them for providing their tools open source:
+- **Leaderboard & Points**
+  - Track top participants and organizers.
+  - Visual leaderboards and stats.
 
-- [MUI](https://mui.com/) - The React UI library for faster and easier web development.
-- [React ChartJS 2](http://reactchartjs.github.io/react-chartjs-2/#/) - Simple yet flexible React charting for designers & developers.
-- [ChromaJS](https://gka.github.io/chroma.js/) - A small-ish zero-dependency JavaScript library for all kinds of color conversions and color scales.
+- **Profile & Settings**
+  - User profile with MetaMask integration.
+  - Platform settings for notifications and preferences.
 
-Let us know your thoughts below. And good luck with development!
+- **Modern UI/UX**
+  - Responsive Material UI design.
+  - Theming (light/dark modes).
+  - Animated transitions and charts.
 
-## Table of Contents
+---
 
-- [Versions](#versions)
-- [Demo](#demo)
-- [Quick Start](#quick-start)
-- [Deploy](#deploy)
-- [Documentation](#documentation)
-- [File Structure](#file-structure)
-- [Browser Support](#browser-support)
-- [Resources](#resources)
-- [Reporting Issues](#reporting-issues)
-- [Technical Support or Questions](#technical-support-or-questions)
-- [Licensing](#licensing)
-- [Useful Links](#useful-links)
+## Getting Started
 
-## Versions
+### Prerequisites
 
-[<img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/react-logo.png?raw=true" width="60" height="60" />](https://www.creative-tim.com/product/material-dashboard-react?ref=readme-mdr)
+- [Node.js (LTS)](https://nodejs.org/en/download/)
+- npm or yarn
 
-| React |
-| ----- |
+### Installation
 
-| [![Material Dashboard React](https://s3.amazonaws.com/creativetim_bucket/products/71/thumb/material-dashboard-react.jpg?1638950990)](http://demos.creative-tim.com/material-dashboard-react/#/dashboard?ref=readme-mdr)
+```sh
+npm install
+# or
+yarn install
+```
 
-## Terminal Commands
+### Running the App
 
-1. Download and Install NodeJs LTS version from [NodeJs Official Page](https://nodejs.org/en/download/).
-2. Navigate to the root ./ directory of the product and run `yarn install` or `npm install` to install our local dependencies.
+```sh
+npm start
+# or
+yarn start
+```
 
-## Deploy
+The app will be available at `https://uni-event-hub-frontend.vercel.app/` or for localhost at Port `http://localhost:3000/`.
 
-:rocket: You can deploy your own version of the template to Genezio with one click:
+---
 
-[![Deploy to Genezio](https://raw.githubusercontent.com/Genez-io/graphics/main/svg/deploy-button.svg)](https://app.genez.io/start/deploy?repository=https://github.com/creativetimofficial/material-dashboard-react&utm_source=github&utm_medium=referral&utm_campaign=github-creativetim&utm_term=deploy-project&utm_content=button-head)
+## Project Structure
+
+```
+public/
+  ├── index.html
+  └── ...
+src/
+  ├── App.js
+  ├── index.js
+  ├── routes.js
+  ├── assets/
+  │   ├── images/
+  │   └── theme/
+  ├── components/
+  ├── context/
+  ├── examples/
+  ├── layouts/
+  └── utils/
+```
+
+- **App.js**: Main entry point, routing, theming, layout.
+- **routes.js**: Route definitions, role-based access.
+- **layouts/**: Dashboard, authentication, profile, event management, etc.
+- **components/**: Custom Material UI components (MDBox, MDButton, etc.).
+- **examples/**: Example cards, charts, configurator, sidenav, etc.
+- **assets/theme/**: Theme configuration (light/dark, RTL support).
+
+---
+
+## Technologies Used
+
+- [React](https://reactjs.org/)
+- [Material UI](https://mui.com/)
+- [React Router](https://reactrouter.com/)
+- [Axios](https://axios-http.com/)
+- [Framer Motion](https://www.framer.com/motion/) (animations)
+- [Chart.js](https://www.chartjs.org/) (charts)
+- [IPFS](https://ipfs.tech/) & Blockchain (certificate storage/verification)
+- [MetaMask](https://metamask.io/) (wallet integration)
+
+---
 
 ## Documentation
 
-The documentation for the Material Dashboard is hosted at our [website](https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/?ref=readme-mdr).
+- [Material Dashboard 2 React Documentation](https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/)
 
-### What's included
+---
 
-Within the download you'll find the following directories and files:
+## Dependencies
+- React (react, react-dom)
+- Material UI (@mui/material, @mui/icons-material, @mui/x-date-pickers)
+- React Router (react-router-dom)
+- Axios (for API requests)
+- Framer Motion (for animations)
+- React Hook Form (for forms)
+- Chart.js and react-chartjs-2 (for charts)
+- Emotion (@emotion/react, @emotion/styled)
+- react-toastify (for notifications)
+- @react-oauth/google (for Google OAuth)
+- stylis-plugin-rtl (for RTL support)
+- dotenv (for environment variables)
 
-```
-material-dashboard-react
-    ├── public
-    │   ├── apple-icon.png
-    │   ├── favicon.png
-    │   ├── index.html
-    │   ├── manifest.json
-    │   └── robots.txt
-    ├── src
-    │   ├── assets
-    │   │   ├── images
-    │   │   └── theme
-    │   │       ├── base
-    │   │       ├── components
-    │   │       ├── functions
-    │   │       ├── index.js
-    │   │       └── theme-rtl.js
-    │   │   └── theme-dark
-    │   │       ├── base
-    │   │       ├── components
-    │   │       ├── functions
-    │   │       ├── index.js
-    │   │       └── theme-rtl.js
-    │   ├── components
-    │   │   ├── MDAlert
-    │   │   ├── MDAvatar
-    │   │   ├── MDBadge
-    │   │   ├── MDBox
-    │   │   ├── MDButton
-    │   │   ├── MDInput
-    │   │   ├── MDPagination
-    │   │   ├── MDProgress
-    │   │   ├── MDSnackbar
-    │   │   └── MDTypography
-    │   ├── context
-    │   ├── examples
-    │   │   ├── Breadcrumbs
-    │   │   ├── Cards
-    │   │   ├── Charts
-    │   │   ├── Configurator
-    │   │   ├── Footer
-    │   │   ├── Items
-    │   │   ├── LayoutContainers
-    │   │   ├── Lists
-    │   │   ├── Navbars
-    │   │   ├── Sidenav
-    │   │   ├── Tables
-    │   │   └── Timeline
-    │   ├── layouts
-    │   │   ├── authentication
-    │   │   ├── billing
-    │   │   ├── dashboard
-    │   │   ├── notifications
-    │   │   ├── profile
-    │   │   ├── rtl
-    │   │   └── tables
-    │   ├── App.js
-    │   ├── index.js
-    │   └── routes.js
-    ├── .eslintrc.json
-    ├── .prettierrc.json
-    ├── CHANGELOG.md
-    ├── ISSUE_TEMPLATE.md
-    ├── jsconfig.json
-    ├── LICENSE.md
-    ├── package.json
-    └── README.md
-```
+npm install
+---
+
+## required env var
+REACT_APP_GOOGLE_CLIENT_ID=your-google-oauth-client-id
+REACT_APP_VITE_GOOGLE_API_KEY=your-google-sheets-api-key
+REACT_APP_GOOGLE_SHEET_ID=your-google-sheet-id
+
+---
+
+## Acknowledgements
+
+- [MUI](https://mui.com/)
+- [React ChartJS 2](http://reactchartjs.github.io/react-chartjs-2/#/)
+- [ChromaJS](https://gka.github.io/chroma.js/)
+
+---
+
+## Contact
+
+For support or questions, please open an issue or contact the maintainer.
