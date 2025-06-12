@@ -64,8 +64,8 @@ const HackathonWinners = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiKey = "AIzaSyBbnjxZ4ow31wroa_CpwN-EIZM_vU9fxzk";
-  const sheetId = "1z01tSHzfTOXxTTL888LxbmOFhGUJWQmcDbjFfxclwUA";
+  const apiKey = (process.env.REACT_APP_VITE_GOOGLE_API_KEY || "").trim();
+  const sheetId = (process.env.REACT_APP_GOOGLE_SHEET_ID || "").trim();
   const range = "Form Responses 1";
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 

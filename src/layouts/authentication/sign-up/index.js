@@ -21,8 +21,7 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
-import zIndex from "@mui/material/styles/zIndex";
-import { Icon, InputAdornment } from "@mui/material";
+import { Icon, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 
 function Cover() {
   const [controller] = useMaterialUIController();
@@ -37,7 +36,10 @@ function Cover() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
+  const [rememberMe, setRememberMe] = useState(
+    localStorage.getItem("rememberMe") === "true" || false
+  );
+  const [branchError, setBranchError] = useState("");
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -122,6 +124,25 @@ function Cover() {
     }
   };
 
+  // Save credentials if rememberMe is checked
+  if (rememberMe) {
+    localStorage.setItem("savedEmail", email);
+    localStorage.setItem("savedPassword", password);
+    localStorage.setItem("rememberMe", "true");
+  } else {
+    localStorage.removeItem("savedEmail");
+    localStorage.removeItem("savedPassword");
+    localStorage.removeItem("rememberMe");
+  }
+  const handleSetRememberMe = () => {
+    const newRememberMe = !rememberMe;
+    setRememberMe(newRememberMe);
+    if (!newRememberMe) {
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+    }
+  };
+
   return (
     <CoverLayout image={bgImage}>
       {/* Toast Container */}
@@ -167,20 +188,63 @@ function Cover() {
                 fullWidth
               />
             </MDBox>
-            <MDBox display="flex" gap={2} mb={2}>
+            <MDBox display="flex" gap={2} mb={2} alignItems="flex-end">
+              <Tooltip
+                open={Boolean(branchError)}
+                title={branchError}
+                arrow
+                placement="top"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      bgcolor: "error.main",
+                      color: "white",
+                      "& .MuiTooltip-arrow": {
+                        color: "error.main",
+                      },
+                    },
+                  },
+                }}
+              >
+                <div>
+                  <MDInput
+                    label="Branch"
+                    variant="standard"
+                    fullWidth
+                    onChange={(e) => {
+                      const inputValue = e.target.value.toUpperCase();
+                      setBranch(inputValue);
+
+                      if (!["CSE", "ECE", "EEE", "ME", "CE", "IT"].includes(inputValue)) {
+                        setBranchError("Invalid branch. Valid options: CSE, ECE, EEE, ME, CE, IT");
+                      } else {
+                        setBranchError("");
+                      }
+                    }}
+                    value={branch}
+                    sx={{
+                      "& .MuiInput-input": {
+                        paddingBottom: "6px",
+                        minHeight: "1.4375em",
+                      },
+                    }}
+                  />
+                </div>
+              </Tooltip>
               <MDInput
-                onChange={(e) => setBranch(e.target.value)}
-                type="text"
-                label="Branch"
-                variant="standard"
-                fullWidth
-              />
-              <MDInput
-                onChange={(e) => setYear(e.target.value)}
+                onChange={(e) => {
+                  const value = Math.min(Math.max(null, e.target.value), 5);
+                  setYear(value);
+                }}
                 type="number"
                 label="Year"
                 variant="standard"
                 fullWidth
+                inputProps={{
+                  min: 1,
+                  max: 5,
+                }}
+                value={year} // Make sure to define year in your state
               />
             </MDBox>
             <MDBox mb={2}>
@@ -213,6 +277,19 @@ function Cover() {
                   ),
                 }}
               />
+            </MDBox>
+            {/* remember me ?  */}
+            <MDBox display="flex" alignItems="center" ml={-1}>
+              <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />
+              <MDTypography
+                variant="button"
+                fontWeight="regular"
+                color="text"
+                onClick={handleSetRememberMe}
+                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
+              >
+                &nbsp;&nbsp;Remember me
+              </MDTypography>
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Checkbox checked={agreedToTerms} onChange={() => setAgreedToTerms(!agreedToTerms)} />

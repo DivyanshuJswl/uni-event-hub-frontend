@@ -5,6 +5,7 @@ import App from "./App";
 
 // Material Dashboard 2 React Context Provider
 import { MaterialUIControllerProvider } from "./context";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -12,7 +13,9 @@ const root = createRoot(container);
 root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
-      <App />
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+        <App />
+      </GoogleOAuthProvider>
     </MaterialUIControllerProvider>
   </BrowserRouter>
 );

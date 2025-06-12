@@ -3,6 +3,7 @@ import { BASE_URL } from "utils/constants";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useGoogleLogin } from "@react-oauth/google";
 
 // react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
@@ -31,7 +32,89 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 import { Icon, InputAdornment } from "@mui/material";
 
+// Create a custom hook for Google login logic
+const useGoogleAuth = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    console.log("Google credential response:", credentialResponse);
+    const idToken = credentialResponse.credential || credentialResponse.id_token;
+
+    if (!idToken) {
+      throw new Error("No ID token received from Google");
+    }
+    try {
+      setIsLoading(true);
+      const res = await axios.post(
+        `${BASE_URL}/api/auth/google`,
+        { credential: idToken },
+        { withCredentials: true }
+      );
+
+      const { token, data, isNewUser } = res?.data; // Add isNewUser flag from backend
+      const { student } = data;
+      const role = student?.role;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+
+      toast.success(
+        isNewUser ? "Welcome! Account created successfully." : "Login successful! Redirecting...",
+        {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+
+      setTimeout(() => {
+        navigate(
+          isNewUser && role === "participant"
+            ? "/complete-profile" // Redirect new users to profile completion
+            : role === "participant"
+            ? "/user-dashboard"
+            : "/organizer-dashboard"
+        );
+      }, 2000);
+    } catch (err) {
+      console.error("Google login error:", err);
+      console.log("Error response data:", err.response?.data);
+      toast.error("Google login failed. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = useGoogleLogin({
+    onSuccess: handleGoogleLoginSuccess,
+    onError: () => {
+      toast.error("Google login failed. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    },
+  });
+
+  return { login, isLoading };
+};
+
 function Basic() {
+  const { login, isLoading: isGoogleLoading } = useGoogleAuth();
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [error, setError] = useState("");
@@ -43,6 +126,7 @@ function Basic() {
   const [rememberMe, setRememberMe] = useState(
     localStorage.getItem("rememberMe") === "true" || false
   );
+
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
@@ -87,7 +171,6 @@ function Basic() {
       const { token, data } = res?.data;
       const { student } = data;
       const role = student?.role;
-      // const role = res?.data?.student?.role;
       console.log(role);
       console.log(res?.data);
       localStorage.setItem("token", token);
@@ -188,7 +271,17 @@ function Basic() {
               </MDTypography>
             </Grid>
             <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
+              <MDTypography
+                component={MuiLink}
+                href="#"
+                variant="body1"
+                color="white"
+                onClick={(e) => {
+                  e.preventDefault();
+                  login();
+                }}
+                sx={{ cursor: "pointer" }}
+              >
                 <GoogleIcon color="inherit" />
               </MDTypography>
             </Grid>
@@ -247,6 +340,18 @@ function Basic() {
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign in"}
+              </MDButton>
+            </MDBox>
+            <MDBox mt={2} mb={1} textAlign="center">
+              <MDButton
+                onClick={login}
+                variant="outlined"
+                color="info"
+                fullWidth
+                disabled={isGoogleLoading}
+                startIcon={<GoogleIcon />}
+              >
+                {isGoogleLoading ? "Signing in with Google..." : "Sign in with Google"}
               </MDButton>
             </MDBox>
             <MDBox mt={3} mb={1} textAlign="center">
