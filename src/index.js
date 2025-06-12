@@ -9,11 +9,16 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
+console.log("Google Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
 
+const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+if (!clientId) {
+  console.error("Google Client ID is not set in environment variables.");
+}
 root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
-      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider clientId={clientId}>
         <App />
       </GoogleOAuthProvider>
     </MaterialUIControllerProvider>
