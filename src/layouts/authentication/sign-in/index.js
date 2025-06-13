@@ -31,10 +31,13 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 import { Divider, Icon, InputAdornment } from "@mui/material";
+import ResetPasswordModal from "../forgotPassword";
 
 function Basic() {
   const [controller] = useMaterialUIController();
-  const { darkMode } = controller;
+  const { darkMode, sideNavColor } = controller;
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +57,21 @@ function Basic() {
       if (savedPassword) setPassword(savedPassword);
     }
   }, []);
+
+  const handleResetSubmit = (email) => {
+    // TODO: Add your reset logic here (API call, toast, etc.)
+    console.log("Reset password for:", email);
+    toast.success("Reset password link sent to " + email, {
+      position: "top-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+
+    setResetOpen(false);
+  };
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -227,19 +245,40 @@ function Basic() {
                 }}
               />
             </MDBox>
-            <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />
+            <MDBox
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              width="100%"
+              mt={2}
+            >
+              <MDBox display="flex" alignItems="center">
+                <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />
+                <MDTypography
+                  variant="button"
+                  fontWeight="regular"
+                  color="text"
+                  onClick={handleSetRememberMe}
+                  sx={{ cursor: "pointer", userSelect: "none", ml: 1 }}
+                >
+                  Remember me
+                </MDTypography>
+              </MDBox>
               <MDTypography
                 variant="button"
-                fontWeight="regular"
-                color="text"
-                onClick={handleSetRememberMe}
-                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
+                color="info"
+                sx={{ cursor: "pointer", textAlign: "right" }}
+                onClick={() => setResetOpen(true)}
               >
-                &nbsp;&nbsp;Remember me
+                Forgot password?
               </MDTypography>
+              <ResetPasswordModal
+                open={resetOpen}
+                onClose={() => setResetOpen(false)}
+                onSubmit={handleResetSubmit}
+              />
             </MDBox>
-            <MDBox mt={4} mb={1}>
+            <MDBox mt={2} mb={1} fullWidth>
               <MDButton
                 onClick={handleSubmit}
                 variant="gradient"
@@ -254,19 +293,19 @@ function Basic() {
             <MDBox
               mt={2}
               mb={1}
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
               textAlign="center"
-              width="100%"
-              style={{
-                width: "100%",
-                background: "transparent",
-                color: "#000",
-                borderRadius: "4px",
-                boxShadow: "none",
-              }}
+              fullWidth
             >
               <GoogleLogin
-                width="100%"
-                ux_mode="popup"
+                theme={darkMode ? "filled_blue" : "filled_blue"}
+                size="large"
+                shape="pill"
+                type="standard"
+                // width="330px"
+                logo_alignment="center"
                 onSuccess={async (credentialResponse) => {
                   // console.log("Google credential response:", credentialResponse);
                   if (!credentialResponse || !credentialResponse.credential) {

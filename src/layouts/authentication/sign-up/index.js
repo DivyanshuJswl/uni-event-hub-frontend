@@ -5,7 +5,7 @@ import axios from "axios";
 import { BASE_URL } from "utils/constants";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { styled } from "@mui/material/styles";
 // @mui material components
 import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
@@ -22,6 +22,36 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
 import { Icon, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
+
+// Add this styled component above your Cover function
+const BackgroundWrapper = styled("div")({
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  zIndex: 0,
+  overflow: "hidden",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    filter: "blur(4px) brightness(0.7)",
+    zIndex: 1,
+  },
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    background: "linear-gradient(120deg, rgba(0,123,255,0.5), rgba(0,0,0,0.5))",
+    zIndex: 2,
+  },
+});
 
 function Cover() {
   const [controller] = useMaterialUIController();
@@ -144,7 +174,8 @@ function Cover() {
   };
 
   return (
-    <CoverLayout image={bgImage}>
+    <CoverLayout>
+      <BackgroundWrapper />
       {/* Toast Container */}
       <ToastContainer
         position="top-right"
@@ -158,7 +189,7 @@ function Cover() {
         pauseOnHover
       />
 
-      <Card>
+      <Card sx={{ position: "relative", zIndex: 10 }}>
         <MDBox
           variant="gradient"
           bgColor="info"
@@ -177,7 +208,7 @@ function Cover() {
             Enter your email and password to register
           </MDTypography>
         </MDBox>
-        <MDBox pt={4} pb={3} px={3}>
+        <MDBox pt={2} pb={2} px={3}>
           <MDBox component="form" role="form">
             <MDBox mb={2}>
               <MDInput
@@ -292,7 +323,20 @@ function Cover() {
               </MDTypography>
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
-              <Checkbox checked={agreedToTerms} onChange={() => setAgreedToTerms(!agreedToTerms)} />
+              <Checkbox
+                checked={agreedToTerms}
+                onChange={() => setAgreedToTerms(!agreedToTerms)}
+                sx={{
+                  "&.Mui-checked": {
+                    color: "info.main",
+                  },
+                  // Make outline more visible in light mode
+                  "& .MuiSvgIcon-root": {
+                    border: darkMode ? "1px solid #fff" : "1px solid #000", // black outline in light mode
+                    borderRadius: "4px", // optional: to match the checkbox shape
+                  },
+                }}
+              />
               <MDTypography
                 variant="button"
                 fontWeight="regular"
@@ -312,7 +356,7 @@ function Cover() {
                 Terms and Conditions
               </MDTypography>
             </MDBox>
-            <MDBox mt={4} mb={1}>
+            <MDBox mt={2} mb={1}>
               <MDButton
                 variant="gradient"
                 color="info"
