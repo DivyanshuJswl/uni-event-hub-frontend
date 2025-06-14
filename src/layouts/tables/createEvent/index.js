@@ -215,7 +215,7 @@ const CreateEvent = () => {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} locale="en">
                       <Controller
                         name="date"
                         control={control}
@@ -233,6 +233,7 @@ const CreateEvent = () => {
                               width: "100%",
                               "& .MuiOutlinedInput-root": {
                                 borderRadius: 2,
+                                color: darkMode ? "white" : "black",
                               },
                             }}
                             slotProps={{

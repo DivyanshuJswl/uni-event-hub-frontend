@@ -24,21 +24,22 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
           sx={{
             width: 50,
             height: 50,
-            backgroundColor: darkMode ? "#3949ab" : sidenavColor || "primary.main",
-            borderRadius: "10%",
+            backgroundColor: darkMode ? "steelblue" : "#bbbcc4",
+            borderRadius: "20%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 14,
-            fontWeight: "bold",
-            color: "white",
             px: 3,
             mr: 2,
           }}
         >
-          <Typography variant="body2">{date.month}</Typography>
-          <Typography variant="h6">{date.day}</Typography>
+          <Typography variant="body2" fontWeight="regular" sx={{ color: "white" }}>
+            {date.month}
+          </Typography>
+          <Typography variant="h6" fontWeight="regular" sx={{ color: "white" }}>
+            {date.day}
+          </Typography>
         </Box>
         <Box sx={{ flexGrow: 1 }}>
           <MDTypography variant="h6" color={darkMode ? "white" : "text.primary"}>
@@ -48,7 +49,7 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
             variant="button"
             ml={1}
             color={darkMode ? "white" : "text"}
-            fontWeight="light"
+            fontWeight="regular"
           >
             {time}
           </MDTypography>

@@ -49,7 +49,7 @@ const MDCalendar = ({ color = "primary" }) => {
       calendar: {
         backgroundColor: darkMode
           ? isTransparent
-            ? "rgba(30, 30, 30, 0.9)"
+            ? "#bbbcc4"
             : "#1e1e1e"
           : isTransparent
           ? "rgba(255, 255, 255, 0.9)"
@@ -61,17 +61,17 @@ const MDCalendar = ({ color = "primary" }) => {
       },
       day: {
         today: {
-          backgroundColor: darkMode ? "#3949ab" : "#e3f2fd",
+          backgroundColor: darkMode ? "steelblue" : "#bbbcc4",
         },
         highlighted: {
           backgroundColor: darkMode ? "#c5cae9" : "#e1e4ff",
         },
         hover: {
-          backgroundColor: darkMode ? "#333" : "#f5f5f5",
+          backgroundColor: darkMode ? "#333" : "#ced3de",
         },
       },
       button: {
-        color: darkMode ? "secondary" : sidenavColor || color,
+        color: darkMode ? "primary" : sidenavColor || color,
       },
     };
   };
@@ -85,7 +85,7 @@ const MDCalendar = ({ color = "primary" }) => {
         maxWidth: 700,
         mx: "auto",
         p: 2,
-        borderRadius: 4,
+        borderRadius: 3,
         boxShadow: 3,
         backgroundColor: styles.calendar.backgroundColor,
         color: styles.calendar.color,
@@ -122,7 +122,8 @@ const MDCalendar = ({ color = "primary" }) => {
           <Typography
             key={day}
             align="center"
-            fontWeight="bold"
+            fontWeight="regular"
+            variant="body2"
             sx={{ color: styles.calendar.color, opacity: 0.8 }}
           >
             {day}

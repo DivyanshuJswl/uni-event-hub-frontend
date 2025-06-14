@@ -1,6 +1,6 @@
 // react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "utils/constants";
 import { toast, ToastContainer } from "react-toastify";
@@ -21,7 +21,19 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
-import { Icon, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
+import {
+  Icon,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  Tooltip,
+} from "@mui/material";
+import PasswordGeneratorModal from "../components/PasswordGenerator";
+import { zxcvbn } from "zxcvbn";
+import { Box } from "@mui/system";
 
 // Add this styled component above your Cover function
 const BackgroundWrapper = styled("div")({
@@ -70,9 +82,13 @@ function Cover() {
     localStorage.getItem("rememberMe") === "true" || false
   );
   const [branchError, setBranchError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(null);
+  const [generatorOpen, setGeneratorOpen] = useState(false);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  const toggleGenerator = () => setGeneratorOpen(!generatorOpen);
   const handleSubmit = async () => {
     // Validate required fields
     if (!name || !email || !password || !year || !branch) {
@@ -170,6 +186,58 @@ function Cover() {
     if (!newRememberMe) {
       localStorage.removeItem("savedEmail");
       localStorage.removeItem("savedPassword");
+    }
+  };
+  useEffect(() => {
+    if (password) {
+      try {
+        const result = zxcvbn(password);
+        setPasswordStrength(result);
+      } catch (error) {
+        console.error("Password strength check failed:", error);
+        setPasswordStrength(null);
+      }
+    } else {
+      setPasswordStrength(null);
+    }
+  }, [password]);
+  const strengthMeterStyles = {
+    mt: 1,
+    ml: 1,
+    p: 1,
+    borderRadius: 1,
+    backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+  };
+  const getStrengthColor = (score) => {
+    switch (score) {
+      case 0:
+        return "#ff0000"; // Very weak
+      case 1:
+        return "#ff5252"; // Weak
+      case 2:
+        return "#ffb142"; // Fair
+      case 3:
+        return "#33d9b2"; // Good
+      case 4:
+        return "#2ecc71"; // Strong
+      default:
+        return "#cccccc";
+    }
+  };
+  const getStrengthText = (score) => {
+    switch (score) {
+      case 0:
+        return "Very Weak";
+      case 1:
+        return "Weak";
+      case 2:
+        return "Fair";
+      case 3:
+        return "Good";
+      case 4:
+        return "Strong";
+      default:
+        return "";
     }
   };
 
@@ -296,6 +364,13 @@ function Cover() {
                 fullWidth
                 value={password}
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton onClick={toggleGenerator} size="small">
+                        <Icon sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}>key</Icon>
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <Icon
@@ -308,7 +383,43 @@ function Cover() {
                   ),
                 }}
               />
+              {/* {passwordStrength && password && (
+                <MDBox mt={1} ml={1} sx={strengthMeterStyles}>
+                  // {/* Strength meter bars 
+                  <MDBox display="flex" alignItems="center" gap={1}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          height: 4,
+                          flexGrow: 1,
+                          backgroundColor:
+                            i <= passwordStrength.score
+                              ? getStrengthColor(passwordStrength.score)
+                              : "#eeeeee",
+                          borderRadius: 2,
+                        }}
+                      />
+                    ))}
+                  </MDBox>
+                  // Strength text and suggestions
+                  <MDTypography variant="caption" color={getStrengthColor(passwordStrength.score)}>
+                    {getStrengthText(passwordStrength.score)}
+                    {passwordStrength.feedback.suggestions.length > 0 && (
+                      <span> · {passwordStrength.feedback.suggestions[0]}</span>
+                    )}
+                  </MDTypography>
+                </MDBox>
+              )} */}
             </MDBox>
+            <PasswordGeneratorModal
+              open={generatorOpen}
+              onClose={() => setGeneratorOpen(false)}
+              onPasswordGenerated={(password) => {
+                setPassword(password);
+                setGeneratorOpen(false);
+              }}
+            />
             {/* remember me ?  */}
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />

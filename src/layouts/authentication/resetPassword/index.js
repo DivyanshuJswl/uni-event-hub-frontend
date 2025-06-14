@@ -6,6 +6,7 @@ import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import axios from "axios";
 import { BASE_URL } from "contexts/constants";
+
 function ResetPasswordPage() {
   const { token } = useParams();
   const navigate = useNavigate();
