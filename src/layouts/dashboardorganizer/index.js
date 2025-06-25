@@ -67,10 +67,18 @@ function DashboardOrg() {
               <MDBox mb={3}>
                 <EventCard
                   image={hack1}
-                  title="Tech Era 2.0 - A Fusion of Technical & Non-Technical Challenges"
-                  description="Apex Techno Warriors, in collaboration with Alexa Developers Community, GeeksforGeeks CU, and Rotaract Club, invites you to Tech Era 2.0 – a two-day extravaganza featuring coding challenges, project exhibitions, debates, marketing competitions, and more! 🎯"
-                  date="April 1-2, 2025"
-                  location="Chandigarh University"
+                  title="Future Tech Summit 2025"
+                  description="Annual technology conference featuring AI, blockchain, and quantum computing experts"
+                  category="conference"
+                  date="September 15, 2025 at 9:00 AM"
+                  location="Convention Center, San Francisco"
+                  maxParticipants={500}
+                  currentParticipants={427}
+                  organizerName="Tech Events Inc."
+                  organizerEmail="events@techevents.com"
+                  status="upcoming"
+                  isFull={false}
+                  _id="techconf_2025_001"
                 />
               </MDBox>
             </Grid>
@@ -78,11 +86,18 @@ function DashboardOrg() {
               <MDBox mb={3}>
                 <EventCard
                   image={hack2}
-                  title="What The Hack: 24 hour hackathon In collaboration with C Square & CyberLock"
-                  description="The ultimate 24-hour national-level hackathon is calling YOU! 💻⚡
-Are you ready to push boundaries, innovate, and compete with the best?"
-                  date="April 4-5, 2025"
-                  location="Chandigarh University, Punjab"
+                  title="Sunrise Yoga Retreat"
+                  description="Morning yoga session with meditation and breathing exercises by the beach"
+                  category="wellness"
+                  date="July 8, 2025 at 5:30 AM"
+                  location="Beachfront Park, Miami"
+                  maxParticipants={30}
+                  currentParticipants={30}
+                  organizerName="Zen Life"
+                  organizerEmail="contact@zenlife.com"
+                  status="upcoming"
+                  isFull={true}
+                  _id="yoga_retreat_0725"
                 />
               </MDBox>
             </Grid>
@@ -90,10 +105,18 @@ Are you ready to push boundaries, innovate, and compete with the best?"
               <MDBox mb={3}>
                 <EventCard
                   image={hack3}
-                  title="Curie Lab: Empowering Students in Science & Innovation!"
-                  description="Explore opportunities in engineering, tech, & business with expert insights, career guidance, and entrepreneurial strategies!"
-                  date="April 11, 2025"
-                  location="Curie Lab, Chandigarh University"
+                  title="Innovation Challenge 2025"
+                  description="Pitch your startup idea to top VCs and win $100,000 in funding"
+                  category="competition"
+                  date="November 20, 2025 at 2:00 PM"
+                  location="Tech Hub, New York"
+                  maxParticipants={15}
+                  currentParticipants={8}
+                  organizerName="Venture Network"
+                  organizerEmail="info@venturenetwork.co"
+                  status="ongoing"
+                  isFull={false}
+                  _id="pitch_comp_1125"
                 />
               </MDBox>
             </Grid>

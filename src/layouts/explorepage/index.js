@@ -1,8 +1,6 @@
 // @mui material components
 import Grid from "@mui/material/Grid";
-
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";

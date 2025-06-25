@@ -2,7 +2,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { styled } from "@mui/material/styles";
@@ -66,6 +65,7 @@ const BackgroundWrapper = styled("div")({
 });
 
 function Cover() {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [name, setName] = useState("");

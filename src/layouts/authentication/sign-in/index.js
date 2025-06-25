@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { BASE_URL } from "utils/constants";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -34,6 +33,7 @@ import { Divider, Icon, InputAdornment } from "@mui/material";
 import ResetPasswordModal from "../forgotPassword";
 
 function Basic() {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode, sideNavColor } = controller;
   const [resetOpen, setResetOpen] = useState(false);

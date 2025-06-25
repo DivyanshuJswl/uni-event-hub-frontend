@@ -36,7 +36,7 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
             "&.MuiInputLabel-shrink": {
               transform: "translate(14px, -6px) scale(0.75)",
             },
-            color: darkMode ? "white" : "text.primary",
+            color: darkMode ? "white" : "primary",
             "&.Mui-focused": {
               color: darkMode ? "white" : "primary.dark",
             },
@@ -69,7 +69,7 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
               value={category.value}
               sx={{
                 fontWeight: categoryFilter === category.value ? 600 : 400,
-                color: darkMode ? "white" : "text.primary",
+                color: darkMode ? "white" : "primary",
               }}
             >
               {category.label}

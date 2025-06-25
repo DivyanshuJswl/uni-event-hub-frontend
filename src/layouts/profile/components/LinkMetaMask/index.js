@@ -6,11 +6,11 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 
 const MetaMaskIntegration = () => {
   const [metaMaskAddress, setmetaMaskAddress] = useState("");
   const [error, setError] = useState("");
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const handleSubmit = async () => {
     try {

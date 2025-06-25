@@ -11,9 +11,9 @@ import { useMaterialUIController } from "context";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 
 const CertificatePublisher = () => {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const { control, handleSubmit, reset } = useForm();
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;

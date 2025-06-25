@@ -5,97 +5,57 @@ import {
   Typography,
   Box,
   Pagination,
-  MenuItem,
   TextField,
   InputAdornment,
   Icon,
-  FormControl,
-  InputLabel,
-  Select,
+  Button,
 } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+
 import EventCard from "examples/Cards/EventCard/indexProject";
 import { useMaterialUIController } from "context";
 import MDTypography from "components/MDTypography";
 import CategoryFilter from "./components/Category";
-
+import MDBox from "components/MDBox";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
-
-// Mock data for events (replace with your actual data source)
-const mockEvents = [
-  {
-    image: "https://source.unsplash.com/random/300x200?event=1",
-    title: "Tech Conference 2023",
-    description: "Annual technology summit featuring industry leaders",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=2",
-    title: "Art Exhibition",
-    description: "Contemporary art showcase from local artists",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=3",
-    title: "Music Festival",
-    description: "3-day outdoor festival with multiple stages",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=4",
-    title: "Startup Pitch Night",
-    description: "Early-stage startups present to investors",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=5",
-    title: "Cooking Workshop",
-    description: "Learn authentic Italian cuisine from master chefs",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=6",
-    title: "Yoga Retreat",
-    description: "Weekend wellness program in the mountains",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=7",
-    title: "Book Launch",
-    description: "Meet the author of this year's bestseller",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=8",
-    title: "Film Premiere",
-    description: "Exclusive screening of the award-winning documentary",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=9",
-    title: "Science Fair",
-    description: "Interactive exhibits for all ages",
-  },
-  {
-    image: "https://source.unsplash.com/random/300x200?event=10",
-    title: "Charity Gala",
-    description: "Black-tie fundraiser for children's education",
-  },
-];
 
 const Explore = () => {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const eventsPerPage = 9;
+  const [inputValue, setInputValue] = useState("9");
+  const [articlesPerPage, setArticlesPerPage] = useState(9);
 
-  // // Calculate current events to display
-  // const currentEvents = mockEvents.slice((page - 1) * eventsPerPage, page * eventsPerPage);
-
-  const [events, setEvents] = useState();
+  const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
+  const [totalEvents, setTotalEvents] = useState(0);
 
   const fetchEvents = async () => {
     try {
-      console.log("inside events");
+      if (!refreshing) setLoading(true);
+      setError(null);
+
       const res = await axios.get(BASE_URL + "/api/events", { withCredentials: true });
-      setEvents(res?.data?.data?.events);
-    } catch (error) {
-      setError(error);
+      const fetchedEvents = res?.data?.data?.events || [];
+
+      setEvents(fetchedEvents);
+      setTotalEvents(fetchedEvents.length);
+      setError(null);
+
+      console.log("Events fetched:", fetchedEvents);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setError(err.response?.data?.message || err.message || "Failed to fetch events");
+      setEvents([]);
+      setTotalEvents(0);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -103,8 +63,40 @@ const Explore = () => {
     fetchEvents();
   }, []);
 
+  const refreshNews = async () => {
+    try {
+      console.log("Refreshing events...");
+      setRefreshing(true);
+      setError(null);
+      await fetchEvents();
+      setPage(1); // Reset to first page when refreshing
+    } catch (err) {
+      console.error("Error refreshing events:", err);
+      setError(err.message);
+    }
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const handleArticlesPerPageChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    if (/^\d+$/.test(value) && parseInt(value) > 0) {
+      if (parseInt(value) > 12) {
+        setInputValue("12");
+        setArticlesPerPage(12);
+      } else {
+        setArticlesPerPage(parseInt(value));
+        setPage(1); // Reset to first page when changing items per page
+      }
+    }
+  };
+
   // Filter events based on search term and category
-  const filteredEvents = mockEvents.filter((event) => {
+  const filteredEvents = events.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -112,12 +104,11 @@ const Explore = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Calculate current events to display
-  const currentEvents = filteredEvents.slice((page - 1) * eventsPerPage, page * eventsPerPage);
-
-  const handlePageChange = (event, value) => {
-    setPage(value);
-  };
+  // Calculate current page events range
+  const indexOfLastEvent = page * articlesPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - articlesPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(filteredEvents.length / articlesPerPage);
 
   return (
     <Box
@@ -134,7 +125,7 @@ const Explore = () => {
             variant="h3"
             sx={{
               fontWeight: 700,
-              color: darkMode ? "white" : "text.primary",
+              color: darkMode ? "white" : "primary",
             }}
           >
             Explore Events
@@ -142,7 +133,7 @@ const Explore = () => {
           <MDTypography
             variant="subtitle1"
             sx={{
-              color: darkMode ? "white" : "text.primary",
+              color: darkMode ? "white" : "primary",
             }}
           >
             Discover upcoming events in your area
@@ -165,7 +156,7 @@ const Explore = () => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setPage(1); // Reset to first page when searching
+              setPage(1);
             }}
             InputProps={{
               startAdornment: (
@@ -186,45 +177,127 @@ const Explore = () => {
             setCategoryFilter={setCategoryFilter}
             setPage={setPage}
           />
+          <MDBox display="flex" alignItems="center">
+            <TextField
+              label="Items per page"
+              type="number"
+              value={inputValue}
+              onChange={handleArticlesPerPageChange}
+              size="small"
+              sx={{ width: 120, mr: 2 }}
+            />
+            <Button
+              variant="outlined"
+              sx={{
+                borderRadius: "8px",
+                fontWeight: 300,
+                borderWidth: "1px",
+                color: darkMode ? "primary.main" : "text.primary",
+                borderColor: darkMode ? "primary.main" : "text.primary",
+                "&:hover": {
+                  borderColor: darkMode ? "primary.dark" : "text.secondary",
+                },
+                "&.Mui-disabled": {
+                  borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
+                  color: darkMode ? "text.disabled" : "action.disabled",
+                },
+              }}
+              onClick={refreshNews}
+              disabled={loading || refreshing}
+              startIcon={
+                refreshing ? <CircularProgress size={20} color="inherit" /> : <Icon>refresh</Icon>
+              }
+            >
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+          </MDBox>
         </Box>
 
         {/* Events Grid */}
-        <Grid container spacing={4}>
-          {events !== null &&
-            events !== undefined &&
-            events.length !== 0 &&
-            events.map((event, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <EventCard
-                  image="https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=60"
-                  title={event.title}
-                  description={event.description}
-                  category={event.category}
-                  date={event.date}
-                  location={event.location}
-                  maxParticipants={event.maxParticipants}
-                  status={event.status}
-                  _id={event._id}
-                />
-              </Grid>
-            ))}
-        </Grid>
+        {loading ? (
+          <MDBox display="flex" justifyContent="center" py={4}>
+            <CircularProgress color="info" />
+          </MDBox>
+        ) : error ? (
+          <MDBox py={2} textAlign="center">
+            <MDTypography variant="body2" color="error">
+              Error loading events: {error}
+            </MDTypography>
+            <Button
+              variant="text"
+              color="info"
+              onClick={refreshNews}
+              startIcon={<Icon>refresh</Icon>}
+              sx={{ mt: 2 }}
+            >
+              Try Again
+            </Button>
+          </MDBox>
+        ) : (
+          <>
+            <Grid container spacing={4}>
+              {currentEvents.length > 0 ? (
+                currentEvents.map((event, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={event._id || index}>
+                    <EventCard
+                      image={
+                        event.featuredImage ||
+                        "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=60"
+                      }
+                      title={event.title}
+                      description={event.description}
+                      category={event.category}
+                      date={event.date}
+                      location={event.location}
+                      maxParticipants={event.maxParticipants}
+                      currentParticipants={event.participants.length}
+                      organizerName={event.organizer.name}
+                      organizerEmail={event.organizer.email}
+                      status={event.status}
+                      isFull={event.isFull}
+                      _id={event._id}
+                    />
+                  </Grid>
+                ))
+              ) : (
+                <Grid item xs={12}>
+                  <Typography variant="h6" sx={{ color: darkMode ? "white" : "black", mt: 4 }}>
+                    {filteredEvents.length === 0 && events.length > 0
+                      ? "No events match your filters."
+                      : "No events found."}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
 
-        {/* Pagination */}
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <Pagination
-            count={Math.ceil(mockEvents.length / eventsPerPage)}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            sx={{
-              "& .MuiPaginationItem-root": {
-                color: darkMode ? "white" : "text.primary",
-              },
-            }}
-          />
-        </Box>
-        {error && <div className="error">Error: {error.message}</div>}
+            {/* Pagination and Results Count */}
+            {filteredEvents.length > 0 && (
+              <>
+                <MDBox display="flex" justifyContent="center" mt={3}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="secondary"
+                    shape="rounded"
+                    sx={{
+                      "& .MuiPaginationItem-root": {
+                        color: darkMode ? "white" : "inherit",
+                      },
+                    }}
+                  />
+                </MDBox>
+                <MDBox display="flex" justifyContent="center" mt={1} mb={3}>
+                  <MDTypography variant="button" color={darkMode ? "white" : "text"}>
+                    Showing {indexOfFirstEvent + 1}-
+                    {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length}{" "}
+                    events
+                  </MDTypography>
+                </MDBox>
+              </>
+            )}
+          </>
+        )}
       </Container>
     </Box>
   );

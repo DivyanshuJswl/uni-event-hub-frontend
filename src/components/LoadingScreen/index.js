@@ -92,7 +92,7 @@ const LoadingScreen = () => {
         variant="h6"
         sx={{
           mt: 4,
-          color: theme.palette.text.primary,
+          color: theme.palette.primary,
           fontWeight: 500,
           letterSpacing: 1.2,
           animation: `${fadeIn} 0.8s ease-out 0.3s both`,

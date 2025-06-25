@@ -42,7 +42,7 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
           </Typography>
         </Box>
         <Box sx={{ flexGrow: 1 }}>
-          <MDTypography variant="h6" color={darkMode ? "white" : "text.primary"}>
+          <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
             {title}
           </MDTypography>
           <MDTypography
@@ -94,7 +94,7 @@ const UpcomingEvents = ({ events = [] }) => {
         mb: 3,
       }}
     >
-      <Typography variant="h5" gutterBottom color={darkMode ? "white" : "text.primary"}>
+      <Typography variant="h5" gutterBottom color={darkMode ? "white" : "primary"}>
         Upcoming Events
       </Typography>
       <Box py></Box>

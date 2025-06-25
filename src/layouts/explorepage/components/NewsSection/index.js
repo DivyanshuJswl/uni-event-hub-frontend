@@ -3,7 +3,6 @@ import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import Icon from "@mui/material/Icon";
 import CircularProgress from "@mui/material/CircularProgress";
-import { BASE_URL } from "utils/constants";
 import Pagination from "@mui/material/Pagination";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -13,20 +12,24 @@ import NewsCard from "../NewsCard";
 
 import { useState, useEffect } from "react";
 import { TextField } from "@mui/material";
+import { useMaterialUIController } from "context";
 
 function NewsSection() {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [articlesPerPage, setArticlesPerPage] = useState(3);
   const [inputValue, setInputValue] = useState("3");
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
 
   useEffect(() => {
     const fetchTechNews = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://uni-event-hub-backend.onrender.com/api/tech-news");
+        const response = await fetch(`${BASE_URL}/api/tech-news`);
         const data = await response.json();
         setNews(data.articles || []);
         setLoading(false);
@@ -93,7 +96,20 @@ function NewsSection() {
           />
           <Button
             variant="outlined"
-            color="primary"
+            sx={{
+              borderRadius: "8px", // Rounded corners
+              fontWeight: 300, // Thin font weight
+              borderWidth: "1px", // Thin border
+              color: darkMode ? "primary.main" : "text.primary", // Text color
+              borderColor: darkMode ? "primary.main" : "text.primary", // Border color
+              "&:hover": {
+                borderColor: darkMode ? "primary.dark" : "text.secondary",
+              },
+              "&.Mui-disabled": {
+                borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
+                color: darkMode ? "text.disabled" : "action.disabled",
+              },
+            }}
             onClick={refreshNews}
             disabled={loading}
             startIcon={<Icon>refresh</Icon>}
@@ -144,7 +160,7 @@ function NewsSection() {
                   count={totalPages}
                   page={page}
                   onChange={handlePageChange}
-                  color="primary"
+                  color="secondary"
                   shape="rounded"
                 />
               </MDBox>

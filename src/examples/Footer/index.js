@@ -62,7 +62,7 @@ const Footer = () => {
             </MDTypography>
             <MDTypography
               variant="body2"
-              color={darkMode ? "white" : "text.primary"}
+              color={darkMode ? "white" : "primary"}
               fontWeight="regular"
               sx={{ lineHeight: 1.8 }}
             >
@@ -70,7 +70,7 @@ const Footer = () => {
             </MDTypography>
             <MDTypography
               variant="body2"
-              color={darkMode ? "white" : "text.primary"}
+              color={darkMode ? "white" : "primary"}
               sx={{ lineHeight: 1.8 }}
             >
               Divyanshu Jaiswal
@@ -129,7 +129,7 @@ const Footer = () => {
                   href={link.url}
                   underline="none"
                   sx={{
-                    color: darkMode ? "white" : "text.primary",
+                    color: darkMode ? "white" : "primary",
                     "&:hover": {
                       color: darkMode ? "#4facfe" : "#3f51b5",
                       fontWeight: 500,
@@ -164,7 +164,7 @@ const Footer = () => {
                   fontSize: "1.2rem",
                 }}
               />
-              <MDTypography variant="body2" color={darkMode ? "white" : "text.primary"}>
+              <MDTypography variant="body2" color={darkMode ? "white" : "primary"}>
                 Chandigarh University, Mohali, Punjab - 140413
               </MDTypography>
             </MDBox>
@@ -176,7 +176,7 @@ const Footer = () => {
                   fontSize: "1.2rem",
                 }}
               />
-              <MDTypography variant="body2" color={darkMode ? "white" : "text.primary"}>
+              <MDTypography variant="body2" color={darkMode ? "white" : "primary"}>
                 support@uniEventHub.com
               </MDTypography>
             </MDBox>
@@ -188,7 +188,7 @@ const Footer = () => {
                   fontSize: "1.2rem",
                 }}
               />
-              <MDTypography variant="body2" color={darkMode ? "white" : "text.primary"}>
+              <MDTypography variant="body2" color={darkMode ? "white" : "primary"}>
                 +1 (555) 123-4567
               </MDTypography>
             </MDBox> */}
@@ -204,14 +204,14 @@ const Footer = () => {
           >
             <MDTypography
               variant="body2"
-              color={darkMode ? "white" : "text.primary"}
+              color={darkMode ? "white" : "primary"}
               sx={{ fontStyle: "italic" }}
             >
               The best event management platform we ve used. Highly recommended!
             </MDTypography>
             <MDTypography
               variant="caption"
-              color={darkMode ? "white" : "text.primary"}
+              color={darkMode ? "white" : "primary"}
               sx={{ display: "block", mt: 1 }}
             >
               — Happy Customer

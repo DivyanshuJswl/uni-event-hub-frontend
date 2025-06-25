@@ -9,7 +9,6 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-import { BASE_URL } from "utils/constants";
 
 const style = {
   position: "fixed",
@@ -30,6 +29,7 @@ export default function ResetPasswordModal({ open, onClose, onSubmit }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -33,7 +33,7 @@ function Tables() {
           variant="h3"
           sx={{
             fontWeight: 700,
-            color: darkMode ? "white" : "text.primary",
+            color: darkMode ? "white" : "primary",
           }}
         >
           Create Events
@@ -41,7 +41,7 @@ function Tables() {
         <MDTypography
           variant="subtitle1"
           sx={{
-            color: darkMode ? "white" : "text.primary",
+            color: darkMode ? "white" : "primary",
           }}
         >
           Create and manage events (Organizer only)

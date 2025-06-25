@@ -25,9 +25,9 @@ import burceMars from "assets/images/bruce-marspic.jpg";
 import backgroundImage from "assets/images/bg-profile.jpeg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 
 function Header({ children }) {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
   const [isOrganizer, setIsOrganizer] = useState(false); // State to track organizer status

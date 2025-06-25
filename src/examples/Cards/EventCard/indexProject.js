@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -12,14 +11,23 @@ import {
   Grid,
   Fade,
   Backdrop,
+  LinearProgress,
+  Chip,
+  Avatar,
+  Tooltip,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import CloseIcon from "@mui/icons-material/Close";
+import EmailIcon from "@mui/icons-material/Email";
+import PersonIcon from "@mui/icons-material/Person";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import CategoryIcon from "@mui/icons-material/Category";
+import GroupIcon from "@mui/icons-material/Group";
 import axios from "axios";
-import { BASE_URL } from "utils/constants";
 
 function EventCard({
   image,
@@ -29,20 +37,23 @@ function EventCard({
   date,
   location,
   maxParticipants,
+  currentParticipants,
+  organizerName,
+  organizerEmail,
   status,
+  isFull,
   _id,
 }) {
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-
   const [registerBtn, setRegisterBn] = useState("Register Now");
+  const [err, setError] = useState();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  const [err, setError] = useState();
 
   const handleRegister = async () => {
     registerBtn === "Register Now" ? setRegisterBn("Unenroll") : setRegisterBn("Register Now");
@@ -63,6 +74,15 @@ function EventCard({
     }
   };
 
+  const participationPercentage = Math.round((currentParticipants / maxParticipants) * 100);
+  const formattedDate = new Date(date).toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
     <div>
       {/* Clickable Card */}
@@ -78,64 +98,152 @@ function EventCard({
         }}
       >
         <MDBox padding="1rem">
-          <MDBox
-            component="img"
-            src={image}
-            alt={title}
-            width="100%"
-            height="12.5rem"
-            sx={{
-              objectFit: "cover",
-              borderRadius: "lg",
-              boxShadow: darkMode ? 2 : 3,
-              borderTopLeftRadius: "0.6rem",
-              borderTopRightRadius: "0.6rem",
-              borderBottomLeftRadius: "0.6rem",
-              borderBottomRightRadius: "0.6rem",
-              mt: -5,
-              border: darkMode
-                ? "1px solid rgba(255, 255, 255, 0.1)"
-                : "1px solid rgba(0, 0, 0, 0.1)",
-              transition: "transform 0.3s ease",
-              "&:hover": {
-                transform: "scale(1.02)",
-              },
-            }}
-          />
+          <MDBox position="relative">
+            <MDBox
+              component="img"
+              src={image}
+              alt={title}
+              width="100%"
+              height="12.5rem"
+              sx={{
+                objectFit: "cover",
+                borderRadius: "lg",
+                boxShadow: darkMode ? 2 : 3,
+                borderTopLeftRadius: "0.6rem",
+                borderTopRightRadius: "0.6rem",
+                borderBottomLeftRadius: "0.6rem",
+                borderBottomRightRadius: "0.6rem",
+                mt: -5,
+                border: darkMode
+                  ? "1px solid rgba(255, 255, 255, 0.1)"
+                  : "1px solid rgba(0, 0, 0, 0.1)",
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
+              }}
+            />
+            <Chip
+              label={status}
+              color={
+                status === "upcoming"
+                  ? "secondary"
+                  : status === "ongoing"
+                  ? "success"
+                  : status === "completed"
+                  ? "secondary"
+                  : "default"
+              }
+              size="small"
+              sx={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                fontWeight: "bold",
+                textTransform: "uppercase",
+              }}
+            />
+          </MDBox>
 
           <MDBox pt={3} pb={1} px={1}>
             <MDTypography
               variant="h6"
               textTransform="capitalize"
               color={darkMode ? "white" : "dark"}
+              sx={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
-              {title}..
+              {title}
             </MDTypography>
-            <MDTypography
-              component="div"
-              variant="button"
-              color={darkMode ? "white" : "text"}
-              fontWeight="light"
-            >
-              {category}
-            </MDTypography>
-            <Divider
-              sx={{ backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)" }}
-            />
-            <MDBox display="flex" alignItems="center" mt={1}>
+
+            <Box display="flex" alignItems="center" mt={0.5}>
+              <CategoryIcon fontSize="small" color="secondary" />
               <MDTypography
-                variant="button"
+                variant="caption"
+                ml={0.5}
                 color={darkMode ? "white" : "text"}
-                sx={{ mt: 0.15, mr: 0.5 }}
-              ></MDTypography>
-              <MDTypography variant="button" color={darkMode ? "white" : "text"} fontWeight="light">
-                📅 {date}
+                fontWeight="light"
+              >
+                {category}
               </MDTypography>
-            </MDBox>
+            </Box>
+
+            <Divider
+              sx={{
+                backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
+                my: 1,
+              }}
+            />
+
+            <Box display="flex" alignItems="center" mb={0.5}>
+              <EventAvailableIcon fontSize="small" color="secondary" />
+              <MDTypography
+                variant="caption"
+                ml={0.5}
+                color={darkMode ? "white" : "text"}
+                fontWeight="light"
+              >
+                {formattedDate}
+              </MDTypography>
+            </Box>
+
+            <Box display="flex" alignItems="center" mb={1}>
+              <LocationOnIcon fontSize="small" color="secondary" />
+              <MDTypography
+                variant="caption"
+                ml={0.5}
+                color={darkMode ? "white" : "text"}
+                fontWeight="light"
+              >
+                {location}
+              </MDTypography>
+            </Box>
+
+            <Box mb={1}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                <Box display="flex" alignItems="center">
+                  <GroupIcon fontSize="small" color="secondary" />
+                  <MDTypography
+                    variant="caption"
+                    ml={0.5}
+                    color={darkMode ? "white" : "text"}
+                    fontWeight="light"
+                  >
+                    {currentParticipants}/{maxParticipants} spots filled
+                  </MDTypography>
+                </Box>
+                <MDTypography
+                  variant="caption"
+                  color={darkMode ? "white" : "text"}
+                  fontWeight="medium"
+                >
+                  {participationPercentage}%
+                </MDTypography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={participationPercentage}
+                color={isFull ? "error" : participationPercentage > 80 ? "warning" : "secondary"}
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                }}
+              />
+            </Box>
 
             <MDBox display="flex" justifyContent="center" alignItems="center" padding="8px" mt={2}>
-              <MDButton variant="gradient" color={sidenavColor} size="medium">
-                SHOW DETAILS
+              <MDButton
+                variant="gradient"
+                color={isFull ? "error" : sidenavColor}
+                size="medium"
+                disabled={isFull}
+              >
+                {isFull ? "FULLY BOOKED" : "SHOW DETAILS"}
               </MDButton>
             </MDBox>
           </MDBox>
@@ -188,7 +296,6 @@ function EventCard({
                 position: "absolute",
                 right: 30,
                 top: 25,
-                // color: "white",
                 zIndex: 1000,
                 backgroundColor: darkMode ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.5)",
                 backdropFilter: "blur(10px)",
@@ -218,40 +325,92 @@ function EventCard({
                       borderRadius: "12px",
                     }}
                   />
+                  <Box mt={2}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <MDTypography variant="h6" color={darkMode ? "white" : "dark"}>
+                        Participation Status
+                      </MDTypography>
+                      <Chip
+                        label={status}
+                        color={
+                          status === "upcoming"
+                            ? "secondary"
+                            : status === "ongoing"
+                            ? "success"
+                            : "secondary"
+                        }
+                        size="medium"
+                        sx={{ fontWeight: "bold", textTransform: "uppercase" }}
+                      />
+                    </Box>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                      <MDTypography variant="body2" color={darkMode ? "white" : "text"}>
+                        {currentParticipants}/{maxParticipants} participants
+                      </MDTypography>
+                      <MDTypography variant="body2" color={darkMode ? "white" : "text"}>
+                        {participationPercentage}% filled
+                      </MDTypography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={participationPercentage}
+                      color={
+                        isFull ? "error" : participationPercentage > 80 ? "warning" : "secondary"
+                      }
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                      }}
+                    />
+                    {isFull && (
+                      <MDTypography
+                        variant="caption"
+                        color="error"
+                        sx={{ display: "block", mt: 0.5, textAlign: "right" }}
+                      >
+                        This event is fully booked
+                      </MDTypography>
+                    )}
+                  </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <MDTypography
                     variant="h3"
                     textTransform="capitalize"
                     color={darkMode ? "white" : "dark"}
+                    sx={{ mb: 1 }}
                   >
                     {title}
                   </MDTypography>
-                  <MDTypography
-                    component="div"
-                    variant="button"
-                    color={darkMode ? "white" : "text"}
-                    fontWeight="light"
-                  >
-                    {category}
-                  </MDTypography>
+
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <CategoryIcon color="secondary" />
+                    <MDTypography
+                      variant="h6"
+                      ml={1}
+                      color={darkMode ? "white" : "text"}
+                      fontWeight="light"
+                    >
+                      {category}
+                    </MDTypography>
+                  </Box>
 
                   <Divider sx={{ my: 2 }} />
 
                   <Box display="flex" alignItems="center" mb={2}>
-                    <Icon color="primary">schedule</Icon>
+                    <EventAvailableIcon color="secondary" />
                     <MDTypography
                       variant="body1"
                       ml={1}
                       color={darkMode ? "white" : "text"}
                       fontWeight="light"
                     >
-                      {date}
+                      {formattedDate}
                     </MDTypography>
                   </Box>
 
                   <Box display="flex" alignItems="center" mb={2}>
-                    <Icon color="primary">location_on</Icon>
+                    <LocationOnIcon color="secondary" />
                     <MDTypography
                       variant="body1"
                       ml={1}
@@ -262,20 +421,43 @@ function EventCard({
                     </MDTypography>
                   </Box>
 
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <PersonIcon color="secondary" />
+                    <MDTypography
+                      variant="body1"
+                      ml={1}
+                      color={darkMode ? "white" : "text"}
+                      fontWeight="light"
+                    >
+                      Organized by: {organizerName}
+                    </MDTypography>
+                  </Box>
+
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <EmailIcon color="secondary" />
+                    <MDTypography
+                      variant="body1"
+                      ml={1}
+                      color={darkMode ? "white" : "text"}
+                      fontWeight="light"
+                    >
+                      {organizerEmail}
+                    </MDTypography>
+                  </Box>
+
                   <MDTypography
-                    variant="body1"
-                    ml={1}
-                    color={darkMode ? "white" : "text"}
-                    fontWeight="medium"
+                    variant="h6"
+                    color={darkMode ? "white" : "dark"}
+                    sx={{ mt: 3, mb: 1 }}
                   >
-                    Event Details
+                    Event Description
                   </MDTypography>
                   <MDTypography
-                    variant="body2"
+                    variant="body1"
                     paragraph
-                    ml={1}
                     color={darkMode ? "white" : "text"}
                     fontWeight="light"
+                    sx={{ mb: 3 }}
                   >
                     {description}
                   </MDTypography>
@@ -283,12 +465,13 @@ function EventCard({
                   <MDButton
                     onClick={handleRegister}
                     variant="gradient"
-                    color={sidenavColor}
+                    color={isFull ? "error" : sidenavColor}
                     size="large"
                     fullWidth
-                    sx={{ mt: 4 }}
+                    disabled={isFull}
+                    sx={{ mt: 2 }}
                   >
-                    {registerBtn}
+                    {isFull ? "Event Full" : registerBtn}
                   </MDButton>
                 </Grid>
               </Grid>
@@ -304,7 +487,16 @@ EventCard.propTypes = {
   image: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  category: PropTypes.string,
+  category: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  location: PropTypes.string.isRequired,
+  maxParticipants: PropTypes.number,
+  currentParticipants: PropTypes.number.isRequired,
+  organizerName: PropTypes.string.isRequired,
+  organizerEmail: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
+  isFull: PropTypes.bool.isRequired,
+  _id: PropTypes.string.isRequired,
 };
 
 export default EventCard;
