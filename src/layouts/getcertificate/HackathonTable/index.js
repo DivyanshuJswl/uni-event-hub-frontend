@@ -9,13 +9,49 @@ import {
   Paper,
   Tooltip,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import Icon from "@mui/material/Icon";
 import CertificateActions from "../CertificateAction";
+import MDAlert from "components/MDAlert";
 
-function HackathonTable({ data }) {
+function HackathonTable({ data, loading, error }) {
+  if (loading) {
+    return (
+      <MDBox display="flex" justifyContent="center" alignItems="center" height="200px">
+        <CircularProgress sx={{ color: "white" }} />
+      </MDBox>
+    );
+  }
+
+  if (error) {
+    return (
+      <MDBox mx="auto" p={3} maxWidth="800px">
+        <MDAlert color="error">
+          <MDTypography variant="h6" color="white">
+            Error
+          </MDTypography>
+          {error}
+        </MDAlert>
+      </MDBox>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <MDBox mx="auto" p={3} textAlign="center" maxWidth="800px">
+        <MDTypography variant="h5" gutterBottom color="white">
+          No Data Available
+        </MDTypography>
+        <MDTypography variant="body2" color="white">
+          The Google Sheet is empty or couldn&apos;t be loaded.
+        </MDTypography>
+      </MDBox>
+    );
+  }
+
   return (
     <TableContainer component={Paper} sx={{ boxShadow: "none", backgroundColor: "transparent" }}>
       <MDBox mb={2} display="flex" justifyContent="space-between" alignItems="center">
@@ -99,6 +135,10 @@ HackathonTable.propTypes = {
       certificateId: PropTypes.string.isRequired,
     })
   ).isRequired,
+  loading: PropTypes.bool.isRequired,
+  error: PropTypes.string,
 };
-
+HackathonTable.defaultProps = {
+  error: null,
+};
 export default HackathonTable;

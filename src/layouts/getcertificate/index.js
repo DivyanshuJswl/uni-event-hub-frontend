@@ -79,6 +79,8 @@ const HackathonWinners = () => {
     const fetchData = async () => {
       try {
         // Actual API call would look like:
+        setLoading(true);
+        setError(null);
         const response = await axios.get(url);
         if (response.data?.values) {
           const [headers, ...rows] = response.data.values;
@@ -103,13 +105,9 @@ const HackathonWinners = () => {
     fetchData();
   }, [url, apiKey]);
 
-  if (loading) return <LoadingIndicator />;
-  if (error) return <ErrorDisplay error={error} apiKey={apiKey} />;
-  if (data.length === 0) return <EmptyState />;
-
   return (
     <DashboardLayout>
-      <DashboardNavbar absolute />
+      <DashboardNavbar />
       <MDBox mx={3} mt={5}>
         <MDBox mb={3} display="flex" justifyContent="space-between" alignItems="center">
           <MDTypography variant="h4" mt={1}>
@@ -120,14 +118,16 @@ const HackathonWinners = () => {
           </MDButton>
         </MDBox>
         <MDBox mb={3} display="flex">
-          <HackathonTable data={data} />
+          <HackathonTable data={data} loading={loading} error={error} />
         </MDBox>
-        <MDBox mt={3}>
-          <MDTypography variant="body2" fontStyle="italic">
-            {data.length} certificates issued. All certificates are stored on IPFS and verifiable
-            on-chain.
-          </MDTypography>
-        </MDBox>
+        {!loading && !error && (
+          <MDBox mt={3}>
+            <MDTypography variant="body2" fontStyle="italic">
+              {data.length} certificates issued. All certificates are stored on IPFS and verifiable
+              on-chain.
+            </MDTypography>
+          </MDBox>
+        )}
       </MDBox>
       <Footer />
     </DashboardLayout>

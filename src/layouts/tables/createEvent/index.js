@@ -103,7 +103,8 @@ const CreateEvent = () => {
       if (imageFile) {
         const formData = new FormData();
         formData.append("image", imageFile);
-
+        formData.append("eventId", eventId);
+        console.log("Uploading image for eventId:", eventId);
         const uploadResponse = await axios.post(
           `${BASE_URL}/api/events/${eventId}/upload-image`,
           formData,
@@ -115,6 +116,7 @@ const CreateEvent = () => {
             withCredentials: true,
           }
         );
+        console.log("Upload URL:", uploadResponse);
         imageUrl = uploadResponse.data.url;
 
         // In your frontend code, modify the PATCH request:

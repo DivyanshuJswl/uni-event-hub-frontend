@@ -241,7 +241,8 @@ const Explore = () => {
                   <Grid item xs={12} sm={6} md={4} key={event._id || index}>
                     <EventCard
                       image={
-                        event.featuredImage ||
+                        event.featuredImage?.url ||
+                        event.images?.[0]?.url ||
                         "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=60"
                       }
                       title={event.title}

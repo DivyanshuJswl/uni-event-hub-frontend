@@ -28,7 +28,7 @@ function ResetPasswordPage() {
     setError("");
 
     try {
-      await axios.post({BASE_URL}+"/api/auth/reset-password", {
+      await axios.post({ BASE_URL } + "/api/auth/reset-password", {
         token,
         newPassword: password,
       });
