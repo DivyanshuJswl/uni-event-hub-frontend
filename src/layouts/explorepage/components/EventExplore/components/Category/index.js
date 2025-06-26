@@ -13,12 +13,12 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
 
   const categories = [
     { value: "all", label: "All Categories" },
-    { value: "workshop", label: "workshop" },
-    { value: "seminar", label: "social" },
-    { value: "social", label: "Music" },
-    { value: "hackathon", label: "hackathon" },
-    { value: "cultural", label: "cultural" },
-    { value: "technology", label: "technology" },
+    { value: "workshop", label: "Workshop" },
+    { value: "seminar", label: "Seminar" },
+    { value: "social", label: "Social" },
+    { value: "hackathon", label: "Hackathon" },
+    { value: "cultural", label: "Cultural" },
+    { value: "technology", label: "Technology" },
   ];
 
   const handleChange = (event) => {

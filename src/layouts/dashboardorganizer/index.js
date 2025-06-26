@@ -124,13 +124,13 @@ function DashboardOrg() {
         </MDBox>
         <MDBox>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
+            <Grid item xs={12} md={5} lg={8}>
               <Projects />
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
+            <Grid item xs={12} md={7} lg={4}>
               <OrdersOverview events={events} />
             </Grid>
-            <Grid item xs={12} md={6} lg={12}>
+            <Grid item xs={12} md={12} lg={12}>
               <LeaderboardTable />
             </Grid>
           </Grid>

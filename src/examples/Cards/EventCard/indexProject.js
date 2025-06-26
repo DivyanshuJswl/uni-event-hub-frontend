@@ -484,7 +484,7 @@ function EventCard({
 }
 
 EventCard.propTypes = {
-  image: PropTypes.object.isRequired,
+  image: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   category: PropTypes.string.isRequired,

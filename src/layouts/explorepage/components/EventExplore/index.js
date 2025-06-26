@@ -30,10 +30,8 @@ const Explore = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [inputValue, setInputValue] = useState("9");
   const [articlesPerPage, setArticlesPerPage] = useState(9);
-
   const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
-  const [totalEvents, setTotalEvents] = useState(0);
 
   const fetchEvents = async () => {
     try {
@@ -44,7 +42,6 @@ const Explore = () => {
       const fetchedEvents = res?.data?.data?.events || [];
 
       setEvents(fetchedEvents);
-      setTotalEvents(fetchedEvents.length);
       setError(null);
 
       console.log("Events fetched:", fetchedEvents);
@@ -52,7 +49,6 @@ const Explore = () => {
       console.error("Error fetching events:", err);
       setError(err.response?.data?.message || err.message || "Failed to fetch events");
       setEvents([]);
-      setTotalEvents(0);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -69,6 +65,7 @@ const Explore = () => {
       setRefreshing(true);
       setError(null);
       await fetchEvents();
+      console.log("Events refreshed successfully");
       setPage(1); // Reset to first page when refreshing
     } catch (err) {
       console.error("Error refreshing events:", err);
@@ -98,9 +95,13 @@ const Explore = () => {
   // Filter events based on search term and category
   const filteredEvents = events.filter((event) => {
     const matchesSearch =
+      searchTerm === "" ||
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || event.category === categoryFilter;
+
+    const matchesCategory =
+      categoryFilter === "all" || event.category.toLowerCase() === categoryFilter.toLowerCase();
+
     return matchesSearch && matchesCategory;
   });
 
@@ -175,7 +176,9 @@ const Explore = () => {
             />
             <CategoryFilter
               categoryFilter={categoryFilter}
-              setCategoryFilter={setCategoryFilter}
+              setCategoryFilter={(category) => {
+                setCategoryFilter(category);
+              }}
               setPage={setPage}
             />
           </MDBox>

@@ -41,7 +41,7 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
             {date.day}
           </Typography>
         </Box>
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
           <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
             {title}
           </MDTypography>

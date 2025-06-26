@@ -45,7 +45,7 @@ const data = () => {
     const { darkMode } = controller;
     // Define colors based on rank
     let backgroundColor = "#344767"; // Default dark
-    let textColor = darkMode ? "white" : "black";
+    let textColor = darkMode ? "white" : "dark";
     let borderColor = "transparent";
     let width = "28px";
     let height = "28px";
