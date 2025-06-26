@@ -146,37 +146,39 @@ const Explore = () => {
             display: "flex",
             gap: 2,
             mb: 4,
-            flexDirection: { xs: "column", sm: "row" },
+            flexDirection: { xs: "column", md: "row" },
           }}
         >
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search events..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPage(1);
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Icon fontSize="small" color={darkMode ? "white" : "black"}>
-                    search
-                  </Icon>
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: 2,
-                backgroundColor: darkMode ? "" : "white",
-              },
-            }}
-          />
-          <CategoryFilter
-            categoryFilter={categoryFilter}
-            setCategoryFilter={setCategoryFilter}
-            setPage={setPage}
-          />
+          <MDBox display="flex" gap={2} flexGrow={1}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search events..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Icon fontSize="small" color={darkMode ? "white" : "black"}>
+                      search
+                    </Icon>
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 2,
+                  backgroundColor: darkMode ? "" : "white",
+                },
+              }}
+            />
+            <CategoryFilter
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
+              setPage={setPage}
+            />
+          </MDBox>
           <MDBox display="flex" alignItems="center">
             <TextField
               label="Items per page"
@@ -282,8 +284,12 @@ const Explore = () => {
                     color="secondary"
                     shape="rounded"
                     sx={{
-                      "& .MuiPaginationItem-root": {
-                        color: darkMode ? "white" : "inherit",
+                      "& .MuiPaginationItem-page.Mui-selected": {
+                        color: "white",
+                      },
+                      //make non selected text white
+                      "& .MuiPaginationItem-page": {
+                        color: darkMode ? "white" : "text.primary",
                       },
                     }}
                   />

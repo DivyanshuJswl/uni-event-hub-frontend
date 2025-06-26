@@ -23,7 +23,11 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
           height="160"
           image={image}
           alt={name}
-          sx={{ objectFit: "cover" }}
+          sx={{
+            objectFit: "cover",
+            maxHeight: "160px",
+            objectPosition: "center",
+          }}
         />
       )}
       <CardContent>

@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { FormControl, InputLabel, Select, MenuItem, Box } from "@mui/material";
 import { useMaterialUIController } from "context";
+import MDBox from "components/MDBox";
 
 const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
   const [controller] = useMaterialUIController();
@@ -26,7 +27,7 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
   };
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 300, minWidth: 250 }}>
+    <MDBox sx={{ width: "100%", height: "50%" }}>
       <FormControl fullWidth>
         <InputLabel
           id="category-filter-label"
@@ -77,7 +78,7 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
           ))}
         </Select>
       </FormControl>
-    </Box>
+    </MDBox>
   );
 };
 
