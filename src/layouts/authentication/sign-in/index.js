@@ -109,6 +109,7 @@ function Basic() {
       const role = student?.role;
       console.log(role);
       console.log(res?.data);
+      localStorage.setItem("student", JSON.stringify(student));
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
       toast.success("Login successful! Redirecting...", {
@@ -122,7 +123,7 @@ function Basic() {
 
       setTimeout(() => {
         navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
-      }, 2000);
+      }, 500);
     } catch (err) {
       console.log(err);
       let errorMessage = "Login failed";
@@ -328,6 +329,7 @@ function Basic() {
                   const role = student?.role;
                   localStorage.setItem("token", token);
                   localStorage.setItem("role", role);
+                  localStorage.setItem("student", JSON.stringify(student));
                   toast.success(
                     isNewUser
                       ? "Welcome! Account created successfully."
@@ -349,7 +351,7 @@ function Basic() {
                         ? "/user-dashboard"
                         : "/organizer-dashboard"
                     );
-                  }, 2000);
+                  }, 700);
                 }}
                 onError={() => {
                   toast.error("Google login failed. Please try again.", {

@@ -1,21 +1,13 @@
-// react-router components
+import React from "react";
 import { Link } from "react-router-dom";
-
-// prop-types is library for typechecking of props
 import PropTypes from "prop-types";
-
-// @mui material components
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
 import Chip from "@mui/material/Chip";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-// Material Dashboard 2 React base styles
 import colors from "assets/theme/base/colors";
 import typography from "assets/theme/base/typography";
 
@@ -27,11 +19,11 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
   const formatValue = (key, value) => {
     switch (key) {
       case "year":
-        return `Year ${value}`;
+        return `${value}`;
       case "branch":
         return value.toUpperCase();
       case "metaMaskAddress":
-        return value ? (
+        return value && value !== "Not connected" ? (
           <Tooltip title={value} placement="top">
             <Chip
               label={`${value.substring(0, 6)}...${value.substring(value.length - 4)}`}
@@ -49,8 +41,10 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
             size="small"
           />
         );
-      case "tokens":
-        return value.length > 0 ? `${value.length} active tokens` : "No active tokens";
+      case "isVerified":
+        return (
+          <Chip label={value} color={value === "Verified" ? "success" : "error"} size="small" />
+        );
       default:
         return value;
     }
@@ -67,7 +61,7 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
           {formattedKey}: &nbsp;
         </MDTypography>
         <MDTypography variant="button" fontWeight="regular" color="text">
-          &nbsp;{formattedValue}
+          {formattedValue}
         </MDTypography>
       </MDBox>
     );
@@ -140,20 +134,21 @@ ProfileInfoCard.defaultProps = {
   shadow: true,
   action: null,
   social: [],
+  title: "", // Add default title
+  description: "",
 };
 
 // Typechecking props for the ProfileInfoCard
 ProfileInfoCard.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   description: PropTypes.string.isRequired,
   info: PropTypes.shape({
-    name: PropTypes.string,
     year: PropTypes.number,
     email: PropTypes.string,
-    branch: PropTypes.oneOf(["CSE", "ECE", "EEE", "ME", "CE", "IT"]),
+    branch: PropTypes.string,
     metaMaskAddress: PropTypes.string,
-    role: PropTypes.oneOf(["participant", "organizer", "admin"]),
-    tokens: PropTypes.arrayOf(PropTypes.object),
+    role: PropTypes.string,
+    isVerified: PropTypes.string,
   }).isRequired,
   social: PropTypes.arrayOf(
     PropTypes.shape({

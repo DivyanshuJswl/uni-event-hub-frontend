@@ -38,7 +38,22 @@ const WelcomeBox = () => {
     >
       <MDBox sx={{ position: "relative", zIndex: 1 }}>
         <MDTypography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          Welcome back,
+          {localStorage.getItem("student") ? (
+            <Box component="span">
+              Welcome back,{" "}
+              <Box
+                component="span"
+                sx={{
+                  color: darkMode ? "#1A73E8" : "#1976D2",
+                  fontWeight: "bold",
+                }}
+              >
+                {JSON.parse(localStorage.getItem("student")).name}
+              </Box>
+            </Box>
+          ) : (
+            "Welcome"
+          )}
         </MDTypography>
         <MDTypography
           variant="button"

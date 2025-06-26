@@ -478,7 +478,7 @@ const CreateEvent = () => {
 
                     <Grid item xs={12}>
                       <input
-                        accept="image/*"
+                        accept="image/*,.gif"
                         style={{ display: "none" }}
                         id="event-image-upload"
                         type="file"

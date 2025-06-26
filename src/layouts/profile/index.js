@@ -34,56 +34,85 @@ import team4 from "assets/images/team-4.jpg";
 import MetaMaskIntegration from "./components/LinkMetaMask";
 
 function Overview() {
+  // Get student data from localStorage
+  const student = JSON.parse(localStorage.getItem("student"));
+  const token = localStorage.getItem("token");
+
+  if (!student || !token) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox mt={5} mb={3}>
+          <MDTypography variant="h4" fontWeight="medium" textAlign="center">
+            Please log in to view your profile.
+          </MDTypography>
+        </MDBox>
+        <Footer />
+      </DashboardLayout>
+    );
+  }
+
+  // Format student data for display
+  const studentInfo = {
+    year: student.year,
+    email: student.email,
+    branch: student.branch,
+    metaMaskAddress: student.metaMaskAddress || "Not connected",
+    role: student.role,
+    isVerified: student.isVerified ? "Verified" : "Not Verified",
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox mb={2} />
-      <Header>
+      <Header name={student.name} role={student.role}>
         <MDBox mt={5} mb={3}>
           <Grid container spacing={1}>
             <Grid item xs={12} md={6} xl={4}>
-              <PlatformSettings />
+              <PlatformSettings role={student.role} />
             </Grid>
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
-              <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
+              <Divider orientation="vertical" sx={{ ml: -2, mr: 2 }} />
               <ProfileInfoCard
-                title="profile information"
-                description="Hi, I’m Divyanshu Jaiswal, Decisions: If you can’t decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
-                info={{
-                  year: 3,
-                  email: "dev12@@gmail.com",
-                  branch: "CSE",
-                  metaMaskAddress: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-                  role: "organizer",
-                  tokens: [{ token: "abc123" }, { token: "def456" }],
-                }}
+                title="Student Profile"
+                description="Here you can find your profile information and manage your projects."
+                info={studentInfo}
                 social={[
                   {
-                    link: "https://www.facebook.com/CreativeTim/",
+                    link: "https://www.facebook.com/",
                     icon: <FacebookIcon />,
                     color: "facebook",
                   },
                   {
-                    link: "https://twitter.com/creativetim",
+                    link: "https://twitter.com/",
                     icon: <TwitterIcon />,
                     color: "twitter",
                   },
                   {
-                    link: "https://www.instagram.com/creativetimofficial/",
+                    link: "https://www.instagram.com/",
                     icon: <InstagramIcon />,
                     color: "instagram",
                   },
                 ]}
-                action={{ route: "", tooltip: "Edit Profile" }}
+                action={{ route: "/profile/edit", tooltip: "Edit Profile" }}
                 shadow={false}
               />
-              <Divider orientation="vertical" sx={{ mx: 0 }} />
+              <Divider orientation="vertical" sx={{ mx: 0, ml: 2 }} />
             </Grid>
-            <Grid item xs={12} xl={4}>
-              <MetaMaskIntegration />
+            <Grid item xs={12} md={4} xl={4}>
+              <MetaMaskIntegration
+                currentAddress={student.metaMaskAddress}
+                onAddressUpdate={(newAddress) => {
+                  // Update local storage when MetaMask address changes
+                  const updatedStudent = { ...student, metaMaskAddress: newAddress };
+                  localStorage.setItem("student", JSON.stringify(updatedStudent));
+                }}
+              />
             </Grid>
           </Grid>
         </MDBox>
+
         <MDBox pt={2} px={2} lineHeight={1.25}>
           <MDTypography variant="h6" fontWeight="medium">
             Projects

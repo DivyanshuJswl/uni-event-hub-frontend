@@ -26,7 +26,7 @@ import backgroundImage from "assets/images/bg-profile.jpeg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Header({ children }) {
+function Header({ name, children }) {
   const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
@@ -47,6 +47,12 @@ function Header({ children }) {
 
     // Call the handleTabsOrientation function to set the state with the initial value.
     handleTabsOrientation();
+    const org = localStorage.getItem("role");
+    if (org === "organizer") {
+      setIsOrganizer(true); // Set organizer status based on localStorage
+    } else {
+      setIsOrganizer(false); // Reset organizer status if not found
+    }
 
     // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleTabsOrientation);
@@ -118,7 +124,7 @@ function Header({ children }) {
             <MDBox height="100%" mt={0.5} lineHeight={1}>
               <MDBox display="flex" justifyContent="space-between" alignItems="center">
                 <MDTypography variant="h5" fontWeight="medium">
-                  Divyanshu Jaiswal
+                  {name}
                 </MDTypography>
                 {/* Become Organizer Button */}
                 {!isOrganizer ? (
@@ -142,8 +148,15 @@ function Header({ children }) {
                     py={0.5}
                     ml={2}
                   >
-                    <Icon sx={{ color: "white", fontSize: "1rem", mr: 0.5 }}>verified</Icon>
-                    <MDTypography variant="caption" color="white" fontWeight="medium">
+                    <Icon color="success" sx={{ fontSize: "1rem", mr: 0.5 }}>
+                      verified
+                    </Icon>
+                    <MDTypography
+                      varient="gradient"
+                      color="white"
+                      fontWeight="regular"
+                      fontSize="0.875rem"
+                    >
                       Organizer
                     </MDTypography>
                   </MDBox>
@@ -196,11 +209,13 @@ function Header({ children }) {
 // Setting default props for the Header
 Header.defaultProps = {
   children: "",
+  name: "Student Name",
 };
 
 // Typechecking props for the Header
 Header.propTypes = {
   children: PropTypes.node,
+  name: PropTypes.string.isRequired,
 };
 
 export default Header;

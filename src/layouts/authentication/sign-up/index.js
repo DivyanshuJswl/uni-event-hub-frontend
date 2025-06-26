@@ -8,7 +8,7 @@ import { styled } from "@mui/material/styles";
 // @mui material components
 import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
-
+import { LinearProgress } from "@mui/material";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -31,7 +31,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import PasswordGeneratorModal from "../components/PasswordGenerator";
-import { zxcvbn } from "zxcvbn";
+import * as zxcvbnModule from "zxcvbn";
+const zxcvbn = zxcvbnModule.zxcvbn || zxcvbnModule.default;
 import { Box } from "@mui/system";
 
 // Add this styled component above your Cover function
@@ -128,6 +129,9 @@ function Cover() {
         },
         { withCredentials: true }
       );
+      if (res.status !== 201) {
+        throw new Error("Registration failed");
+      }
 
       toast.success("Registration successful! Redirecting to login...", {
         position: "top-right",
@@ -141,7 +145,7 @@ function Cover() {
       // Redirect after 3 seconds
       setTimeout(() => {
         navigate("/authentication/sign-in");
-      }, 3000);
+      }, 700);
     } catch (err) {
       let errorMessage = "Registration failed";
 
@@ -166,6 +170,13 @@ function Cover() {
 
       setError(err);
     } finally {
+      // Reset form fields
+      setName("");
+      setEmail("");
+      setPassword("");
+      setYear("");
+      setBranch("");
+      setAgreedToTerms(false);
       setIsLoading(false);
     }
   };
@@ -194,34 +205,28 @@ function Cover() {
         const result = zxcvbn(password);
         setPasswordStrength(result);
       } catch (error) {
-        console.error("Password strength check failed:", error);
+        console.error("Error calculating password strength:", error);
         setPasswordStrength(null);
       }
     } else {
       setPasswordStrength(null);
     }
   }, [password]);
-  const strengthMeterStyles = {
-    mt: 1,
-    ml: 1,
-    p: 1,
-    borderRadius: 1,
-    backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
-  };
+
   const getStrengthColor = (score) => {
     switch (score) {
       case 0:
-        return "#ff0000"; // Very weak
+        return "#ff0000"; // Red for very weak
       case 1:
-        return "#ff5252"; // Weak
+        return "#ff5252"; // Orange-red for weak
       case 2:
-        return "#ffb142"; // Fair
+        return "#ffb142"; // Orange-yellow for fair
       case 3:
-        return "#33d9b2"; // Good
+        return "#33d9b2"; // Teal for good
       case 4:
-        return "#2ecc71"; // Strong
+        return "#2ecc71"; // Green for strong
       default:
-        return "#cccccc";
+        return "#cccccc"; // Gray as fallback
     }
   };
   const getStrengthText = (score) => {
@@ -242,7 +247,7 @@ function Cover() {
   };
 
   return (
-    <CoverLayout>
+    <CoverLayout sx={{ minHeight: "100vh" }} image={bgImage}>
       <BackgroundWrapper />
       {/* Toast Container */}
       <ToastContainer
@@ -257,7 +262,7 @@ function Cover() {
         pauseOnHover
       />
 
-      <Card sx={{ position: "relative", zIndex: 10 }}>
+      <Card sx={{ maxWidth: 375, zIndex: 10 }}>
         <MDBox
           variant="gradient"
           bgColor="info"
@@ -313,7 +318,6 @@ function Cover() {
                     onChange={(e) => {
                       const inputValue = e.target.value.toUpperCase();
                       setBranch(inputValue);
-
                       if (!["CSE", "ECE", "EEE", "ME", "CE", "IT"].includes(inputValue)) {
                         setBranchError("Invalid branch. Valid options: CSE, ECE, EEE, ME, CE, IT");
                       } else {
@@ -383,34 +387,41 @@ function Cover() {
                   ),
                 }}
               />
-              {/* {passwordStrength && password && (
-                <MDBox mt={1} ml={1} sx={strengthMeterStyles}>
-                  // {/* Strength meter bars 
-                  <MDBox display="flex" alignItems="center" gap={1}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <Box
-                        key={i}
-                        sx={{
-                          height: 4,
-                          flexGrow: 1,
-                          backgroundColor:
-                            i <= passwordStrength.score
-                              ? getStrengthColor(passwordStrength.score)
-                              : "#eeeeee",
-                          borderRadius: 2,
-                        }}
-                      />
-                    ))}
-                  </MDBox>
-                  // Strength text and suggestions
-                  <MDTypography variant="caption" color={getStrengthColor(passwordStrength.score)}>
-                    {getStrengthText(passwordStrength.score)}
-                    {passwordStrength.feedback.suggestions.length > 0 && (
-                      <span> · {passwordStrength.feedback.suggestions[0]}</span>
-                    )}
-                  </MDTypography>
+              {password && (
+                <MDBox mt={1} mb={2}>
+                  <Box
+                    sx={{
+                      height: 4,
+                      width: "100%",
+                      backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: `${passwordStrength ? (passwordStrength.score + 1) * 20 : 0}%`,
+                        backgroundColor: passwordStrength
+                          ? `${getStrengthColor(passwordStrength.score)}`
+                          : "#ccc",
+                        transition: "width 0.3s ease, background-color 0.3s ease",
+                      }}
+                    />
+                  </Box>
+                  {passwordStrength && (
+                    <MDTypography variant="caption" color="text" sx={{ mt: 0.5, display: "block" }}>
+                      Strength: {getStrengthText(passwordStrength.score)}
+                      {passwordStrength.score < 2 && (
+                        <MDBox component="span" color="error.main" ml={1}>
+                          {" "}
+                          - {passwordStrength.feedback.suggestions[0]}
+                        </MDBox>
+                      )}
+                    </MDTypography>
+                  )}
                 </MDBox>
-              )} */}
+              )}
             </MDBox>
             <PasswordGeneratorModal
               open={generatorOpen}
@@ -455,16 +466,23 @@ function Cover() {
                 sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
               >
                 &nbsp;&nbsp;I agree to the&nbsp;
-              </MDTypography>
-              <MDTypography
-                component="a"
-                href="#"
-                variant="button"
-                fontWeight="bold"
-                color="info"
-                textGradient
-              >
-                Terms and Conditions
+                <MDTypography
+                  component="span"
+                  href="#"
+                  variant="button"
+                  fontWeight="bold"
+                  color="info"
+                  textGradient
+                  onClick={() => {
+                    window.open(
+                      "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your terms and conditions link
+                      "_blank"
+                    );
+                  }}
+                  sx={{ textDecoration: "none", cursor: "pointer" }}
+                >
+                  Terms and Conditions
+                </MDTypography>
               </MDTypography>
             </MDBox>
             <MDBox mt={2} mb={1}>

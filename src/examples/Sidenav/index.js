@@ -34,6 +34,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     // Remove user data from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("student");
 
     if (!localStorage.getItem("token")) {
       // Update toast to success
