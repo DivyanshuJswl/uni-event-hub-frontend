@@ -316,7 +316,6 @@ function Basic() {
                   // This is the ID token (JWT)
                   const idToken = credentialResponse.credential;
                   // Send to backend
-                  // console.log("ID Token:", idToken);
                   const res = await axios.post(`${BASE_URL}/api/auth/google`, {
                     credential: idToken,
                   });
