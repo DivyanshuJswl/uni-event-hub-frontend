@@ -15,7 +15,6 @@ import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
 import DefaultProjectCard from "examples/Cards/EventCard/DefaultProjectCard";
 
 // Overview page components
@@ -32,6 +31,7 @@ import team2 from "assets/images/team-2.jpg";
 import team3 from "assets/images/team-3.jpg";
 import team4 from "assets/images/team-4.jpg";
 import MetaMaskIntegration from "./components/LinkMetaMask";
+import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
 
 function Overview() {
   // Get student data from localStorage
@@ -66,7 +66,7 @@ function Overview() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox mb={2} />
-      <Header name={student.name} role={student.role}>
+      <Header name={student.name} avatar={student.avatar}>
         <MDBox mt={5} mb={3}>
           <Grid container spacing={1}>
             <Grid item xs={12} md={6} xl={4}>
@@ -101,14 +101,7 @@ function Overview() {
               <Divider orientation="vertical" sx={{ mx: 0, ml: 2 }} />
             </Grid>
             <Grid item xs={12} md={4} xl={4}>
-              <MetaMaskIntegration
-                currentAddress={student.metaMaskAddress}
-                onAddressUpdate={(newAddress) => {
-                  // Update local storage when MetaMask address changes
-                  const updatedStudent = { ...student, metaMaskAddress: newAddress };
-                  localStorage.setItem("student", JSON.stringify(updatedStudent));
-                }}
-              />
+              <MetaMaskIntegration />
             </Grid>
           </Grid>
         </MDBox>

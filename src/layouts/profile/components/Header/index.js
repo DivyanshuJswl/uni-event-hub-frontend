@@ -26,7 +26,7 @@ import backgroundImage from "assets/images/bg-profile.jpeg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Header({ name, children }) {
+function Header({ name, avatar, children }) {
   const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
@@ -118,7 +118,7 @@ function Header({ name, children }) {
       >
         <Grid container spacing={3} alignItems="center">
           <Grid item>
-            <MDAvatar src={burceMars} alt="profile-image" size="xl" shadow="sm" />
+            <MDAvatar src={avatar || burceMars} alt="profile-image" size="xl" shadow="sm" />
           </Grid>
           <Grid item xs={12} sm={6} md={5}>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
@@ -216,6 +216,7 @@ Header.defaultProps = {
 Header.propTypes = {
   children: PropTypes.node,
   name: PropTypes.string.isRequired,
+  avatar: PropTypes.string, // Added avatar prop
 };
 
 export default Header;

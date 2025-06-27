@@ -1,5 +1,3 @@
-// MetaMaskIntegration.js component to replace the Conversations tab
-
 import React, { useState } from "react";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -8,25 +6,54 @@ import MDButton from "components/MDButton";
 import axios from "axios";
 
 const MetaMaskIntegration = () => {
-  const [metaMaskAddress, setmetaMaskAddress] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const result = JSON.parse(localStorage.getItem("student"));
+  const [metaMaskAddress, setMetaMaskAddress] = useState("");
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true);
+      setError(null);
+      setSuccess(false);
+
       const res = await axios.patch(
-        BASE_URL + "/api/wallet",
+        `${BASE_URL}/api/wallet`,
         { metaMaskAddress },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
         {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           withCredentials: true,
         }
       );
-      console.log(res?.data);
+
+      // Proper success check based on your API response
+      if (res.data?.status === "success") {
+        setSuccess(true);
+        // Update local storage with the new student data from response
+        localStorage.setItem("student", JSON.stringify(res.data.data.student));
+        // Update local state with the new address
+        setMetaMaskAddress(res.data.data.student.metaMaskAddress);
+
+        // Keep success message visible for 5 seconds
+        setTimeout(() => setSuccess(false), 5000);
+      } else {
+        throw new Error(res.data?.message || "Failed to link wallet");
+      }
     } catch (error) {
-      setError(error);
-      console.log(error);
+      console.error("Error:", error.response?.data || error.message);
+      setError(error.response?.data?.message || error.message || "An error occurred");
+      setSuccess(false);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (e) => {
+    if (success) setSuccess(false);
+    setError(null);
+    setMetaMaskAddress(e.target.value);
   };
 
   return (
@@ -46,14 +73,37 @@ const MetaMaskIntegration = () => {
           label="Your MetaMask ID"
           fullWidth
           value={metaMaskAddress}
-          onChange={(e) => setmetaMaskAddress(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Enter your MetaMask account ID"
         />
       </MDBox>
 
+      {/* Success Message */}
+      {success && (
+        <MDBox mb={2} textAlign="center">
+          <MDTypography variant="button" color="success" fontWeight="medium">
+            ✓ Wallet linked successfully!
+          </MDTypography>
+        </MDBox>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <MDBox mb={2} textAlign="center">
+          <MDTypography variant="button" color="error" fontWeight="medium">
+            ⚠️ Error: {error}
+          </MDTypography>
+        </MDBox>
+      )}
+
       <MDBox display="flex" justifyContent="center" mb={4}>
-        <MDButton variant="gradient" color="info" onClick={handleSubmit}>
-          Link Account
+        <MDButton
+          variant="gradient"
+          color="info"
+          onClick={handleSubmit}
+          disabled={isLoading || !metaMaskAddress.trim()}
+        >
+          {isLoading ? "Processing..." : result.metaMaskAddress ? "Update Wallet" : "Link Wallet"}
         </MDButton>
       </MDBox>
 
@@ -70,10 +120,10 @@ const MetaMaskIntegration = () => {
             title="How to create MetaMask wallet"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            frameBorder={0}
-          ></iframe>
+            style={{ border: "none", borderRadius: "8px" }}
+            loading="lazy"
+          />
         </MDBox>
-        {error && <div className="error">Error: {error.message}</div>}
         <MDTypography variant="button" color="text">
           Watch our guide on how to create and set up a MetaMask wallet
         </MDTypography>
