@@ -136,6 +136,7 @@ const routes = [
     route: "/authentication/sign-in",
     component: <SignIn />,
     public: true,
+    devOnly: true, // Only for development purposes
     // hideWhenAuthenticated: true,
   },
   {
@@ -146,6 +147,7 @@ const routes = [
     route: "/authentication/sign-up",
     component: <SignUp />,
     public: true,
+    devOnly: true, // Only for development purposes
     // hideWhenAuthenticated: true,
   },
   {
@@ -156,6 +158,8 @@ const routes = [
     route: "/test-page",
     component: <ComponentTestPage />,
     public: true,
+    devOnly: true, // Only for development purposes
+    test: true, // For testing purposes
   },
 ];
 

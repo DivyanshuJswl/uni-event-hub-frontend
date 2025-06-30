@@ -25,6 +25,7 @@ import {
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
+  const { developerMode } = controller; // Added developerMode from context
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
   const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -104,20 +105,30 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     return () => window.removeEventListener("resize", handleMiniSidenav);
   }, [dispatch, location]);
 
-  // Filter routes based on authentication and role
   const filteredRoutes = routes.filter((route) => {
-    // Public routes
-    if (route.public) {
-      if (route.hideWhenAuthenticated && isAuthenticated) return false;
+    // 1. Developer mode routes - show all devOnly routes when developerMode is true
+    if (developerMode && route.devOnly) {
       return true;
     }
 
-    // Authenticated routes (no specific role required)
+    // 2. Public routes (visible to everyone, including non-authenticated users)
+    if (route.public && !route.test) {
+      // Special case: Show sign-in/sign-up when not authenticated (even if not in dev mode)
+      if ((route.key === "sign-in" || route.key === "sign-up") && !isAuthenticated) {
+        return true;
+      }
+      // Hide public routes that should be hidden when authenticated
+      if (route.hideWhenAuthenticated && isAuthenticated) return false;
+      if (route.devOnly) return false; // Hide devOnly routes for non-developers
+      return true;
+    }
+
+    // 3. Authenticated routes (no specific role required)
     if (route.authenticated) {
       return isAuthenticated;
     }
 
-    // Role-specific routes
+    // 4. Role-specific routes
     if (route.roles) {
       return isAuthenticated && route.roles.includes(userRole);
     }

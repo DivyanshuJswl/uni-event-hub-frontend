@@ -1,12 +1,8 @@
 import { createContext, useContext, useReducer, useMemo } from "react";
-
-// prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
 
 // Material Dashboard 2 React main context
 const MaterialUI = createContext();
-
-// Setting custom name for the context which is visible on react dev tools
 MaterialUI.displayName = "MaterialUIContext";
 
 // Material Dashboard 2 React reducer
@@ -42,6 +38,9 @@ function reducer(state, action) {
     case "DARKMODE": {
       return { ...state, darkMode: action.value };
     }
+    case "DEVELOPER_MODE": {
+      return { ...state, developerMode: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -61,6 +60,7 @@ function MaterialUIControllerProvider({ children }) {
     direction: "ltr",
     layout: "dashboard",
     darkMode: true,
+    developerMode: false, // Add developer mode state
   };
 
   const [controller, dispatch] = useReducer(reducer, initialState);
@@ -99,6 +99,7 @@ const setOpenConfigurator = (dispatch, value) => dispatch({ type: "OPEN_CONFIGUR
 const setDirection = (dispatch, value) => dispatch({ type: "DIRECTION", value });
 const setLayout = (dispatch, value) => dispatch({ type: "LAYOUT", value });
 const setDarkMode = (dispatch, value) => dispatch({ type: "DARKMODE", value });
+const setDeveloperMode = (dispatch, value) => dispatch({ type: "DEVELOPER_MODE", value });
 
 export {
   MaterialUIControllerProvider,
@@ -113,4 +114,5 @@ export {
   setDirection,
   setLayout,
   setDarkMode,
+  setDeveloperMode, // Export the new function
 };

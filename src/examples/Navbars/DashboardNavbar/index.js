@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 // react-router components
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -12,7 +12,7 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
-
+import MenuItem from "@mui/material/MenuItem";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDInput from "components/MDInput";
@@ -38,14 +38,25 @@ import {
   setOpenConfigurator,
   setDarkMode,
 } from "context";
+import { setDeveloperMode } from "context";
+import MDTypography from "components/MDTypography";
+import { Avatar } from "@mui/material";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
-  const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
+  const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode, developerMode } =
+    controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (developerMode) {
+      console.log("%cDeveloper Mode Enabled", "color: #FFA500; font-size: 16px; font-weight: bold");
+    }
+  }, [developerMode]);
   useEffect(() => {
     // Setting the navbar type
     if (fixedNavbar) {
@@ -72,6 +83,9 @@ function DashboardNavbar({ absolute, light, isMini }) {
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
+  const handleDeveloperModeToggle = () => {
+    setDeveloperMode(dispatch, !developerMode);
+  };
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
@@ -109,6 +123,23 @@ function DashboardNavbar({ absolute, light, isMini }) {
     },
   });
 
+  const student = localStorage.getItem("student");
+  const avatarUrl = student ? JSON.parse(student).avatar : null;
+  const isAuthenticated = !!localStorage.getItem("token");
+
+  const handleProfileMenuOpen = (event) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const handleLogout = () => {
+    handleProfileMenuClose();
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("student");
+  };
   return (
     <AppBar
       position={absolute ? "absolute" : navbarType}
@@ -125,11 +156,60 @@ function DashboardNavbar({ absolute, light, isMini }) {
               <MDInput label="Search here" />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in">
-                <IconButton sx={navbarIconButton} size="small" disableRipple>
+              <IconButton
+                sx={navbarIconButton}
+                size="small"
+                disableRipple
+                onClick={handleProfileMenuOpen}
+              >
+                {avatarUrl ? (
+                  <Avatar src={avatarUrl} alt="User Avatar" sx={{ width: 32, height: 32 }} />
+                ) : (
                   <Icon sx={iconsStyle}>account_circle</Icon>
-                </IconButton>
-              </Link>
+                )}
+              </IconButton>
+              <Menu
+                anchorEl={profileMenuAnchor}
+                open={Boolean(profileMenuAnchor)}
+                onClose={handleProfileMenuClose}
+                sx={{ mt: 1 }}
+              >
+                {isAuthenticated
+                  ? [
+                      <MenuItem
+                        key="profile"
+                        onClick={() => {
+                          setProfileMenuAnchor(null);
+                          navigate("/profile");
+                        }}
+                      >
+                        <Icon sx={{ mr: 1 }}>person</Icon> Profile
+                      </MenuItem>,
+                      <MenuItem key="logout" onClick={handleLogout}>
+                        <Icon sx={{ mr: 1 }}>logout</Icon> Logout
+                      </MenuItem>,
+                    ]
+                  : [
+                      <MenuItem
+                        key="sign-in"
+                        onClick={() => {
+                          setProfileMenuAnchor(null);
+                          navigate("/authentication/sign-in");
+                        }}
+                      >
+                        <Icon sx={{ mr: 1 }}>login</Icon> Sign In
+                      </MenuItem>,
+                      <MenuItem
+                        key="sign-up"
+                        onClick={() => {
+                          setProfileMenuAnchor(null);
+                          navigate("/authentication/sign-up");
+                        }}
+                      >
+                        <Icon sx={{ mr: 1 }}>person_add</Icon> Sign Up
+                      </MenuItem>,
+                    ]}
+              </Menu>
               <IconButton
                 size="small"
                 disableRipple
@@ -173,6 +253,19 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>
+              <IconButton
+                size="small"
+                color={developerMode ? "warning" : "inherit"}
+                onClick={handleDeveloperModeToggle}
+                title="Toggle Developer Mode"
+              >
+                <Icon sx={iconsStyle}>code</Icon>
+              </IconButton>
+              {developerMode && (
+                <MDTypography variant="caption" color="warning" fontWeight="bold" sx={{ ml: 0.5 }}>
+                  DEV
+                </MDTypography>
+              )}
               {renderMenu()}
             </MDBox>
           </MDBox>
