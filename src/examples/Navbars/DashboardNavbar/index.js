@@ -134,12 +134,55 @@ function DashboardNavbar({ absolute, light, isMini }) {
     setProfileMenuAnchor(null);
   };
 
-  const handleLogout = () => {
+  // Logout function
+  const handleLogout = async () => {
+    // Close the profile menu
     handleProfileMenuClose();
+    // Remove user data from localStorage
+    // Make API call to logout
+    if (localStorage.getItem("role") !== "organizer") {
+      try {
+        const r = await axios.get(`${BASE_URL}/api/auth/logout`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        console.log(r);
+      } catch (error) {
+        console.error("Logout failed:", error);
+        toast.error("Logout failed. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
+      }
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("student");
+
+    if (!localStorage.getItem("token")) {
+      // Update toast to success
+      toast.success("Logout successful!", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Redirect after toast closes
+      setTimeout(() => {
+        navigate("/authentication/sign-in");
+      }, 1000);
+    }
   };
+
   return (
     <AppBar
       position={absolute ? "absolute" : navbarType}
@@ -163,9 +206,16 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 onClick={handleProfileMenuOpen}
               >
                 {avatarUrl ? (
-                  <Avatar src={avatarUrl} alt="User Avatar" sx={{ width: 32, height: 32 }} />
+                  <Avatar
+                    title="Profile"
+                    src={avatarUrl}
+                    alt="User Avatar"
+                    sx={{ width: 32, height: 32 }}
+                  />
                 ) : (
-                  <Icon sx={iconsStyle}>account_circle</Icon>
+                  <Icon sx={iconsStyle} title="Profile">
+                    account_circle
+                  </Icon>
                 )}
               </IconButton>
               <Menu

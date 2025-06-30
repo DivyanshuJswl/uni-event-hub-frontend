@@ -16,11 +16,11 @@ import Explore from "./components/EventExplore";
 function ExplorePage() {
   return (
     <DashboardLayout>
-      <DashboardNavbar absolute />
-      <MDBox mt={8}>
+      <DashboardNavbar />
+      <MDBox py={3}>
         <Explore />
       </MDBox>
-      <MDBox mt={8}>
+      <MDBox py={3} px={2}>
         <MDBox mb={3}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={7}>

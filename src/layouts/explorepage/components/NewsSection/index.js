@@ -80,42 +80,51 @@ function NewsSection() {
 
   return (
     <Card>
-      <MDBox pt={3} px={2} display="flex" justifyContent="space-between" alignItems="center">
+      <MDBox
+        pt={3}
+        px={2}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 2 }}
+      >
         <MDTypography variant="h4" fontWeight="medium">
           Top Tech Headlines
         </MDTypography>
         <MDBox display="flex" alignItems="center">
-          <TextField
-            label="Items per page"
-            type="number"
-            value={inputValue}
-            onChange={handleArticlesPerPageChange}
-            inputProps={{ min: 1, max: 20 }}
-            size="small"
-            sx={{ width: 120, mr: 2 }}
-          />
-          <Button
-            variant="outlined"
-            sx={{
-              borderRadius: "8px", // Rounded corners
-              fontWeight: 300, // Thin font weight
-              borderWidth: "1px", // Thin border
-              color: darkMode ? "primary.main" : "text.primary", // Text color
-              borderColor: darkMode ? "primary.main" : "text.primary", // Border color
-              "&:hover": {
-                borderColor: darkMode ? "primary.dark" : "text.secondary",
-              },
-              "&.Mui-disabled": {
-                borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
-                color: darkMode ? "text.disabled" : "action.disabled",
-              },
-            }}
-            onClick={refreshNews}
-            disabled={loading}
-            startIcon={<Icon>refresh</Icon>}
-          >
-            Refresh
-          </Button>
+          <MDBox display="flex" alignItems="center">
+            <TextField
+              label="Items per page"
+              type="number"
+              value={inputValue}
+              onChange={handleArticlesPerPageChange}
+              inputProps={{ min: 1, max: 20 }}
+              size="small"
+              sx={{ width: 120, mr: 2 }}
+            />
+            <Button
+              variant="outlined"
+              sx={{
+                borderRadius: "8px", // Rounded corners
+                fontWeight: 300, // Thin font weight
+                borderWidth: "1px", // Thin border
+                color: darkMode ? "primary.main" : "text.primary", // Text color
+                borderColor: darkMode ? "primary.main" : "text.primary", // Border color
+                "&:hover": {
+                  borderColor: darkMode ? "primary.dark" : "text.secondary",
+                },
+                "&.Mui-disabled": {
+                  borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
+                  color: darkMode ? "text.disabled" : "action.disabled",
+                },
+              }}
+              onClick={refreshNews}
+              disabled={loading}
+              startIcon={<Icon>refresh</Icon>}
+            >
+              Refresh
+            </Button>
+          </MDBox>
         </MDBox>
       </MDBox>
 
