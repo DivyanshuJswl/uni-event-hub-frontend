@@ -19,6 +19,7 @@
     "eventhub-react": "file:",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.12.1",
+    "fuse.js": "^7.1.0",
     "prop-types": "15.8.1",
     "react": "18.2.0",
     "react-chartjs-2": "5.2.0",

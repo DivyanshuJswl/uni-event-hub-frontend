@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-
-// react-router components
+import { useState, useEffect, useMemo } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-
-// prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
+import Fuse from "fuse.js";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 // @material-ui core components
 import AppBar from "@mui/material/AppBar";
@@ -13,9 +12,12 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
 import MenuItem from "@mui/material/MenuItem";
+import { Avatar } from "@mui/material";
+
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDInput from "components/MDInput";
+import MDTypography from "components/MDTypography";
 
 // Material Dashboard 2 React example components
 import Breadcrumbs from "examples/Breadcrumbs";
@@ -37,10 +39,11 @@ import {
   setMiniSidenav,
   setOpenConfigurator,
   setDarkMode,
+  setDeveloperMode,
 } from "context";
-import { setDeveloperMode } from "context";
-import MDTypography from "components/MDTypography";
-import { Avatar } from "@mui/material";
+
+// Environment configuration
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
@@ -52,45 +55,173 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
   const navigate = useNavigate();
 
+  // Search functionality states
+  const [searchData, setSearchData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  // Initialize search data
+  useEffect(() => {
+    // Mock data - replace with your actual data sources
+    const mockSearchData = [
+      { id: 1, title: "Dashboard", url: "/user-dashboard", type: "page" },
+      { id: 2, title: "Profile", url: "/profile", type: "page" },
+      { id: 3, title: "Events", url: "/explore", type: "page" },
+      { id: 4, title: "Settings", url: "/settings", type: "page" },
+      { id: 5, title: "User Management", url: "/users", type: "page" },
+      {
+        id: 6,
+        title: "Upcoming Conference",
+        url: "/myevents",
+        type: "event",
+        description: "Annual tech conference",
+      },
+      {
+        id: 7,
+        title: "John Doe",
+        url: "/users/456",
+        type: "user",
+        description: "john@example.com",
+      },
+      { id: 8, title: "System Configuration", url: "/settings/system", type: "page" },
+    ];
+
+    setSearchData(mockSearchData);
+
+    // Load recent searches from localStorage
+    const savedSearches = localStorage.getItem("recentSearches");
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
+
+  // Configure Fuse.js for fuzzy searching
+  const fuseOptions = {
+    keys: ["title", "description"],
+    threshold: 0.4,
+    includeScore: true,
+  };
+
+  const fuse = useMemo(() => new Fuse(searchData, fuseOptions), [searchData]);
+
+  // Handle search input changes
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const results = fuse.search(searchQuery);
+    setSearchResults(results.map((result) => result.item));
+  }, [searchQuery, fuse]);
+
+  // Handle developer mode logging
   useEffect(() => {
     if (developerMode) {
       console.log("%cDeveloper Mode Enabled", "color: #FFA500; font-size: 16px; font-weight: bold");
     }
   }, [developerMode]);
+
+  // Navbar type and transparency setup
   useEffect(() => {
-    // Setting the navbar type
     if (fixedNavbar) {
       setNavbarType("sticky");
     } else {
       setNavbarType("static");
     }
 
-    // A function that sets the transparent state of the navbar.
     function handleTransparentNavbar() {
       setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
     }
 
-    /** 
-     The event listener that's calling the handleTransparentNavbar function when 
-     scrolling the window.
-    */
     window.addEventListener("scroll", handleTransparentNavbar);
-
-    // Call the handleTransparentNavbar function to set the state with the initial value.
     handleTransparentNavbar();
 
-    // Remove event listener on cleanup
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
+  // Handler functions
   const handleDeveloperModeToggle = () => {
     setDeveloperMode(dispatch, !developerMode);
   };
+
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
   const handleDarkMode = () => setDarkMode(dispatch, !darkMode);
+
+  // Profile menu handlers
+  const handleProfileMenuOpen = (event) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  // Search result click handler
+  const handleResultClick = (result) => {
+    // Add to recent searches
+    const newRecentSearches = [
+      result,
+      ...recentSearches.filter((item) => item.id !== result.id).slice(0, 4),
+    ];
+    setRecentSearches(newRecentSearches);
+    localStorage.setItem("recentSearches", JSON.stringify(newRecentSearches));
+
+    // Close search and navigate
+    setSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    navigate(result.url);
+  };
+
+  // Logout function
+  const handleLogout = async () => {
+    handleProfileMenuClose();
+
+    if (localStorage.getItem("role") !== "organizer") {
+      try {
+        await axios.get(`${BASE_URL}/api/auth/logout`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+      } catch (error) {
+        console.error("Logout failed:", error);
+        toast.error("Logout failed. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
+      }
+    }
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("student");
+
+    toast.success("Logout successful!", {
+      position: "top-right",
+      autoClose: 1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+
+    setTimeout(() => {
+      navigate("/authentication/sign-in");
+    }, 1000);
+  };
+
   // Render the notifications menu
   const renderMenu = () => (
     <Menu
@@ -123,65 +254,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
     },
   });
 
+  // User data
   const student = localStorage.getItem("student");
   const avatarUrl = student ? JSON.parse(student).avatar : null;
   const isAuthenticated = !!localStorage.getItem("token");
-
-  const handleProfileMenuOpen = (event) => {
-    setProfileMenuAnchor(event.currentTarget);
-  };
-  const handleProfileMenuClose = () => {
-    setProfileMenuAnchor(null);
-  };
-
-  // Logout function
-  const handleLogout = async () => {
-    // Close the profile menu
-    handleProfileMenuClose();
-    // Remove user data from localStorage
-    // Make API call to logout
-    if (localStorage.getItem("role") !== "organizer") {
-      try {
-        const r = await axios.get(`${BASE_URL}/api/auth/logout`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        console.log(r);
-      } catch (error) {
-        console.error("Logout failed:", error);
-        toast.error("Logout failed. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        return;
-      }
-    }
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("student");
-
-    if (!localStorage.getItem("token")) {
-      // Update toast to success
-      toast.success("Logout successful!", {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-
-      // Redirect after toast closes
-      setTimeout(() => {
-        navigate("/authentication/sign-in");
-      }, 1000);
-    }
-  };
 
   return (
     <AppBar
@@ -195,9 +271,97 @@ function DashboardNavbar({ absolute, light, isMini }) {
         </MDBox>
         {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <MDBox pr={1}>
-              <MDInput label="Search here" />
+            <MDBox pr={1} sx={{ position: "relative", width: 300 }}>
+              <MDInput
+                label="Search here"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => searchQuery && setSearchOpen(true)}
+                onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
+                autoComplete="off"
+                fullWidth
+              />
+              {searchOpen && (
+                <MDBox
+                  sx={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    bgcolor: "background.default",
+                    boxShadow: 3,
+                    zIndex: 1201,
+                    maxHeight: 300,
+                    overflowY: "auto",
+                    borderRadius: 1,
+                    mt: 1,
+                  }}
+                >
+                  {searchResults.length > 0 ? (
+                    searchResults.map((result) => (
+                      <MenuItem
+                        key={result.id}
+                        onClick={() => handleResultClick(result)}
+                        sx={{
+                          whiteSpace: "normal",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <MDTypography variant="h6" fontWeight="regular">
+                          {result.title}
+                        </MDTypography>
+                        <MDTypography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            backgroundColor:
+                              result.type === "event" ? "primary.light" : "secondary.light",
+                            px: 1,
+                            borderRadius: 1,
+                            mt: 0.5,
+                          }}
+                        >
+                          {result.type}
+                        </MDTypography>
+                        {result.description && (
+                          <MDTypography
+                            variant="caption"
+                            color={darkMode ? "secondary" : "primary"}
+                            display="block"
+                          >
+                            {result.description}
+                          </MDTypography>
+                        )}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <>
+                      <MDTypography variant="caption" color="text.secondary" sx={{ px: 2, py: 1 }}>
+                        {searchQuery.trim() ? "No results found" : "Type to search"}
+                      </MDTypography>
+                      {recentSearches.length > 0 && !searchQuery.trim() && (
+                        <>
+                          <MDTypography variant="overline" sx={{ px: 2, pt: 1, display: "block" }}>
+                            Recent searches
+                          </MDTypography>
+                          {recentSearches.map((search) => (
+                            <MenuItem key={search.id} onClick={() => handleResultClick(search)}>
+                              <MDTypography variant="body2">{search.title}</MDTypography>
+                            </MenuItem>
+                          ))}
+                        </>
+                      )}
+                    </>
+                  )}
+                </MDBox>
+              )}
             </MDBox>
+
             <MDBox color={light ? "white" : "inherit"}>
               <IconButton
                 sx={navbarIconButton}
@@ -260,6 +424,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                       </MenuItem>,
                     ]}
               </Menu>
+
               <IconButton
                 size="small"
                 disableRipple
@@ -271,6 +436,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   {miniSidenav ? "menu_open" : "menu"}
                 </Icon>
               </IconButton>
+
               <IconButton
                 size="small"
                 disableRipple
@@ -282,6 +448,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   {darkMode ? "light_mode" : "dark_mode"}
                 </Icon>
               </IconButton>
+
               <IconButton
                 size="small"
                 disableRipple
@@ -291,6 +458,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>settings</Icon>
               </IconButton>
+
               <IconButton
                 size="small"
                 disableRipple
@@ -303,6 +471,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>
+
               <IconButton
                 size="small"
                 color={developerMode ? "warning" : "inherit"}
@@ -311,11 +480,13 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>code</Icon>
               </IconButton>
+
               {developerMode && (
                 <MDTypography variant="caption" color="warning" fontWeight="bold" sx={{ ml: 0.5 }}>
                   DEV
                 </MDTypography>
               )}
+
               {renderMenu()}
             </MDBox>
           </MDBox>
@@ -325,14 +496,12 @@ function DashboardNavbar({ absolute, light, isMini }) {
   );
 }
 
-// Setting default values for the props of DashboardNavbar
 DashboardNavbar.defaultProps = {
   absolute: false,
   light: false,
   isMini: false,
 };
 
-// Typechecking props for the DashboardNavbar
 DashboardNavbar.propTypes = {
   absolute: PropTypes.bool,
   light: PropTypes.bool,

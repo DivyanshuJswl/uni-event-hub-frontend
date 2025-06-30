@@ -79,7 +79,6 @@ const LoadingScreen = () => {
         />
         <Box
           component="img"
-          // src="/path/to/your/logo.png" // Replace with your logo
           sx={{
             width: 40,
             height: 40,

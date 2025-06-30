@@ -49,7 +49,7 @@ export default function App() {
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 1200);
+    }, 600);
 
     return () => clearTimeout(loadingTimer);
   }, []);
