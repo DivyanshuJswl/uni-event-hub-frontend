@@ -14,7 +14,7 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-
+import brandImage from "../../assets/images/Untitled design_prev_ui.png";
 import {
   useMaterialUIController,
   setMiniSidenav,
@@ -216,7 +216,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           </MDTypography>
         </MDBox>
         <MDBox component={NavLink} to="/" display="flex" alignItems="center">
-          {brand && <MDBox component="img" src={brand} alt="Brand" width="2rem" />}
+          {brand && <MDBox component="img" src={brandImage} alt="Brand" width="2rem" />}
           <MDBox
             width={!brandName && "100%"}
             sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
