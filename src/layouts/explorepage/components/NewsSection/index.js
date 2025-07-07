@@ -86,7 +86,7 @@ function NewsSection() {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 2 }}
+        sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gap: 2 }}
       >
         <MDTypography variant="h4" fontWeight="medium">
           Top Tech Headlines

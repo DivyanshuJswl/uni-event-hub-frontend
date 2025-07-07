@@ -110,11 +110,18 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     if (developerMode && route.devOnly) {
       return true;
     }
-    // Check if route has custom show function
+
+    // Check if route has custom show function (highest priority)
     if (route.show) {
       return route.show(userRole ? { role: userRole } : null);
     }
-    // 2. Public routes (visible to everyone, including non-authenticated users)
+
+    // 2. Handle Sign In/Sign Up routes specifically
+    if (route.key === "sign-in" || route.key === "sign-up") {
+      return !isAuthenticated; // Only show when not authenticated
+    }
+
+    // 3. Public routes (visible to everyone, including non-authenticated users)
     if (route.public) {
       // Hide public routes that should be hidden when authenticated
       if (route.hideWhenAuthenticated && isAuthenticated) return false;
@@ -123,12 +130,12 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
       return true;
     }
 
-    // 3. Authenticated routes (no specific role required)
+    // 4. Authenticated routes (no specific role required)
     if (route.authenticated) {
       return isAuthenticated;
     }
 
-    // 4. Role-specific routes
+    // 5. Role-specific routes
     if (route.roles) {
       return isAuthenticated && route.roles.includes(userRole);
     }
