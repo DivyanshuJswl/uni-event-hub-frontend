@@ -31,13 +31,13 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 import { Divider, Icon, InputAdornment } from "@mui/material";
 import ResetPasswordModal from "../forgotPassword";
+import HCaptchaComponent from "./hCaptcha";
 
 function Basic() {
   const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode, sideNavColor } = controller;
   const [resetOpen, setResetOpen] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +47,9 @@ function Basic() {
   const [rememberMe, setRememberMe] = useState(
     localStorage.getItem("rememberMe") === "true" || false
   );
-
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaError, setCaptchaError] = useState("");
+  const [resetCaptcha, setResetCaptcha] = useState(false);
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
@@ -85,8 +87,12 @@ function Basic() {
       });
       return;
     }
+    if (!captchaToken) {
+      setCaptchaError("Please complete the captcha verification");
+      return;
+    }
 
-    // Save credentials if rememberMe is checked
+    //  credentials if rememberMe is checked
     if (rememberMe) {
       localStorage.setItem("savedEmail", email);
       localStorage.setItem("savedPassword", password);
@@ -97,11 +103,11 @@ function Basic() {
       localStorage.removeItem("rememberMe");
     }
 
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const res = await axios.post(
         BASE_URL + "/api/auth/login",
-        { email, password },
+        { email, password, captchaToken },
         { withCredentials: true }
       );
       const { token, data } = res?.data;
@@ -125,6 +131,8 @@ function Basic() {
         navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
       }, 500);
     } catch (err) {
+      setResetCaptcha((prev) => !prev); // Trigger captcha reset
+      setCaptchaToken(null);
       console.log(err);
       let errorMessage = "Login failed";
 
@@ -279,6 +287,41 @@ function Basic() {
                 onSubmit={handleResetSubmit}
               />
             </MDBox>
+            <HCaptchaComponent
+              onVerify={(token) => {
+                setCaptchaToken(token);
+                setCaptchaError("");
+              }}
+              onError={() => {
+                setCaptchaToken(null);
+                setCaptchaError("Captcha verification failed");
+              }}
+              onExpire={() => {
+                setCaptchaToken(null);
+                setCaptchaError("Captcha expired - please verify again");
+              }}
+              reset={resetCaptcha}
+            />
+            {captchaError && (
+              <MDTypography
+                variant="caption"
+                color="error"
+                sx={{
+                  mt: -1,
+                  mb: 1,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon // padding right
+                  sx={{ mr: 0.8, color: "error.main" }} // Adjust color based on theme
+                  fontSize="small"
+                >
+                  error
+                </Icon>{" "}
+                {captchaError}
+              </MDTypography>
+            )}{" "}
             <MDBox mt={2} mb={1} fullWidth>
               <MDButton
                 onClick={handleSubmit}
