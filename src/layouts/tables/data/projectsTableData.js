@@ -3,16 +3,12 @@ import Icon from "@mui/material/Icon";
 import { useState } from "react";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import Backdrop from "@mui/material/Backdrop";
 import Fade from "@mui/material/Fade";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import Divider from "@mui/material/Divider";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 // Material Dashboard 2 React components
@@ -20,14 +16,7 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
 import MDButton from "components/MDButton";
-
-// Sample event images
-import event1 from "assets/images/small-logos/logo-asana.svg";
-import event2 from "assets/images/small-logos/github.svg";
-import event3 from "assets/images/small-logos/logo-atlassian.svg";
-import event4 from "assets/images/small-logos/logo-slack.svg";
-import event5 from "assets/images/small-logos/logo-spotify.svg";
-import event6 from "assets/images/small-logos/logo-invision.svg";
+import Divider from "@mui/material/Divider";
 import { useMaterialUIController } from "context";
 
 // Separate component for the Info button with modal functionality
@@ -231,7 +220,7 @@ export default function data() {
   const eventsData = [
     {
       title: "Tech Conference 2025",
-      image: event1,
+      image: "",
       date: "May 15, 2025",
       participants: 230,
       status: "upcoming",
@@ -242,7 +231,7 @@ export default function data() {
     },
     {
       title: "Developer Hackathon",
-      image: event2,
+      image: "",
       date: "March 20, 2025",
       participants: 120,
       status: "completed",
@@ -253,7 +242,7 @@ export default function data() {
     },
     {
       title: "Product Management Workshop",
-      image: event3,
+      image: "",
       date: "April 10, 2025",
       participants: 45,
       status: "completed",
@@ -264,7 +253,7 @@ export default function data() {
     },
     {
       title: "Digital Marketing Summit",
-      image: event4,
+      image: "",
       date: "June 5, 2025",
       participants: 180,
       status: "upcoming",
@@ -275,7 +264,7 @@ export default function data() {
     },
     {
       title: "AI Ethics Symposium",
-      image: event5,
+      image: "",
       date: "February 15, 2025",
       participants: 75,
       status: "cancelled",
@@ -286,7 +275,7 @@ export default function data() {
     },
     {
       title: "Blockchain Developer Conference",
-      image: event6,
+      image: "",
       date: "July 28, 2025",
       participants: 210,
       status: "upcoming",

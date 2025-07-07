@@ -9,6 +9,10 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
+  const handleViewEvent = () => {
+    // Logic to handle viewing the event can be added here
+    console.log(`Viewing event: ${title}`);
+  };
   return (
     <Card
       sx={{
@@ -58,6 +62,7 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
           component="a"
           variant="gradient"
           color={sidenavColor}
+          onClick={handleViewEvent}
           sx={{
             height: 50,
             width: 60,

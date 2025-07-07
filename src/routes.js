@@ -35,10 +35,6 @@ import ExplorePage from "layouts/explorepage";
 import Icon from "@mui/material/Icon";
 import GoogleFormData from "layouts/getcertificate";
 import DashboardOrg from "layouts/dashboardorganizer";
-import ComponentTestPage from "layouts/component-testpage";
-import { TipsAndUpdates } from "@mui/icons-material";
-
-// ... (previous imports remain the same)
 
 const routes = [
   {
@@ -48,7 +44,7 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/user-dashboard",
     component: <Dashboard />,
-    roles: ["participant"],
+    show: (user) => !user || (user && user.role === "participant"),
   },
   {
     type: "collapse",
@@ -137,7 +133,7 @@ const routes = [
     component: <SignIn />,
     public: true,
     devOnly: true, // Only for development purposes
-    // hideWhenAuthenticated: true,
+    hideWhenAuthenticated: true, // Hide when user is authenticated
   },
   {
     type: "collapse",
@@ -148,18 +144,7 @@ const routes = [
     component: <SignUp />,
     public: true,
     devOnly: true, // Only for development purposes
-    // hideWhenAuthenticated: true,
-  },
-  {
-    type: "collapse",
-    name: "Demo Test Page",
-    key: "test-page",
-    icon: <TipsAndUpdates fontSize="small" />,
-    route: "/test-page",
-    component: <ComponentTestPage />,
-    public: true,
-    devOnly: true, // Only for development purposes
-    test: true, // For testing purposes
+    hideWhenAuthenticated: true, // Hide when user is authenticated
   },
 ];
 

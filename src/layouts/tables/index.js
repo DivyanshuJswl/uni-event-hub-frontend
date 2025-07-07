@@ -47,7 +47,6 @@ function Tables() {
           Create and manage events (Organizer only)
         </MDTypography>
       </Box>
-      {/* {user?.role === "organizer" ? ( */}
       {true ? (
         <CreateEvent />
       ) : (

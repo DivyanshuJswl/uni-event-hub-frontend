@@ -262,7 +262,12 @@ function Basic() {
               mt={2}
             >
               <MDBox display="flex" alignItems="center">
-                <Switch name="rememberme" checked={rememberMe} onChange={handleSetRememberMe} color="info" />
+                <Switch
+                  name="rememberme"
+                  checked={rememberMe}
+                  onChange={handleSetRememberMe}
+                  color="info"
+                />
                 <MDTypography
                   variant="button"
                   fontWeight="regular"

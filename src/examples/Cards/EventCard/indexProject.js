@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import {
   Card,
   Divider,
-  Icon,
   Modal,
   Box,
   IconButton,
@@ -13,8 +12,6 @@ import {
   Backdrop,
   LinearProgress,
   Chip,
-  Avatar,
-  Tooltip,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";

@@ -19,13 +19,6 @@ const CertificatePublisher = () => {
   const { darkMode, sidenavColor } = controller;
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const [event, setEvent] = useState("");
-
-  const [email1, setEmail1] = useState("");
-  const [email2, setEmail2] = useState("");
-  const [email3, setEmail3] = useState("");
-  const [url1, setUrl1] = useState("");
-
   const onSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -52,11 +45,12 @@ const CertificatePublisher = () => {
 
       const res = await axios.post(
         `
-        https://uni-event-backend.vercel.app/api/certificates/addcertificates 
+      ${BASE_URL}/api/certificates/addcertificates 
         `,
         data
       );
       toast.success("Certificates published successfully!");
+      console.log(res.data);
       reset();
     } catch (err) {
       toast.error("Failed to publish certificates");

@@ -110,16 +110,16 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     if (developerMode && route.devOnly) {
       return true;
     }
-
+    // Check if route has custom show function
+    if (route.show) {
+      return route.show(userRole ? { role: userRole } : null);
+    }
     // 2. Public routes (visible to everyone, including non-authenticated users)
-    if (route.public && !route.test) {
-      // Special case: Show sign-in/sign-up when not authenticated (even if not in dev mode)
-      if ((route.key === "sign-in" || route.key === "sign-up") && !isAuthenticated) {
-        return true;
-      }
+    if (route.public) {
       // Hide public routes that should be hidden when authenticated
       if (route.hideWhenAuthenticated && isAuthenticated) return false;
-      if (route.devOnly) return false; // Hide devOnly routes for non-developers
+      // Hide devOnly routes for non-developers
+      if (route.devOnly) return false;
       return true;
     }
 
