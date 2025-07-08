@@ -56,7 +56,8 @@ function NewsSection() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("https://uni-event-hub-backend.onrender.com/api/tech-news");
+      const BASE_URL = process.env.REACT_APP_BASE_URL;
+      const response = await fetch(`${BASE_URL}/api/tech-news`);
       const data = await response.json();
       setNews(data.articles || []);
       setPage(1); // Reset to first page when refreshing
