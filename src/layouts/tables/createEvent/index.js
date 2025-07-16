@@ -30,6 +30,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MDTypography from "components/MDTypography";
 
 const CreateEvent = () => {
   const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -96,6 +97,7 @@ const CreateEvent = () => {
       });
 
       console.log("Event creation response:", eventResponse);
+
       const eventId = eventResponse.data.data?.event?._id;
       console.log("Extracted eventId:", eventId);
       // If there's an image, upload it
@@ -132,20 +134,13 @@ const CreateEvent = () => {
               withCredentials: true,
             }
           );
-
+          setCreatedEvent(response.data.data.event);
           console.log("Update successful:", response.data);
         } catch (err) {
           console.error("Update error:", err.response?.data || err.message);
+          setCreatedEvent(eventResponse.data.data.event);
         }
       }
-
-      // Get the full event details with image
-      const fullEventResponse = await axios.get(`${BASE_URL}/api/events/${eventId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        withCredentials: true,
-      });
 
       toast.success("Event created successfully!", {
         position: "top-right",
@@ -155,8 +150,6 @@ const CreateEvent = () => {
         pauseOnHover: true,
         draggable: true,
       });
-
-      setCreatedEvent(fullEventResponse.data.data);
       reset();
       setImagePreview(null);
       setImageFile(null);
@@ -166,7 +159,9 @@ const CreateEvent = () => {
       if (err.response) {
         console.error("Error response data:", err.response.data);
         console.error("Error response status:", err.response.status);
-        if (err.response.status === 400) {
+        if (err.response.data.message) {
+          errorMessage = "Error:" + err.response.data.message;
+        } else if (err.response.status === 400) {
           errorMessage = "Validation error: " + (err.response.data.message || "Invalid data");
         } else if (err.response.status === 401) {
           errorMessage = "Unauthorized - Please login again";
@@ -193,9 +188,8 @@ const CreateEvent = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
         backgroundColor: darkMode ? "background.default" : "grey.100",
-        py: 2,
+        py: 1,
       }}
     >
       <ToastContainer
@@ -228,6 +222,7 @@ const CreateEvent = () => {
                   fontWeight: 600,
                   color: darkMode ? "white" : "primary",
                   mb: 3,
+                  textAlign: "center",
                 }}
               >
                 Create New Event
@@ -238,18 +233,15 @@ const CreateEvent = () => {
                   sx={{
                     textAlign: "center",
                     p: 4,
-                    border: "1px dashed",
-                    borderColor: "success.main",
-                    borderRadius: 2,
-                    backgroundColor: darkMode ? "background.paper" : "success.light",
+                    backgroundColor: darkMode ? "background.default" : "",
                   }}
                 >
                   <Typography variant="h5" color="success.main" gutterBottom>
                     Event Created Successfully!
                   </Typography>
-                  {createdEvent.imageUrl && (
+                  {(createdEvent.featuredImage?.url || createdEvent.images?.[0]?.url) && (
                     <Avatar
-                      src={createdEvent.imageUrl}
+                      src={createdEvent.featuredImage?.url || createdEvent.images?.[0]?.url}
                       alt="Event cover"
                       sx={{
                         width: 200,
@@ -262,20 +254,26 @@ const CreateEvent = () => {
                       variant="rounded"
                     />
                   )}
-                  <Typography variant="h6" gutterBottom>
+                  <MDTypography variant="h6" gutterBottom>
                     {createdEvent.title}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
+                  </MDTypography>
+                  <MDTypography variant="body1" gutterBottom>
                     {dayjs(createdEvent.date).format("MMMM D, YYYY h:mm A")}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
+                  </MDTypography>
+                  <MDTypography variant="body1" gutterBottom>
                     {createdEvent.location}
-                  </Typography>
+                  </MDTypography>
+                  <MDTypography variant="body1" gutterBottom>
+                    Category: {createdEvent.category}
+                  </MDTypography>
                   <MDButton
                     variant="gradient"
                     color={sidenavColor}
                     sx={{ mt: 3 }}
-                    onClick={() => setCreatedEvent(null)}
+                    onClick={() => {
+                      setCreatedEvent(null);
+                      reset();
+                    }}
                   >
                     Create Another Event
                   </MDButton>
