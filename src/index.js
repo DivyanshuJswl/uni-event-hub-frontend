@@ -6,6 +6,7 @@ import App from "./App";
 // Material Dashboard 2 React Context Provider
 import { MaterialUIControllerProvider } from "./context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Analytics } from "@vercel/analytics/react"
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -20,6 +21,7 @@ root.render(
     <MaterialUIControllerProvider>
       <GoogleOAuthProvider clientId={clientId}>
         <App />
+        <Analytics />
       </GoogleOAuthProvider>
     </MaterialUIControllerProvider>
   </BrowserRouter>
