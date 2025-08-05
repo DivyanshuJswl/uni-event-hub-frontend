@@ -43,7 +43,7 @@ const EventCard = ({ date, title, time, sidenavColor }) => {
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
           <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
-            {title}
+            {title.length > 40 ? `${title.substring(0, 37)}...` : title}
           </MDTypography>
           <MDTypography
             variant="button"

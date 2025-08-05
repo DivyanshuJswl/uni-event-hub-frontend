@@ -53,6 +53,9 @@ function EventCard({
   const handleClose = () => setOpen(false);
 
   const handleRegister = async () => {
+    if (isFull || new Date() > new Date(date)) return;
+    setRegisterBn((prev) => (prev === "Register Now" ? "Unenroll" : "Register Now"));
+    // Toggle register button text
     registerBtn === "Register Now" ? setRegisterBn("Unenroll") : setRegisterBn("Register Now");
     try {
       const token = localStorage.getItem("token");
@@ -462,13 +465,17 @@ function EventCard({
                   <MDButton
                     onClick={handleRegister}
                     variant="gradient"
-                    color={isFull ? "error" : sidenavColor}
+                    color={isFull || new Date() > new Date(date) ? "error" : sidenavColor}
                     size="large"
                     fullWidth
                     disabled={isFull}
                     sx={{ mt: 2 }}
                   >
-                    {isFull ? "Event Full" : registerBtn}
+                    {isFull
+                      ? "Event Full"
+                      : new Date() > new Date(date)
+                      ? "Event is Over Now"
+                      : registerBtn}
                   </MDButton>
                 </Grid>
               </Grid>

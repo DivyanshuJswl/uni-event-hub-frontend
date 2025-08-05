@@ -5,36 +5,70 @@ import MDAvatar from "components/MDAvatar";
 import MDBadge from "components/MDBadge";
 import MDButton from "components/MDButton";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@mui/material/Icon";
 import Tooltip from "@mui/material/Tooltip";
 import DataTable from "examples/Tables/DataTable";
-
-// Images for sample data
-import event1 from "assets/images/apple-icon.png"; // Replace with your actual event images
-import event2 from "assets/images/apple-icon.png";
-import event3 from "assets/images/apple-icon.png";
-import event4 from "assets/images/apple-icon.png";
-import event5 from "assets/images/apple-icon.png";
-import event6 from "assets/images/apple-icon.png";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function MyParticipatedEvents() {
-  const [tableData, setTableData] = useState(getData());
+  const defaultEventImage =
+    "https://res.cloudinary.com/dh5cebjwj/image/upload/v1750793771/samples/animals/kitten-playing.gif";
+  const [tableData, setTableData] = useState({
+    columns: [
+      { Header: "event", accessor: "event", width: "35%", align: "left" },
+      { Header: "organizer", accessor: "organizer", width: "25%", align: "left" },
+      { Header: "date", accessor: "date", align: "center" },
+      { Header: "status", accessor: "status", align: "center" },
+      { Header: "actions", accessor: "actions", align: "center" },
+    ],
+    rows: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Function to handle unenrolling from an event
-  const handleUnenroll = (eventId) => {
-    setTableData((prevData) => {
-      const newRows = prevData.rows.filter((row) => row.id !== eventId);
-      return { ...prevData, rows: newRows };
-    });
-  };
+  useEffect(() => {
+    const fetchParticipatedEvents = async () => {
+      try {
+        const student = JSON.parse(localStorage.getItem("student"));
+        const token = localStorage.getItem("token");
 
-  // Function to get table data
-  function getData() {
-    // Event component to display event name, description and image
+        if (!student?._id || !token) {
+          throw new Error("Authentication data not found");
+        }
+
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/api/events/students/${student._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const events = response.data.data?.events || [];
+        const rows = events.map((event) => createEventRow(event));
+
+        setTableData((prev) => ({ ...prev, rows }));
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        // Show error to user
+        alert(`Error: ${error.response?.data?.message || error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchParticipatedEvents();
+  }, []);
+
+  // Function to create a table row from event data
+  const createEventRow = (event) => {
+    // Event component
     const Event = ({ image, name, description }) => (
       <MDBox display="flex" alignItems="center" lineHeight={1}>
-        <MDAvatar src={image} name={name} size="sm" variant="rounded" />
+        <MDAvatar src={image || defaultEventImage} name={name} size="sm" variant="rounded" />
         <MDBox ml={2} lineHeight={1} textAlign="left">
           <MDTypography display="block" variant="button" fontWeight="medium">
             {name}
@@ -45,12 +79,12 @@ function MyParticipatedEvents() {
     );
 
     Event.propTypes = {
-      image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+      image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
       name: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
     };
 
-    // Organizer component to display organizer details
+    // Organizer component
     const Organizer = ({ name, email }) => (
       <MDBox display="flex" alignItems="center" lineHeight={1}>
         <MDBox ml={2} lineHeight={1}>
@@ -71,7 +105,12 @@ function MyParticipatedEvents() {
     const ActionButtons = ({ eventId }) => (
       <MDBox display="flex" justifyContent="space-around">
         <Tooltip title="View Details" placement="top">
-          <MDButton variant="text" color="info" size="small">
+          <MDButton
+            variant="text"
+            color="info"
+            size="small"
+            onClick={() => navigate(`/events/${eventId}`)}
+          >
             <Icon>visibility</Icon>
           </MDButton>
         </Tooltip>
@@ -89,153 +128,95 @@ function MyParticipatedEvents() {
     );
 
     ActionButtons.propTypes = {
-      eventId: PropTypes.number.isRequired,
+      eventId: PropTypes.string.isRequired,
+    };
+
+    // Determine status
+    const getStatusBadge = () => {
+      const now = new Date();
+      const startDate = new Date(event.date);
+      const endDate = new Date(event.date);
+
+      if (event.status === "cancelled") {
+        return <MDBadge badgeContent="cancelled" color="error" variant="gradient" size="sm" />;
+      }
+
+      if (now > endDate) {
+        return <MDBadge badgeContent="completed" color="success" variant="gradient" size="sm" />;
+      }
+
+      if (now >= startDate && now <= endDate) {
+        return <MDBadge badgeContent="ongoing" color="warning" variant="gradient" size="sm" />;
+      }
+
+      return <MDBadge badgeContent="upcoming" color="info" variant="gradient" size="sm" />;
     };
 
     return {
-      columns: [
-        { Header: "event", accessor: "event", width: "35%", align: "left" },
-        { Header: "organizer", accessor: "organizer", width: "25%", align: "left" },
-        { Header: "date", accessor: "date", align: "center" },
-        { Header: "status", accessor: "status", align: "center" },
-        { Header: "actions", accessor: "actions", align: "center" },
-      ],
-
-      rows: [
-        {
-          id: 1,
-          event: (
-            <Event
-              image={event1}
-              name="Tech Innovation Summit"
-              description="Explore cutting-edge technologies and networking opportunities"
-            />
-          ),
-          organizer: <Organizer name="John Michael" email="john@techsummit.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              June 15, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="upcoming" color="info" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={1} />,
-        },
-        {
-          id: 2,
-          event: (
-            <Event
-              image={event2}
-              name="Design Workshop"
-              description="UI/UX design principles and practical applications"
-            />
-          ),
-          organizer: <Organizer name="Alexa Liras" email="alexa@designhub.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              July 22, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="upcoming" color="info" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={2} />,
-        },
-        {
-          id: 3,
-          event: (
-            <Event
-              image={event3}
-              name="AI Conference"
-              description="Latest developments in artificial intelligence"
-            />
-          ),
-          organizer: <Organizer name="Laurent Perrier" email="laurent@aiconf.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              May 5, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="completed" color="success" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={3} />,
-        },
-        {
-          id: 4,
-          event: (
-            <Event
-              image={event4}
-              name="Blockchain Masterclass"
-              description="Deep dive into blockchain technology and applications"
-            />
-          ),
-          organizer: <Organizer name="Michael Levi" email="michael@blockmaster.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              August 10, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="upcoming" color="info" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={4} />,
-        },
-        {
-          id: 5,
-          event: (
-            <Event
-              image={event5}
-              name="Data Science Bootcamp"
-              description="Intensive training in data analytics and visualization"
-            />
-          ),
-          organizer: <Organizer name="Richard Gran" email="richard@datascience.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              April 20, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="cancelled" color="error" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={5} />,
-        },
-        {
-          id: 6,
-          event: (
-            <Event
-              image={event6}
-              name="Marketing & Growth Strategies"
-              description="Advanced techniques for business growth and customer acquisition"
-            />
-          ),
-          organizer: <Organizer name="Miriam Eric" email="miriam@marketgrowth.com" />,
-          date: (
-            <MDTypography variant="caption" color="text" fontWeight="medium">
-              September 14, 2025
-            </MDTypography>
-          ),
-          status: (
-            <MDBox ml={-1}>
-              <MDBadge badgeContent="upcoming" color="info" variant="gradient" size="sm" />
-            </MDBox>
-          ),
-          actions: <ActionButtons eventId={6} />,
-        },
-      ],
+      id: event._id,
+      event: (
+        <Event
+          image={event.featuredImage?.url || event.images?.[0]?.url}
+          name={event.title}
+          description={event.description}
+        />
+      ),
+      organizer: (
+        <Organizer
+          name={event.organizer?.name || "Unknown Organizer"}
+          email={event.organizer?.email || "N/A"}
+        />
+      ),
+      date: (
+        <MDTypography variant="caption" color="text" fontWeight="medium">
+          {new Date(event.date).toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </MDTypography>
+      ),
+      status: <MDBox ml={-1}>{getStatusBadge()}</MDBox>,
+      actions: <ActionButtons eventId={event._id} />,
     };
+  };
+
+  const handleUnenroll = async (eventId) => {
+    try {
+      const student = JSON.parse(localStorage.getItem("student"));
+      if (!student?._id) {
+        throw new Error("Student data not found");
+      }
+
+      // Call API to unenroll
+      await axios.delete(
+        `${process.env.REACT_APP_BASE_URL}/api/students/${student._id}/events/${eventId}`
+      );
+
+      // Update UI
+      setTableData((prev) => ({
+        ...prev,
+        rows: prev.rows.filter((row) => row.id !== eventId),
+      }));
+
+      // Show success message
+      alert("Successfully unenrolled from event");
+    } catch (error) {
+      console.error("Error unenrolling:", error);
+      alert("Failed to unenroll: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  if (loading) {
+    return (
+      <MDBox pt={6} pb={3}>
+        <MDTypography variant="body2" color="text">
+          Loading your events...
+        </MDTypography>
+      </MDBox>
+    );
   }
 
   return (
@@ -249,14 +230,20 @@ function MyParticipatedEvents() {
         </MDTypography>
       </MDBox>
       <MDBox>
-        <DataTable
-          table={tableData}
-          isSorted={false}
-          entriesPerPage={{ defaultValue: 5, entries: [5, 10, 15, 20, 25] }}
-          showTotalEntries={true}
-          noEndBorder
-          canSearch
-        />
+        {tableData.rows.length > 0 ? (
+          <DataTable
+            table={tableData}
+            isSorted={false}
+            entriesPerPage={{ defaultValue: 5, entries: [5, 10, 15, 20, 25] }}
+            showTotalEntries={true}
+            noEndBorder
+            canSearch
+          />
+        ) : (
+          <MDTypography variant="body2" color="text">
+            You haven&apos;t enrolled in any events yet.
+          </MDTypography>
+        )}
       </MDBox>
     </MDBox>
   );
