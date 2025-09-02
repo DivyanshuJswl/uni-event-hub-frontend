@@ -7,9 +7,13 @@ export default styled(Box)(({ theme, ownerState }) => {
   const { variant, bgColor, color, opacity, borderRadius, shadow, coloredShadow } = ownerState;
 
   const { gradients, grey, white } = palette;
-  const { linearGradient } = functions;
-  const { borderRadius: radius } = borders;
-  const { colored } = boxShadows;
+  
+  // FIX: Add proper fallback for functions
+  const { linearGradient } = functions || {};
+  
+  // FIX: Add fallbacks for borders and boxShadows
+  const { borderRadius: radius } = borders || {};
+  const { colored } = boxShadows || {};
 
   const greyColors = {
     "grey-100": grey[100],
@@ -65,8 +69,12 @@ export default styled(Box)(({ theme, ownerState }) => {
   let backgroundValue = bgColor;
 
   if (variant === "gradient") {
+    // FIX: Add fallback for linearGradient function
+    const gradientFunc = linearGradient || ((color, colorState) => 
+      `linear-gradient(195deg, ${color}, ${colorState})`);
+    
     backgroundValue = validGradients.find((el) => el === bgColor)
-      ? linearGradient(gradients[bgColor].main, gradients[bgColor].state)
+      ? gradientFunc(gradients[bgColor].main, gradients[bgColor].state)
       : white.main;
   } else if (validColors.find((el) => el === bgColor)) {
     backgroundValue = palette[bgColor] ? palette[bgColor].main : greyColors[bgColor];
@@ -85,16 +93,16 @@ export default styled(Box)(({ theme, ownerState }) => {
   let borderRadiusValue = borderRadius;
 
   if (validBorderRadius.find((el) => el === borderRadius)) {
-    borderRadiusValue = radius[borderRadius];
+    borderRadiusValue = radius ? radius[borderRadius] : borderRadius;
   }
 
   // boxShadow value
   let boxShadowValue = "none";
 
   if (validBoxShadows.find((el) => el === shadow)) {
-    boxShadowValue = boxShadows[shadow];
+    boxShadowValue = boxShadows ? boxShadows[shadow] : "none";
   } else if (coloredShadow) {
-    boxShadowValue = colored[coloredShadow] ? colored[coloredShadow] : "none";
+    boxShadowValue = colored ? colored[coloredShadow] : "none";
   }
 
   return {

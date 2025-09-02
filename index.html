@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Icons and metadata -->
+    <link rel="icon" href="/icon.png" type="image/gif" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="mask-icon" href="/icon.png" color="#000000" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Uni-Event Hub - Your go-to platform for university events, activities, and community engagement." />
+    <meta name="keywords" content="university, events, activities, community, engagement, student life" />
+    <meta name="author" content="Uni-Event Hub Team" />
+    
+    <title>Uni-Event Hub</title>
+
+    <!-- Material Icons with better loading strategy -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
+        rel="stylesheet"
+      />
+    </noscript>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/index.jsx"></script>
+    
+    <!-- Fallback for non-JS users -->
+    <noscript>
+      <div style="text-align: center; padding: 2rem; font-family: sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>Uni-Event Hub requires JavaScript to function properly. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+  </body>
+</html>

@@ -115,6 +115,7 @@ src/
 ---
 
 ## Dependencies
+
 - React (react, react-dom)
 - Material UI (@mui/material, @mui/icons-material, @mui/x-date-pickers)
 - React Router (react-router-dom)
@@ -128,13 +129,13 @@ src/
 - stylis-plugin-rtl (for RTL support)
 - dotenv (for environment variables)
 
-npm install
----
+## npm install
 
 ## required env var
-REACT_APP_GOOGLE_CLIENT_ID=your-google-oauth-client-id
-REACT_APP_VITE_GOOGLE_API_KEY=your-google-sheets-api-key
-REACT_APP_GOOGLE_SHEET_ID=your-google-sheet-id
+
+VITE_GOOGLE_CLIENT_ID=your-google-oauth-client-id
+VITE_VITE_GOOGLE_API_KEY=your-google-sheets-api-key
+VITE_GOOGLE_SHEET_ID=your-google-sheet-id
 
 ---
 
