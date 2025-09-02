@@ -20,16 +20,30 @@
   10. The `component` key is used to store the component of its route.
 */
 
+// Material Dashboard 2 React layouts
+import Dashboard from "layouts/dashboard";
+import Tables from "layouts/tables";
+import Notifications from "layouts/notifications";
+import Profile from "layouts/profile";
+import SignIn from "layouts/authentication/sign-in";
+import SignUp from "layouts/authentication/sign-up";
+import MyEvents from "layouts/myevents";
+import Publish from "layouts/certificatepublisher";
+import ExplorePage from "layouts/explorepage";
+
 // @mui icons
 import Icon from "@mui/material/Icon";
+import GoogleFormData from "layouts/getcertificate";
+import DashboardOrg from "layouts/dashboardorganizer";
 
-const sidenavRoutes = [
+const routes = [
   {
     type: "collapse",
     name: "Dashboard",
     key: "user-dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/user-dashboard",
+    component: <Dashboard />,
     show: (user) => !user || (user && user.role === "participant"),
   },
   {
@@ -38,22 +52,28 @@ const sidenavRoutes = [
     key: "organizer-dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/organizer-dashboard",
+    component: <DashboardOrg />,
     roles: ["organizer"],
   },
+  // Public routes (visible to everyone)
   {
     type: "collapse",
     name: "Explore",
     key: "explore",
     icon: <Icon fontSize="small">search</Icon>,
     route: "/explore",
+    component: <ExplorePage />,
     public: true,
   },
+
+  // User routes (visible to users with role 'user')
   {
     type: "collapse",
     name: "Participated Events",
     key: "my-events",
     icon: <Icon fontSize="small">event</Icon>,
     route: "/my-events",
+    component: <MyEvents />,
     roles: ["participant"],
   },
   {
@@ -62,22 +82,28 @@ const sidenavRoutes = [
     key: "my-certificate",
     icon: <Icon fontSize="small">event</Icon>,
     route: "/my-certificate",
+    component: <GoogleFormData />,
     roles: ["participant"],
   },
+  // Organizer routes (visible to users with role 'organizer')
   {
     type: "collapse",
     name: "Create Event",
     key: "create-event",
     icon: <Icon fontSize="small">event</Icon>,
     route: "/create-event",
+    component: <Tables />,
     roles: ["organizer"],
   },
+
+  // Common authenticated routes (visible to all logged-in users)
   {
     type: "collapse",
     name: "Notifications",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
+    component: <Notifications />,
     authenticated: true,
   },
   {
@@ -86,6 +112,7 @@ const sidenavRoutes = [
     key: "publish-certificate",
     icon: <Icon fontSize="small">publish</Icon>,
     route: "/publish-certificate",
+    component: <Publish />,
     roles: ["organizer"],
   },
   {
@@ -94,6 +121,7 @@ const sidenavRoutes = [
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
+    component: <Profile />,
     authenticated: true,
   },
   {
@@ -102,9 +130,10 @@ const sidenavRoutes = [
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
     route: "/authentication/sign-in",
+    component: <SignIn />,
     public: true,
-    devOnly: true,
-    hideWhenAuthenticated: true,
+    devOnly: true, // Only for development purposes
+    hideWhenAuthenticated: true, // Hide when user is authenticated
   },
   {
     type: "collapse",
@@ -112,11 +141,11 @@ const sidenavRoutes = [
     key: "sign-up",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/sign-up",
+    component: <SignUp />,
     public: true,
-    devOnly: true,
-    hideWhenAuthenticated: true,
+    devOnly: true, // Only for development purposes
+    hideWhenAuthenticated: true, // Hide when user is authenticated
   },
 ];
 
-export { sidenavRoutes };
-export default sidenavRoutes;
+export default routes;

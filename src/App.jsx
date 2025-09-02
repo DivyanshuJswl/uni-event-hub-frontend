@@ -14,23 +14,10 @@ import theme from "assets/theme";
 import themeRTL from "assets/theme/theme-rtl";
 import themeDark from "assets/theme-dark";
 import themeDarkRTL from "assets/theme-dark/theme-rtl";
-import { sidenavRoutes } from "routes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
-
-// Import all layout components
-import Dashboard from "layouts/dashboard";
-import Tables from "layouts/tables";
-import Notifications from "layouts/notifications";
-import Profile from "layouts/profile";
-import SignIn from "layouts/authentication/sign-in";
-import SignUp from "layouts/authentication/sign-up";
-import MyEvents from "layouts/myevents";
-import Publish from "layouts/certificatepublisher";
-import ExplorePage from "layouts/explorepage";
-import GoogleFormData from "layouts/getcertificate";
-import DashboardOrg from "layouts/dashboardorganizer";
+import routes from "routes";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +69,18 @@ export default function App() {
     }
   };
 
+  // Route generator
+  const getRoutes = (allRoutes) =>
+    allRoutes.map((route) => {
+      if (route.collapse) {
+        return getRoutes(route.collapse);
+      }
+      if (route.route) {
+        return <Route exact path={route.route} element={route.component} key={route.key} />;
+      }
+      return null;
+    });
+
   // Configurator toggle
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
 
@@ -130,7 +129,7 @@ export default function App() {
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
             brandName="Uni-Event HUB"
-            routes={sidenavRoutes}
+            routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
           />
@@ -140,17 +139,7 @@ export default function App() {
       )}
       {layout === "vr" && <Configurator />}
       <Routes>
-        <Route path="/user-dashboard" element={<Dashboard />} />
-        <Route path="/organizer-dashboard" element={<DashboardOrg />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/my-events" element={<MyEvents />} />
-        <Route path="/my-certificate" element={<GoogleFormData />} />
-        <Route path="/create-event" element={<Tables />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/publish-certificate" element={<Publish />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/authentication/sign-in" element={<SignIn />} />
-        <Route path="/authentication/sign-up" element={<SignUp />} />
+        {getRoutes(routes)}
         <Route path="*" element={<Navigate to="/user-dashboard" />} />
       </Routes>
     </>
@@ -170,7 +159,7 @@ export default function App() {
       ) : (
         <ThemeProvider theme={darkMode ? themeDark : theme}>
           <CssBaseline />
-            {mainContent}
+          {mainContent}
         </ThemeProvider>
       )}
     </>
