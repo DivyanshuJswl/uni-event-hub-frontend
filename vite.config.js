@@ -19,8 +19,8 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'build',
-    target: 'es2015'
+    outDir: 'dist',
+    sourcemap: false,
   },
   define: {
     global: 'globalThis', // Add global definition
