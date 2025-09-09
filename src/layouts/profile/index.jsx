@@ -21,19 +21,15 @@ import DefaultProjectCard from "examples/Cards/EventCard/DefaultProjectCard";
 import Header from "layouts/profile/components/Header";
 import PlatformSettings from "layouts/profile/components/PlatformSettings";
 
-// Images
-import homeDecor1 from "assets/images/home-decor-1.jpg";
-import homeDecor2 from "assets/images/home-decor-2.jpg";
-import homeDecor3 from "assets/images/home-decor-3.jpg";
-import homeDecor4 from "assets/images/home-decor-4.jpeg";
-import team1 from "assets/images/team-1.jpg";
-import team2 from "assets/images/team-2.jpg";
-import team3 from "assets/images/team-3.jpg";
-import team4 from "assets/images/team-4.jpg";
 import MetaMaskIntegration from "./components/LinkMetaMask";
 import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
 
 function Overview() {
+  // Images
+  const team1 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-1_a7rqfy.jpg";
+  const team2 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-2_aq8yoc.jpg";
+  const team3 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg";
+  const team4 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-4_efvdcl.jpg";
   // Get student data from localStorage
   const student = JSON.parse(localStorage.getItem("student"));
   const token = localStorage.getItem("token");
@@ -120,7 +116,7 @@ function Overview() {
           <Grid container spacing={6}>
             <Grid item xs={12} md={6} xl={3}>
               <DefaultProjectCard
-                image={homeDecor1}
+                image={`https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915812/home-decor-1_yioetq.jpg`}
                 label="project #2"
                 title="modern"
                 description="As Uber works through a huge amount of internal management turmoil."
@@ -140,7 +136,7 @@ function Overview() {
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <DefaultProjectCard
-                image={homeDecor2}
+                image={`https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915817/home-decor-2_dbiguz.jpg`}
                 label="project #1"
                 title="scandinavian"
                 description="Music is something that everyone has their own specific opinion about."
@@ -160,7 +156,7 @@ function Overview() {
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <DefaultProjectCard
-                image={homeDecor3}
+                image={`https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915827/home-decor-3_yg04jv.jpg`}
                 label="project #3"
                 title="minimalist"
                 description="Different people have different taste, and various types of music."
@@ -180,7 +176,7 @@ function Overview() {
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <DefaultProjectCard
-                image={homeDecor4}
+                image={`https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915799/home-decor-4_awposa.jpg`}
                 label="project #4"
                 title="gothic"
                 description="Why would anyone pick blue over pink? Pink is obviously a better color."

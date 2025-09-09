@@ -1,4 +1,4 @@
-// prop-types is a library for typechecking of props
+// DataTableHeadCell.jsx - Updated with theme colors
 import PropTypes from "prop-types";
 
 // @mui material components
@@ -10,9 +10,10 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 React contexts
 import { useMaterialUIController } from "context";
 
-function DataTableHeadCell({ width, children, sorted, align, ...rest }) {
+function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }) {
   const [controller] = useMaterialUIController();
-  const { darkMode } = controller;
+  const { darkMode: contextDarkMode } = controller;
+  const isDark = darkMode !== undefined ? darkMode : contextDarkMode;
 
   return (
     <MDBox
@@ -28,7 +29,7 @@ function DataTableHeadCell({ width, children, sorted, align, ...rest }) {
         {...rest}
         position="relative"
         textAlign={align}
-        color={darkMode ? "white" : "secondary"}
+        color={isDark ? "white" : "black"}
         opacity={0.7}
         sx={({ typography: { size, fontWeightBold } }) => ({
           fontSize: size.xxs,
@@ -77,6 +78,7 @@ DataTableHeadCell.defaultProps = {
   width: "auto",
   sorted: "none",
   align: "left",
+  darkMode: undefined,
 };
 
 // Typechecking props for the DataTableHeadCell
@@ -85,6 +87,7 @@ DataTableHeadCell.propTypes = {
   children: PropTypes.node.isRequired,
   sorted: PropTypes.oneOf([false, "none", "asce", "desc"]),
   align: PropTypes.oneOf(["left", "right", "center"]),
+  darkMode: PropTypes.bool,
 };
 
 export default DataTableHeadCell;

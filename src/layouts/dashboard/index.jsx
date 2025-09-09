@@ -1,5 +1,5 @@
 // @mui material components
-import Grid from "@mui/material/Grid";
+import { Grid } from "@mui/material";
 import React, { useState, useEffect } from "react";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -10,9 +10,8 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
 import EventCard from "examples/Cards/EventCard/indexProject";
-
+import EventSkeleton from "components/EventSkeleton";
 // Dashboard components
 import Projects from "layouts/dashboard/components/Projects";
 import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
@@ -56,17 +55,6 @@ function Dashboard() {
 
     fetchEvents();
   }, []);
-
-  const formatEventDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const events = upcomingEvents.map((event) => ({
     date: {
@@ -158,11 +146,8 @@ function Dashboard() {
           </Typography>
           <Grid container spacing={3}>
             {loading ? (
-              <Grid item xs={12}>
-                <MDBox display="flex" justifyContent="center">
-                  <CircularProgress />
-                </MDBox>
-              </Grid>
+              // Skeleton loading state
+              <EventSkeleton />
             ) : (
               recommendedEvents.slice(0, 3).map((event) => (
                 <Grid item xs={12} md={6} lg={4} key={event._id}>
@@ -172,7 +157,7 @@ function Dashboard() {
                       title={event.title}
                       description={event.description}
                       category={event.category}
-                      date={formatEventDate(event.startDate)}
+                      date={event.date}
                       location={event.location}
                       maxParticipants={event.maxParticipants}
                       currentParticipants={event.participants?.length || 0}
@@ -200,7 +185,7 @@ function Dashboard() {
                 <Projects />
               </Grid>
               <Grid item xs={12} md={7} lg={4}>
-                <OrdersOverview events={events} />
+                <OrdersOverview events={events} loading={loading} />
               </Grid>
               <Grid item xs={12} md={12} lg={12}>
                 <LeaderboardTable />

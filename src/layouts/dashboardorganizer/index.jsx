@@ -10,14 +10,13 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import Typography from "@mui/material/Typography";
-// Data
 import EventCard from "examples/Cards/EventCard/indexProject";
-import { CircularProgress } from "@mui/material";
 // Dashboard components
-import Projects from "./components/Projects";
-import OrdersOverview from "./components/OrdersOverview";
-import WelcomeBox from "./components/WelcomeBox";
-import LeaderboardTable from "./components/Leaderboard";
+import Projects from "layouts/dashboard/components/Projects";
+import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
+import WelcomeBox from "layouts/dashboard/components/WelcomeBox";
+import LeaderboardTable from "layouts/dashboard/components/Leaderboard";
+import EventSkeleton from "components/EventSkeleton";
 
 function DashboardOrg() {
   const hack1 =
@@ -71,44 +70,40 @@ function DashboardOrg() {
         <MDBox mb={3}>
           <WelcomeBox />
         </MDBox>
-        {recommendedEvents.length > 0 && (
-          <MDBox mt={4.5}>
-            <Typography variant="h4" gutterBottom paddingBottom={4}>
-              Recommended Events
-            </Typography>
-            <Grid container spacing={3}>
-              {loading ? (
-                <Grid item xs={12}>
-                  <MDBox display="flex" justifyContent="center">
-                    <CircularProgress />
+        {/* Recommended Events Section */}
+        <MDBox mt={4.5}>
+          <Typography variant="h4" gutterBottom paddingBottom={4}>
+            Recommended Events
+          </Typography>
+          <Grid container spacing={3}>
+            {loading ? (
+              // Skeleton loading state
+              <EventSkeleton />
+            ) : (
+              recommendedEvents.slice(0, 3).map((event) => (
+                <Grid item xs={12} md={6} lg={4} key={event._id}>
+                  <MDBox mb={3}>
+                    <EventCard
+                      image={event.images?.[0]?.url || hack1}
+                      title={event.title}
+                      description={event.description}
+                      category={event.category}
+                      date={event.date}
+                      location={event.location}
+                      maxParticipants={event.maxParticipants}
+                      currentParticipants={event.participants?.length || 0}
+                      organizerName={event.organizer?.name}
+                      organizerEmail={event.organizer?.email}
+                      status={event.status}
+                      isFull={event.participants?.length >= event.maxParticipants}
+                      _id={event._id}
+                    />
                   </MDBox>
                 </Grid>
-              ) : (
-                recommendedEvents.slice(0, 3).map((event) => (
-                  <Grid item xs={12} md={6} lg={4} key={event._id}>
-                    <MDBox mb={3}>
-                      <EventCard
-                        image={event.images?.[0]?.url || hack1}
-                        title={event.title}
-                        description={event.description}
-                        category={event.category}
-                        date={event.date}
-                        location={event.location}
-                        maxParticipants={event.maxParticipants}
-                        currentParticipants={event.participants?.length || 0}
-                        organizerName={event.organizer?.name}
-                        organizerEmail={event.organizer?.email}
-                        status={event.status}
-                        isFull={event.participants?.length >= event.maxParticipants}
-                        _id={event._id}
-                      />
-                    </MDBox>
-                  </Grid>
-                ))
-              )}
-            </Grid>
-          </MDBox>
-        )}
+              ))
+            )}
+          </Grid>
+        </MDBox>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -121,7 +116,7 @@ function DashboardOrg() {
                 <Projects />
               </Grid>
               <Grid item xs={12} md={7} lg={4}>
-                <OrdersOverview events={events} />
+                <OrdersOverview events={events} loading={loading} />
               </Grid>
               <Grid item xs={12} md={12} lg={12}>
                 <LeaderboardTable />

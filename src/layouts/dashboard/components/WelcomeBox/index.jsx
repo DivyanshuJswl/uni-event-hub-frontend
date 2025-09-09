@@ -1,4 +1,4 @@
-import { Card, Typography, Button, Box } from "@mui/material";
+import { Card, Box } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
@@ -10,6 +10,13 @@ const WelcomeBox = () => {
   const { darkMode, sidenavColor } = controller;
   const navigate = useNavigate();
 
+  // Get user data from localStorage
+  const user = localStorage.getItem("student") ? JSON.parse(localStorage.getItem("student")) : null;
+  const userRole = localStorage.getItem("role");
+
+  // Check if user is an organizer
+  const isOrganizer = userRole === "organizer";
+  const isParticipant = userRole === "participant";
   return (
     <Card
       sx={{
@@ -29,7 +36,6 @@ const WelcomeBox = () => {
           right: 0,
           width: "40%",
           height: "100%",
-          // backgroundImage: "url(/path-to-your-image.png)", // Replace with your image path
           backgroundSize: "cover",
           backgroundPosition: "center",
           opacity: 0.1,
@@ -38,7 +44,7 @@ const WelcomeBox = () => {
     >
       <MDBox sx={{ position: "relative", zIndex: 1 }}>
         <MDTypography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          {localStorage.getItem("student") ? (
+          {user ? (
             <Box component="span">
               Welcome back,{" "}
               <Box
@@ -48,7 +54,7 @@ const WelcomeBox = () => {
                   fontWeight: "bold",
                 }}
               >
-                {JSON.parse(localStorage.getItem("student")).name}
+                {user.name}
               </Box>
             </Box>
           ) : (
@@ -62,7 +68,9 @@ const WelcomeBox = () => {
           fontWeight="light"
           py={3}
         >
-          You have 3 upcoming events this week
+          {isOrganizer
+            ? "Let's get started by exploring or creating events!"
+            : "Let's get started by exploring events happening this week!"}
         </MDTypography>
 
         <MDBox mt={2} sx={{ display: "flex", gap: 2 }}>
@@ -74,16 +82,24 @@ const WelcomeBox = () => {
           >
             Browse Events
           </MDButton>
-          <MDButton
-            component="a"
-            target="_blank"
-            rel="noreferrer"
-            variant="gradient"
-            color={sidenavColor}
-            onClick={() => navigate("/my-events")}
-          >
-            Participated Events
-          </MDButton>
+
+          {isOrganizer ? (
+            <MDButton
+              variant="gradient"
+              color={sidenavColor}
+              onClick={() => navigate("/create-event")}
+            >
+              Create Event
+            </MDButton>
+          ) : isParticipant ? (
+            <MDButton
+              variant="gradient"
+              color={sidenavColor}
+              onClick={() => navigate("/my-events")}
+            >
+              Participated Events
+            </MDButton>
+          ) : null}
         </MDBox>
       </MDBox>
     </Card>

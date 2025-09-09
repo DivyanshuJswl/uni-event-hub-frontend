@@ -2,16 +2,15 @@
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import Icon from "@mui/material/Icon";
-import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@mui/material/Pagination";
+import Skeleton from "@mui/material/Skeleton";
+import TextField from "@mui/material/TextField";
+
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-import NewsCard from "../NewsCard";
-
+import NewsCard from "examples/Cards/NewsCard";
 import { useState, useEffect } from "react";
-import { TextField } from "@mui/material";
 import { useMaterialUIController } from "context";
 
 function NewsSection() {
@@ -52,11 +51,11 @@ function NewsSection() {
       setPage(1); // Reset to first page when changing items per page
     }
   };
+
   const refreshNews = async () => {
     try {
       setLoading(true);
       setError(null);
-      const BASE_URL = import.meta.env.VITE_BASE_URL;
       const response = await fetch(`${BASE_URL}/api/tech-news`);
       const data = await response.json();
       setNews(data.articles || []);
@@ -79,73 +78,126 @@ function NewsSection() {
     setPage(value);
   };
 
+  // Skeleton loading component
+  const NewsCardSkeleton = () => (
+    <Card sx={{ mb: 2, boxShadow: 3, p: 2 }}>
+      <Skeleton variant="rectangular" height={160} sx={{ mb: 2, borderRadius: 1 }} />
+      <Skeleton variant="text" height={40} sx={{ mb: 1 }} />
+      <Skeleton variant="text" height={20} width="60%" sx={{ mb: 1 }} />
+      <Skeleton variant="text" height={20} width="40%" sx={{ mb: 2 }} />
+      <Skeleton variant="text" height={60} sx={{ mb: 2 }} />
+      <Skeleton variant="rectangular" height={36} width={120} sx={{ borderRadius: 1 }} />
+    </Card>
+  );
+
   return (
-    <Card>
+    <Card
+      sx={{
+        borderRadius: 3,
+        boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.24)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
+        overflow: "hidden",
+      }}
+    >
       <MDBox
-        pt={3}
+        py={2.5}
         px={2}
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gap: 2 }}
+        sx={{
+          flexDirection: { xs: "column", sm: "column", md: "row" },
+          gap: 2,
+          borderBottom: darkMode
+            ? "1px solid rgba(255, 255, 255, 0.12)"
+            : "1px solid rgba(0, 0, 0, 0.08)",
+          backgroundColor: darkMode ? "background.default" : "background.paper",
+        }}
       >
-        <MDTypography variant="h4" fontWeight="medium">
+        <MDTypography variant="h4" px="1rem" fontWeight="medium" color={darkMode ? "white" : "dark"}>
           Top Tech Headlines
         </MDTypography>
-        <MDBox display="flex" alignItems="center">
-          <MDBox display="flex" alignItems="center">
-            <TextField
-              label="Items per page"
-              type="number"
-              value={inputValue}
-              onChange={handleArticlesPerPageChange}
-              inputProps={{ min: 1, max: 20 }}
-              size="small"
-              sx={{ width: 120, mr: 2 }}
-            />
-            <Button
-              variant="outlined"
-              sx={{
-                borderRadius: "8px", // Rounded corners
-                fontWeight: 300, // Thin font weight
-                borderWidth: "1px", // Thin border
-                color: darkMode ? "primary.main" : "text.primary", // Text color
-                borderColor: darkMode ? "primary.main" : "text.primary", // Border color
-                "&:hover": {
-                  borderColor: darkMode ? "primary.dark" : "text.secondary",
-                },
-                "&.Mui-disabled": {
-                  borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
-                  color: darkMode ? "text.disabled" : "action.disabled",
-                },
-              }}
-              onClick={refreshNews}
-              disabled={loading}
-              startIcon={<Icon>refresh</Icon>}
-            >
-              Refresh
-            </Button>
-          </MDBox>
+        <MDBox display="flex" alignItems="center" gap={2}>
+          <TextField
+            label="Items per page"
+            type="number"
+            value={inputValue}
+            onChange={handleArticlesPerPageChange}
+            inputProps={{ min: 1, max: 20 }}
+            size="small"
+            sx={{
+              width: 120,
+              "& .MuiInputBase-input": {
+                color: darkMode ? "white" : "text.primary",
+              },
+            }}
+          />
+          <Button
+            variant="outlined"
+            sx={{
+              borderRadius: "8px",
+              fontWeight: 400,
+              borderWidth: "1px",
+              color: darkMode ? "primary.main" : "primary.main",
+              borderColor: darkMode ? "primary.main" : "primary.main",
+              "&:hover": {
+                borderColor: darkMode ? "primary.dark" : "primary.dark",
+                backgroundColor: darkMode ? "rgba(25, 118, 210, 0.08)" : "rgba(25, 118, 210, 0.04)",
+              },
+              "&.Mui-disabled": {
+                borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+              },
+            }}
+            onClick={refreshNews}
+            disabled={loading}
+            startIcon={<Icon>refresh</Icon>}
+          >
+            Refresh
+          </Button>
         </MDBox>
       </MDBox>
 
-      <MDBox pt={1} px={2}>
+      <MDBox
+        pt={1}
+        px={2}
+        sx={{
+          backgroundColor: darkMode ? "background.default" : "background.paper",
+        }}
+      >
         {loading ? (
-          <MDBox display="flex" justifyContent="center" py={4}>
-            <CircularProgress color="info" />
+          <MDBox display="flex" flexDirection="column" py={4} gap={2}>
+            {Array.from({ length: articlesPerPage }).map((_, index) => (
+              <NewsCardSkeleton key={index} />
+            ))}
           </MDBox>
         ) : error ? (
-          <MDBox py={2}>
-            <MDTypography variant="body2" color="error">
+          <MDBox py={4} textAlign="center">
+            <MDTypography variant="body2" color="error" sx={{ mb: 2 }}>
               Error loading news: {error}
             </MDTypography>
             <Button
-              variant="text"
-              color="info"
+              variant="contained"
+              color="primary"
               onClick={refreshNews}
               startIcon={<Icon>refresh</Icon>}
+              sx={{ borderRadius: 2 }}
             >
               Try Again
+            </Button>
+          </MDBox>
+        ) : news.length === 0 ? (
+          <MDBox py={4} textAlign="center">
+            <MDTypography variant="body2" color="text" sx={{ mb: 2 }}>
+              No news articles available at the moment.
+            </MDTypography>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={refreshNews}
+              startIcon={<Icon>refresh</Icon>}
+              sx={{ borderRadius: 2 }}
+            >
+              Refresh
             </Button>
           </MDBox>
         ) : (
@@ -165,13 +217,22 @@ function NewsSection() {
               ))}
             </MDBox>
             {totalPages > 1 && (
-              <MDBox display="flex" justifyContent="center" mt={3}>
+              <MDBox display="flex" justifyContent="center" mt={3} mb={2}>
                 <Pagination
                   count={totalPages}
                   page={page}
                   onChange={handlePageChange}
-                  color="secondary"
+                  color="primary"
                   shape="rounded"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      color: darkMode ? "white" : "text.primary",
+                    },
+                    "& .MuiPaginationItem-root.Mui-selected": {
+                      backgroundColor: darkMode ? "primary.main" : "primary.main",
+                      color: "white",
+                    },
+                  }}
                 />
               </MDBox>
             )}
@@ -179,12 +240,24 @@ function NewsSection() {
         )}
       </MDBox>
 
-      <MDBox p={2} display="flex" justifyContent="center">
-        <MDTypography variant="button" color="text">
-          Showing {indexOfFirstArticle + 1}-{Math.min(indexOfLastArticle, news.length)} of{" "}
-          {news.length} articles
-        </MDTypography>
-      </MDBox>
+      {!loading && news.length > 0 && (
+        <MDBox
+          p={2}
+          display="flex"
+          justifyContent="center"
+          sx={{
+            borderTop: darkMode
+              ? "1px solid rgba(255, 255, 255, 0.08)"
+              : "1px solid rgba(0, 0, 0, 0.04)",
+            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.02)",
+          }}
+        >
+          <MDTypography variant="button" color="text">
+            Showing {indexOfFirstArticle + 1}-{Math.min(indexOfLastArticle, news.length)} of{" "}
+            {news.length} articles
+          </MDTypography>
+        </MDBox>
+      )}
     </Card>
   );
 }

@@ -10,7 +10,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import { MaterialUIControllerProvider } from "./context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Analytics } from "@vercel/analytics/react";
-
+import { AuthProvider } from "context/AuthContext";
 const container = document.getElementById("app");
 const root = createRoot(container);
 
@@ -21,13 +21,15 @@ if (!clientId) {
 
 root.render(
   <ErrorBoundary>
-    <BrowserRouter>
+    <BrowserRouter> 
+      {/* <AuthProvider> */}
       <MaterialUIControllerProvider>
         <GoogleOAuthProvider clientId={clientId}>
           <App />
           <Analytics />
         </GoogleOAuthProvider>
       </MaterialUIControllerProvider>
+      {/* </AuthProvider> */}
     </BrowserRouter>
   </ErrorBoundary>
 );

@@ -17,7 +17,7 @@ function ExplorePage() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox py={3}>
+      <MDBox py={2}>
         <Explore />
       </MDBox>
       <MDBox py={3} px={2}>

@@ -18,6 +18,8 @@ import MDTypography from "components/MDTypography";
 import CategoryFilter from "./components/Category";
 import MDBox from "components/MDBox";
 import axios from "axios";
+import EventSkeleton from "components/EventSkeleton";
+import { border, borderRadius } from "@mui/system";
 
 const Explore = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -189,22 +191,31 @@ const Explore = () => {
               value={inputValue}
               onChange={handleArticlesPerPageChange}
               size="small"
-              sx={{ width: 120, mr: 2 }}
+              sx={{
+                width: 120,
+                mr: 2,
+                "& .MuiInputBase-input": {
+                  color: darkMode ? "white" : "text.primary",
+                },
+              }}
             />
             <Button
               variant="outlined"
               sx={{
                 borderRadius: "8px",
-                fontWeight: 300,
+                fontWeight: 400,
                 borderWidth: "1px",
-                color: darkMode ? "primary.main" : "text.primary",
-                borderColor: darkMode ? "primary.main" : "text.primary",
+                color: darkMode ? "primary.main" : "primary.main",
+                borderColor: darkMode ? "primary.main" : "primary.main",
                 "&:hover": {
-                  borderColor: darkMode ? "primary.dark" : "text.secondary",
+                  borderColor: darkMode ? "primary.dark" : "primary.dark",
+                  backgroundColor: darkMode
+                    ? "rgba(25, 118, 210, 0.08)"
+                    : "rgba(25, 118, 210, 0.04)",
                 },
                 "&.Mui-disabled": {
-                  borderColor: darkMode ? "text.disabled" : "action.disabledBackground",
-                  color: darkMode ? "text.disabled" : "action.disabled",
+                  borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                  color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
                 },
               }}
               onClick={refreshNews}
@@ -220,20 +231,21 @@ const Explore = () => {
 
         {/* Events Grid */}
         {loading ? (
-          <MDBox display="flex" justifyContent="center" py={4}>
-            <CircularProgress color="info" />
-          </MDBox>
+          // Skeleton loading state
+          <Grid container spacing={4}>
+            <EventSkeleton />
+          </Grid>
         ) : error ? (
-          <MDBox py={2} textAlign="center">
-            <MDTypography variant="body2" color="error">
+          <MDBox py={4} textAlign="center">
+            <MDTypography variant="body2" color="error" sx={{ mb: 2 }}>
               Error loading events: {error}
             </MDTypography>
             <Button
-              variant="text"
-              color="info"
+              variant="contained"
+              color="primary"
               onClick={refreshNews}
               startIcon={<Icon>refresh</Icon>}
-              sx={{ mt: 2 }}
+              sx={{ borderRadius: 2 }}
             >
               Try Again
             </Button>
@@ -279,26 +291,35 @@ const Explore = () => {
             {/* Pagination and Results Count */}
             {filteredEvents.length > 0 && (
               <>
-                <MDBox display="flex" justifyContent="center" mt={3}>
+                <MDBox display="flex" justifyContent="center" mt={3} mb={2}>
                   <Pagination
                     count={totalPages}
                     page={page}
                     onChange={handlePageChange}
-                    color="secondary"
+                    color="primary"
                     shape="rounded"
                     sx={{
-                      "& .MuiPaginationItem-page.Mui-selected": {
-                        color: "white",
-                      },
-                      //make non selected text white
-                      "& .MuiPaginationItem-page": {
+                      "& .MuiPaginationItem-root": {
                         color: darkMode ? "white" : "text.primary",
+                      },
+                      "& .MuiPaginationItem-root.Mui-selected": {
+                        backgroundColor: darkMode ? "primary.main" : "primary.main",
+                        color: "white",
                       },
                     }}
                   />
                 </MDBox>
-                <MDBox display="flex" justifyContent="center" mt={1} mb={3}>
-                  <MDTypography variant="button" color={darkMode ? "white" : "text"}>
+                <MDBox
+                  p={2}
+                  display="flex"
+                  justifyContent="center"
+                  sx={{
+                    borderBottomLeftRadius: 3,
+                    borderBottomRightRadius: 3,
+                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.02)",
+                  }}
+                >
+                  <MDTypography variant="button" color="text">
                     Showing {indexOfFirstEvent + 1}-
                     {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length}{" "}
                     events

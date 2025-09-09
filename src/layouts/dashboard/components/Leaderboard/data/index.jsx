@@ -7,16 +7,15 @@ import MDProgress from "components/MDProgress";
 import PropTypes from "prop-types";
 import Icon from "@mui/material/Icon";
 
-// Images - using existing team images as student profile pictures
-import team1 from "assets/images/team-1.jpg";
-import team2 from "assets/images/team-2.jpg";
-import team3 from "assets/images/team-3.jpg";
-import team4 from "assets/images/team-4.jpg";
-import team5 from "assets/images/team-5.jpg"; // Reusing images for additional students
-import team6 from "assets/images/team-3.jpg"; // Reusing images for additional students
 import { useMaterialUIController } from "context";
 
 const data = () => {
+  // Images - using existing team images as student profile pictures
+  const team1 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-1_a7rqfy.jpg";
+  const team2 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-2_aq8yoc.jpg";
+  const team3 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-5_lbc0wn.jpg";
+  const team4 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-4_efvdcl.jpg";
+  const team5 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg";
   // Student profile component
   const Student = ({ image, name, department }) => (
     <MDBox display="flex" alignItems="center" lineHeight={1}>
@@ -264,32 +263,6 @@ const data = () => {
             <Tooltip title="Best Research Paper">
               <Icon fontSize="default" color="error">
                 description
-              </Icon>
-            </Tooltip>
-          </MDBox>
-        ),
-      },
-      {
-        rank: <RankBadge rank={6} />,
-        student: (
-          <Student image={team6} name="Sunidhi Chaturwedi" department=" - Mechanical Engineering" />
-        ),
-        participatedEvents: (
-          <MDTypography variant="caption" color="text" fontWeight="medium">
-            14
-          </MDTypography>
-        ),
-        eventsWon: (
-          <MDTypography variant="caption" color="text" fontWeight="medium">
-            6
-          </MDTypography>
-        ),
-        successRate: <SuccessRate rate={43} />,
-        achievement: (
-          <MDBox display="flex" justifyContent="center">
-            <Tooltip title="Most Improved Participant">
-              <Icon fontSize="default" color="success">
-                trending_up
               </Icon>
             </Tooltip>
           </MDBox>

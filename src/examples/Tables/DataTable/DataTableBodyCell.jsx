@@ -1,10 +1,15 @@
-// prop-types is a library for typechecking of props
+// DataTableBodyCell.jsx - Updated with theme colors
 import PropTypes from "prop-types";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
+import { useMaterialUIController } from "context";
 
-function DataTableBodyCell({ noBorder, align, children }) {
+function DataTableBodyCell({ noBorder, align, children, darkMode }) {
+  const [controller] = useMaterialUIController();
+  const { darkMode: contextDarkMode } = controller;
+  const isDark = darkMode !== undefined ? darkMode : contextDarkMode;
+
   return (
     <MDBox
       component="td"
@@ -14,14 +19,10 @@ function DataTableBodyCell({ noBorder, align, children }) {
       sx={({ palette: { light }, typography: { size }, borders: { borderWidth } }) => ({
         fontSize: size.sm,
         borderBottom: noBorder ? "none" : `${borderWidth[1]} solid ${light.main}`,
+        color: isDark ? "white" : "text.primary",
       })}
     >
-      <MDBox
-        display="inline-block"
-        width="max-content"
-        color="text"
-        sx={{ verticalAlign: "middle" }}
-      >
+      <MDBox display="inline-block" width="max-content" sx={{ verticalAlign: "middle" }}>
         {children}
       </MDBox>
     </MDBox>
@@ -32,6 +33,7 @@ function DataTableBodyCell({ noBorder, align, children }) {
 DataTableBodyCell.defaultProps = {
   noBorder: false,
   align: "left",
+  darkMode: undefined,
 };
 
 // Typechecking props for the DataTableBodyCell
@@ -39,6 +41,7 @@ DataTableBodyCell.propTypes = {
   children: PropTypes.node.isRequired,
   noBorder: PropTypes.bool,
   align: PropTypes.oneOf(["left", "right", "center"]),
+  darkMode: PropTypes.bool,
 };
 
 export default DataTableBodyCell;

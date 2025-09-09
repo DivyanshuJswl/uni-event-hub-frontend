@@ -36,7 +36,7 @@ import HCaptchaComponent from "./hCaptcha";
 function Basic() {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
-  const { darkMode, sideNavColor } = controller;
+  const { darkMode } = controller;
   const [resetOpen, setResetOpen] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
@@ -353,7 +353,6 @@ function Basic() {
                 size="large"
                 shape="pill"
                 type="standard"
-                // width="330px"
                 logo_alignment="center"
                 onSuccess={async (credentialResponse) => {
                   // console.log("Google credential response:", credentialResponse);

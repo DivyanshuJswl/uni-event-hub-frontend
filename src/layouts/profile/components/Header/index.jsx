@@ -21,8 +21,6 @@ import MDButton from "components/MDButton"; // Import MDButton
 import breakpoints from "assets/theme/base/breakpoints";
 
 // Images
-import burceMars from "assets/images/bruce-marspic.jpg";
-import backgroundImage from "assets/images/bg-profile.jpeg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -101,7 +99,7 @@ function Header({ name, avatar, children }) {
             `${linearGradient(
               rgba(gradients.info.main, 0.6),
               rgba(gradients.info.state, 0.6)
-            )}, url(${backgroundImage})`,
+            )}, url(https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915286/bg-profile_lvutak.jpg)`,
           backgroundSize: "cover",
           backgroundPosition: "50%",
           overflow: "hidden",
@@ -118,7 +116,7 @@ function Header({ name, avatar, children }) {
       >
         <Grid container spacing={3} alignItems="center">
           <Grid item>
-            <MDAvatar src={avatar || burceMars} alt="profile-image" size="xl" shadow="sm" />
+            <MDAvatar src={avatar || `https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915034/abstract-user-flat-4_liw6zf.png`} alt="profile-image" size="xl" shadow="sm" />
           </Grid>
           <Grid item xs={12} sm={6} md={5}>
             <MDBox height="100%" mt={0.5} lineHeight={1}>

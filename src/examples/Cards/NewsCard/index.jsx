@@ -1,10 +1,14 @@
 import PropTypes from "prop-types";
-import { Card, CardMedia, CardContent, Button } from "@mui/material";
+import { Card, CardMedia, CardContent, Button, Box } from "@mui/material";
 import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import { useMaterialUIController } from "context";
 
 function NewsCard({ name, source, description, author, publishedAt, image, link }) {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -16,7 +20,18 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
   };
 
   return (
-    <Card sx={{ mb: 2, boxShadow: 3 }}>
+    <Card
+      sx={{
+        mb: 2,
+        boxShadow: 3,
+        backgroundColor: darkMode ? "background.default" : "background.paper",
+        "&:hover": {
+          boxShadow: darkMode ? 6 : 4,
+          transform: "translateY(-2px)",
+          transition: "all 0.2s ease-in-out",
+        },
+      }}
+    >
       {image && (
         <CardMedia
           component="img"
@@ -36,12 +51,18 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
           variant="h6"
           component="div"
           fontWeight="medium"
-          sx={{ m: 1.5, lineHeight: 1 }}
+          sx={{ m: 1.5, lineHeight: 1.3, color: darkMode ? "white" : "dark" }}
         >
           {name}
         </MDTypography>
 
-        <MDBox display="flex" justifyContent="space-between" mb={1}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={1}
+          flexWrap="wrap"
+        >
           {source && (
             <MDTypography variant="caption" fontWeight="bold" color="text">
               {source}
@@ -52,15 +73,31 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
               {formatDate(publishedAt)}
             </MDTypography>
           )}
-        </MDBox>
+        </Box>
 
         {description && (
-          <MDTypography variant="body2" color="text">
+          <MDTypography
+            variant="body2"
+            color="text"
+            sx={{
+              mb: 2,
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             {description}
           </MDTypography>
         )}
 
-        <MDBox sx={{ justifyContent: "flex-end" }} mt={2}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+          gap={1}
+        >
           {author && (
             <MDTypography variant="caption" color="text" fontStyle="italic">
               By {author}
@@ -73,12 +110,20 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ textTransform: "none" }}
+              sx={{
+                textTransform: "none",
+                color: "primary.main",
+                "&:hover": {
+                  backgroundColor: darkMode
+                    ? "rgba(25, 118, 210, 0.08)"
+                    : "rgba(25, 118, 210, 0.04)",
+                },
+              }}
             >
               Read More
             </Button>
           )}
-        </MDBox>
+        </Box>
       </CardContent>
     </Card>
   );

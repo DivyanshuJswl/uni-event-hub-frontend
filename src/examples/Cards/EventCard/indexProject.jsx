@@ -46,7 +46,7 @@ function EventCard({
   const { darkMode, sidenavColor } = controller;
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [registerBtn, setRegisterBn] = useState("Register Now");
+  const [registerBtn, setRegisterBtn] = useState("Register Now");
   const [err, setError] = useState();
 
   const handleOpen = () => setOpen(true);
@@ -54,9 +54,7 @@ function EventCard({
 
   const handleRegister = async () => {
     if (isFull || new Date() > new Date(date)) return;
-    setRegisterBn((prev) => (prev === "Register Now" ? "Unenroll" : "Register Now"));
-    // Toggle register button text
-    registerBtn === "Register Now" ? setRegisterBn("Unenroll") : setRegisterBn("Register Now");
+    setRegisterBtn((prev) => (prev === "Register Now" ? "Unenroll" : "Register Now"));
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
@@ -91,6 +89,7 @@ function EventCard({
         sx={{
           cursor: "pointer",
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
+          backgroundColor: darkMode ? "background.default" : "background.paper",
           "&:hover": {
             transform: "translateY(-5px)",
             boxShadow: darkMode ? "0 10px 20px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.1)",
@@ -131,7 +130,7 @@ function EventCard({
                   : status === "ongoing"
                     ? "success"
                     : status === "completed"
-                      ? "secondary"
+                      ? "default"
                       : "default"
               }
               size="small"
@@ -141,6 +140,8 @@ function EventCard({
                 right: 10,
                 fontWeight: "bold",
                 textTransform: "uppercase",
+                backgroundColor: darkMode ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.9)",
+                color: darkMode ? "text.primary" : "text.primary",
               }}
             />
           </MDBox>
@@ -163,12 +164,7 @@ function EventCard({
 
             <Box display="flex" alignItems="center" mt={0.5}>
               <CategoryIcon fontSize="small" color="secondary" />
-              <MDTypography
-                variant="caption"
-                ml={0.5}
-                color={darkMode ? "white" : "text"}
-                fontWeight="light"
-              >
+              <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
                 {category}
               </MDTypography>
             </Box>
@@ -182,24 +178,14 @@ function EventCard({
 
             <Box display="flex" alignItems="center" mb={0.5}>
               <EventAvailableIcon fontSize="small" color="secondary" />
-              <MDTypography
-                variant="caption"
-                ml={0.5}
-                color={darkMode ? "white" : "text"}
-                fontWeight="light"
-              >
+              <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
                 {formattedDate}
               </MDTypography>
             </Box>
 
             <Box display="flex" alignItems="center" mb={1}>
               <LocationOnIcon fontSize="small" color="secondary" />
-              <MDTypography
-                variant="caption"
-                ml={0.5}
-                color={darkMode ? "white" : "text"}
-                fontWeight="light"
-              >
+              <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
                 {location}
               </MDTypography>
             </Box>
@@ -208,20 +194,11 @@ function EventCard({
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
                 <Box display="flex" alignItems="center">
                   <GroupIcon fontSize="small" color="secondary" />
-                  <MDTypography
-                    variant="caption"
-                    ml={0.5}
-                    color={darkMode ? "white" : "text"}
-                    fontWeight="light"
-                  >
+                  <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
                     {currentParticipants}/{maxParticipants} spots filled
                   </MDTypography>
                 </Box>
-                <MDTypography
-                  variant="caption"
-                  color={darkMode ? "white" : "text"}
-                  fontWeight="medium"
-                >
+                <MDTypography variant="caption" color="text" fontWeight="medium">
                   {participationPercentage}%
                 </MDTypography>
               </Box>
@@ -310,7 +287,7 @@ function EventCard({
             </IconButton>
 
             {/* Modal Content */}
-            <Card>
+            <Card sx={{ backgroundColor: darkMode ? "background.default" : "background.paper" }}>
               <Grid container spacing={4} sx={{ padding: 4 }}>
                 <Grid item xs={12} md={6}>
                   <Box
@@ -337,17 +314,24 @@ function EventCard({
                             ? "secondary"
                             : status === "ongoing"
                               ? "success"
-                              : "secondary"
+                              : "default"
                         }
                         size="medium"
-                        sx={{ fontWeight: "bold", textTransform: "uppercase" }}
+                        sx={{
+                          fontWeight: "bold",
+                          textTransform: "uppercase",
+                          backgroundColor: darkMode
+                            ? "rgba(255, 255, 255, 0.9)"
+                            : "rgba(255, 255, 255, 0.9)",
+                          color: darkMode ? "text.primary" : "text.primary",
+                        }}
                       />
                     </Box>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "text"}>
+                      <MDTypography variant="body2" color="text">
                         {currentParticipants}/{maxParticipants} participants
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "text"}>
+                      <MDTypography variant="body2" color="text">
                         {participationPercentage}% filled
                       </MDTypography>
                     </Box>
@@ -385,62 +369,42 @@ function EventCard({
 
                   <Box display="flex" alignItems="center" mb={1}>
                     <CategoryIcon color="secondary" />
-                    <MDTypography
-                      variant="h6"
-                      ml={1}
-                      color={darkMode ? "white" : "text"}
-                      fontWeight="light"
-                    >
+                    <MDTypography variant="h6" ml={1} color="text" fontWeight="light">
                       {category}
                     </MDTypography>
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
+                  <Divider
+                    sx={{
+                      my: 2,
+                      backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
 
                   <Box display="flex" alignItems="center" mb={2}>
                     <EventAvailableIcon color="secondary" />
-                    <MDTypography
-                      variant="body1"
-                      ml={1}
-                      color={darkMode ? "white" : "text"}
-                      fontWeight="light"
-                    >
+                    <MDTypography variant="body1" ml={1} color="text" fontWeight="light">
                       {formattedDate}
                     </MDTypography>
                   </Box>
 
                   <Box display="flex" alignItems="center" mb={2}>
                     <LocationOnIcon color="secondary" />
-                    <MDTypography
-                      variant="body1"
-                      ml={1}
-                      color={darkMode ? "white" : "text"}
-                      fontWeight="light"
-                    >
+                    <MDTypography variant="body1" ml={1} color="text" fontWeight="light">
                       {location}
                     </MDTypography>
                   </Box>
 
                   <Box display="flex" alignItems="center" mb={2}>
                     <PersonIcon color="secondary" />
-                    <MDTypography
-                      variant="body1"
-                      ml={1}
-                      color={darkMode ? "white" : "text"}
-                      fontWeight="light"
-                    >
+                    <MDTypography variant="body1" ml={1} color="text" fontWeight="light">
                       Organized by: {organizerName}
                     </MDTypography>
                   </Box>
 
                   <Box display="flex" alignItems="center" mb={2}>
                     <EmailIcon color="secondary" />
-                    <MDTypography
-                      variant="body1"
-                      ml={1}
-                      color={darkMode ? "white" : "text"}
-                      fontWeight="light"
-                    >
+                    <MDTypography variant="body1" ml={1} color="text" fontWeight="light">
                       {organizerEmail}
                     </MDTypography>
                   </Box>
@@ -455,7 +419,7 @@ function EventCard({
                   <MDTypography
                     variant="body1"
                     paragraph
-                    color={darkMode ? "white" : "text"}
+                    color="text"
                     fontWeight="light"
                     sx={{ mb: 3 }}
                   >
