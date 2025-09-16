@@ -8,7 +8,6 @@ import { styled } from "@mui/material/styles";
 // @mui material components
 import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
-import { LinearProgress } from "@mui/material";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -24,15 +23,11 @@ import {
   Icon,
   IconButton,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
   Switch,
   Tooltip,
 } from "@mui/material";
 import PasswordGeneratorModal from "../components/PasswordGenerator";
-import * as zxcvbnModule from "zxcvbn";
-const zxcvbn = zxcvbnModule.zxcvbn || zxcvbnModule.default;
+import zxcvbn from 'zxcvbn';
 import { Box } from "@mui/system";
 
 // Add this styled component above your Cover function
@@ -129,6 +124,7 @@ function Cover() {
         },
         { withCredentials: true }
       );
+      console.log(res);
       if (res.status !== 201) {
         throw new Error("Registration failed");
       }
@@ -169,7 +165,6 @@ function Cover() {
       });
 
       setError(err);
-    } finally {
       // Reset form fields
       setName("");
       setEmail("");
@@ -249,7 +244,6 @@ function Cover() {
   return (
     <CoverLayout sx={{ minHeight: "100vh" }} image={bgImage}>
       <BackgroundWrapper />
-      {/* Toast Container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}

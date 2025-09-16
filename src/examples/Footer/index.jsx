@@ -147,9 +147,6 @@ const Footer = () => {
                   sx={{
                     color: "text",
                     fontSize: "0.9rem",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
                     display: "flex",
                     alignItems: "center",
                     gap: 0.5,
@@ -157,6 +154,7 @@ const Footer = () => {
                     py: 0.5,
                     transition: "all 0.2s ease",
                     "&:hover": {
+                      color: "primary.main",
                       transform: "translateX(3px)",
                     },
                   }}

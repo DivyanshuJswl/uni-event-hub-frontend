@@ -119,7 +119,7 @@ export default function App() {
       </Icon>
     </MDBox>
   );
-
+  const userRole = localStorage.getItem("role");
   // Main content
   const mainContent = (
     <>
@@ -140,7 +140,7 @@ export default function App() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/user-dashboard" />} />
+        <Route path="*" element={<Navigate to={userRole=="organizer" ? "/organizer-dashboard" : "/user-dashboard"} />} />
       </Routes>
     </>
   );

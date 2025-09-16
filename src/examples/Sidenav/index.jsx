@@ -33,32 +33,34 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   // Logout function
   const handleLogout = async () => {
-    // Remove user data from localStorage
-    // Make API call to logout
-    if (localStorage.getItem("role") !== "organizer") {
-      try {
-        const r = await axios.get(`${BASE_URL}/api/auth/logout`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        console.log(r);
-      } catch (error) {
-        console.error("Logout failed:", error);
-        toast.error("Logout failed. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        return;
+    // Make API call to backend logout first
+    const token = localStorage.getItem("token");
+    try {
+      if (token) {
+        await axios.post(
+          `${BASE_URL}/api/auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("student");
+
+    localStorage.clear();
 
     if (!localStorage.getItem("token")) {
       // Update toast to success

@@ -1,76 +1,143 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+// src/contexts/AuthContext.jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from 'services/api';
 
+// Create Auth Context
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+// Secure storage functions (similar to localStorage API)
+const secureStorage = {
+  getItem: (key) => {
+    try {
+      if (typeof window !== 'undefined') {
+        // Use sessionStorage for temporary storage (cleared when browser closes)
+        return sessionStorage.getItem(key);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error reading from secure storage:', error);
+      return null;
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Error writing to secure storage:', error);
+    }
+  },
+  removeItem: (key) => {
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error('Error removing from secure storage:', error);
+    }
   }
-  return context;
 };
 
+// Auth Provider Component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(secureStorage.getItem('token'));
+  const [id, setId] = useState(secureStorage.getItem('id'));
+  const [user, setUser] = useState(() => {
+    const savedUser = secureStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [role, setRole] = useState(secureStorage.getItem('role'));
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize auth state from storage on app load
   useEffect(() => {
-    // Check for existing session (could be from secure HTTP-only cookie)
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include' // Include cookies
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
+    const initializeAuth = async () => {
+      const storedToken = secureStorage.getItem('token');
+      
+      if (storedToken) {
+        try {
+          // Verify token with backend
+          const response = await authAPI.getMe();
+          if (response.data.success) {
+            const { student } = response.data;
+            // Update state with fresh data from backend
+            setUser(student);
+            setId(student._id);
+            setRole(student.role);
+            setToken(storedToken);
+            
+            // Update storage with fresh data
+            secureStorage.setItem('id', student._id);
+            secureStorage.setItem('role', student.role);
+            secureStorage.setItem('user', JSON.stringify(student));
+          }
+        } catch (error) {
+          console.error('Auth validation failed:', error);
+          // Clear invalid auth data
+          logout();
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setLoading(false);
       }
+      setIsLoading(false);
     };
 
-    checkAuth();
+    initializeAuth();
   }, []);
 
-  const login = async (credentials) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(credentials),
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        return { success: true };
-      }
-      return { success: false, error: 'Login failed' };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
+  // Login function
+  const login = (authData) => {
+    const { token, user } = authData;
+    
+    setToken(token);
+    setId(user._id);
+    setUser(user);
+    setRole(user.role);
+    
+    // Store in secure storage
+    secureStorage.setItem('token', token);
+    secureStorage.setItem('id', user._id);
+    secureStorage.setItem('role', user.role);
+    secureStorage.setItem('user', JSON.stringify(user));
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
+  // Logout function
+  const logout = () => {
+    setToken(null);
+    setId(null);
     setUser(null);
+    setRole(null);
+    
+    // Remove from storage
+    secureStorage.removeItem('token');
+    secureStorage.removeItem('id');
+    secureStorage.removeItem('role');
+    secureStorage.removeItem('user');
+    
+    // Call backend logout if needed
+    authAPI.logout().catch(error => {
+      console.error('Logout API error:', error);
+    });
   };
 
+  // Update user function
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    secureStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
+  // Context value
   const value = {
+    // State (same as your localStorage keys)
+    token,
+    id,
     user,
-    loading,
+    role,
+    isLoading,
+    
+    // Actions
     login,
     logout,
-    isAuthenticated: !!user,
-    isOrganizer: user?.role === 'organizer',
+    updateUser
   };
 
   return (
@@ -78,4 +145,15 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  
+  return context;
 };
