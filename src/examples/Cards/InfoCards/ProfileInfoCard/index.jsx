@@ -64,7 +64,7 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
       case "year":
         return `${value}`;
       case "branch":
-        return value.toUpperCase();
+        return value;
       case "metaMaskAddress":
         return value && value !== "Not connected" ? (
           <Tooltip title={value} placement="top">

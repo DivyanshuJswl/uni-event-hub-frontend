@@ -45,7 +45,7 @@ function Basic() {
   const [captchaToken, setCaptchaToken] = useState(null);
   const [captchaError, setCaptchaError] = useState("");
   const [resetCaptcha, setResetCaptcha] = useState(false);
-  const { login, googleLogin, showToast } = useAuth();
+  const { role, login, googleLogin, showToast } = useAuth();
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
@@ -95,16 +95,12 @@ function Basic() {
       });
 
       if (result.success) {
-        const { student } = result.data;
-        const role = student?.role;
-
         showToast("Login successful! Redirecting...", "success");
 
         setTimeout(() => {
           navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
         }, 500);
       } else {
-        // Handle login failure from AuthContext
         setResetCaptcha((prev) => !prev); // Trigger captcha reset
         setCaptchaToken(null);
         showToast(result.message);

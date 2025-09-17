@@ -29,8 +29,8 @@ export const AuthProvider = ({ children }) => {
           if (response.data.status) {
             const userData = response.data;
             setToken(userData.token || storedToken); // Use storedToken if userData.token is undefined
-            setUser(userData.data.student);
-            setRole(userData.data.role);
+            setUser(userData.student);
+            setRole(userData.role);
           } else {
             // Token is invalid, clear it
             sessionStorage.removeItem("token");
@@ -83,13 +83,12 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data) {
         const data = response.data;
-        const { token, student } = data;
-        const role = student?.role;
+        const token = data.token;
+        const student = data.student;
+        const role = data.role;
 
         // Store token in sessionStorage
         sessionStorage.setItem("token", token);
-        sessionStorage.setItem("student", JSON.stringify(student));
-        sessionStorage.setItem("role", role);
 
         // Set state values
         setToken(token);
@@ -151,8 +150,6 @@ export const AuthProvider = ({ children }) => {
 
       // Store in sessionStorage
       sessionStorage.setItem("token", authToken);
-      sessionStorage.setItem("user", JSON.stringify(student));
-      sessionStorage.setItem("role", userRole);
 
       return {
         success: true,
@@ -209,41 +206,193 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     }
   };
-
-  // Register function
-  const register = async (userData) => {
+  // In your AuthContext
+  const signup = async (userData) => {
     try {
-      // setIsLoading(true);
+      const response = await axios.post(`${BASE_URL}/api/auth/signup`, userData, {
+        withCredentials: true,
+      });
 
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
+      if (response.status === 201) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Registration successful!",
+        };
+      } else {
+        return {
+          success: false,
+          message: "Registration failed",
+        };
+      }
+    } catch (error) {
+      console.error("Register error:", error);
+
+      let message = "Network error";
+      if (error.response) {
+        if (error.response.status === 400) {
+          message = error.response.data.message || "Validation error";
+        } else if (error.response.status === 409) {
+          message = "Email already exists";
+        } else if (error.response.status === 500) {
+          message = "Server error. Please try again later";
+        } else {
+          message = error.response.data.message || "Registration failed";
+        }
+      }
+
+      return { success: false, message };
+    }
+  };
+
+  const becomeOrganizer = async () => {
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/api/roles/upgrade-to-organizer`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data?.status === "success") {
+        const { student } = response.data.data;
+        const userRole = student?.role;
+
+        // Update state
+        setUser(student);
+        setRole(userRole);
+
+        showToast("Successfully upgraded to organizer!", "success");
+        return { success: true, data: response.data };
+      } else {
+        throw new Error(response.data?.message || "Failed to upgrade to organizer");
+      }
+    } catch (error) {
+      console.error("Become organizer error:", error);
+
+      // Handle unauthorized error
+      if (error.response?.status === 401) {
+        // Clear auth state
+        setToken(null);
+        setUser(null);
+        setRole(null);
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("role");
+
+        showToast("Session expired. Please log in again.", "error");
+        return { success: false, requiresLogin: true };
+      }
+
+      const message = error.response?.data?.message || "Failed to upgrade to organizer";
+      showToast(message, "error");
+      return { success: false, message };
+    }
+  };
+
+  const updateWallet = async (metaMaskAddress) => {
+    try {
+      if (!token) {
+        throw new Error("Please log in to update your wallet");
+      }
+
+      if (!metaMaskAddress) {
+        throw new Error("MetaMask address is required");
+      }
+
+      // Basic validation for Ethereum address format
+      const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+      if (!ethAddressRegex.test(metaMaskAddress)) {
+        throw new Error(
+          "Invalid MetaMask address format. Should be 0x followed by 40 hex characters."
+        );
+      }
+
+      const response = await axios.patch(
+        `${BASE_URL}/api/wallet`,
+        { metaMaskAddress },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Wallet update response:", response.data, response.status);
+
+      if (response.data?.status === "success") {
+        const updatedStudent = response.data.data.student;
+
+        // Update state
+        setUser(updatedStudent);
+        showToast("Wallet linked successfully!", "success");
+        return {
+          success: true,
+          data: response.data,
+          metaMaskAddress: updatedStudent.metaMaskAddress,
+        };
+      }
+
+      throw new Error(response.data?.message || "Failed to link wallet");
+    } catch (error) {
+      console.error("Wallet update error:", error);
+
+      let errorMessage = "Failed to update wallet";
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = error.response.data.message || "Invalid request";
+        } else if (error.response.status === 401) {
+          // Clear auth state on unauthorized
+          setToken(null);
+          setUser(null);
+          setRole(null);
+          sessionStorage.clear();
+          errorMessage = "Session expired. Please log in again.";
+        } else if (error.response.status === 409) {
+          errorMessage = "This wallet is already linked to another account";
+        } else {
+          errorMessage = error.response.data.message || "Server error";
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      showToast(errorMessage, "error");
+      return { success: false, message: errorMessage };
+    }
+  };
+
+  // In your AuthContext
+  const updateProfilePicture = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const response = await axios.patch(`${BASE_URL} + /api/user/avatar`, formData, {
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-        body: JSON.stringify(userData),
+        withCredentials: true,
       });
 
       if (response.ok) {
         const data = await response.json();
-
-        // Store token in sessionStorage
-        sessionStorage.setItem("token", data.token);
-
-        // Set state values
-        setToken(data.token);
-        setUser(data.student);
-        setRole(data.student.role);
-
-        return { success: true, data };
+        // Update user context with new avatar
+        updateUser({ avatar: data.avatarUrl });
+        return { success: true, avatarUrl: data.avatarUrl };
       } else {
-        const error = await response.json();
-        return { success: false, message: error.message };
+        return { success: false, message: "Upload failed" };
       }
     } catch (error) {
-      console.error("Register error:", error);
-      return { success: false, message: "Network error" };
-    } finally {
-      // setIsLoading(false);
+      return { success: false, message: error.message };
     }
   };
 
@@ -251,7 +400,6 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (updatedData) => {
     const updatedUser = { ...user, ...updatedData };
     setUser(updatedUser);
-    sessionStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   // Get auth header for API requests
@@ -271,10 +419,13 @@ export const AuthProvider = ({ children }) => {
     login,
     googleLogin,
     logout,
-    register,
+    signup,
     updateUser,
     getAuthHeader,
     showToast,
+    becomeOrganizer,
+    updateWallet,
+    updateProfilePicture,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

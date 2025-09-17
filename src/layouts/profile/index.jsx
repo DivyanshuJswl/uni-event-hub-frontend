@@ -53,7 +53,7 @@ function Overview() {
     year: student.year,
     email: student.email,
     branch: student.branch,
-    metaMaskAddress: "Not connected",
+    metaMaskAddress: student.metaMaskAddress || "Not linked",
     role: student.role,
     isVerified: student.isVerified ? "Verified" : "Not Verified",
   };

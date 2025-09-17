@@ -34,7 +34,7 @@ function MyParticipatedEvents() {
   // Function to get user data from various storage locations
   const getUserData = () => {
     // Check for regular login (student data)
-    if (studentData) {
+    if (user) {
       try {
         return { id: user.id, token, type: "regular" };
       } catch (e) {
@@ -43,8 +43,7 @@ function MyParticipatedEvents() {
     }
 
     // Check for user profile data (common in many apps)
-    const userProfile = sessionStorage.getItem("userProfile") || sessionStorage.getItem("user");
-
+    const userProfile = sessionStorage.getItem("userProfile") || null;
     if (userProfile) {
       try {
         const user = JSON.parse(userProfile);

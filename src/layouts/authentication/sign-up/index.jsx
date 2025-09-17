@@ -2,8 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import { styled } from "@mui/material/styles";
 // @mui material components
 import Card from "@mui/material/Card";
@@ -18,12 +17,14 @@ import { useMaterialUIController } from "context";
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
-import bgImage from "assets/images/bg-sign-up-cover.jpeg";
 import { Icon, IconButton, InputAdornment, Switch, Tooltip } from "@mui/material";
 import PasswordGeneratorModal from "../components/PasswordGenerator";
 import zxcvbn from "zxcvbn";
 import { Box } from "@mui/system";
+import { useAuth } from "context/AuthContext";
 
+
+const bgImage = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758117993/bg-sign-up-cover_on4sqw.jpg";
 // Add this styled component above your Cover function
 const BackgroundWrapper = styled("div")({
   position: "absolute",
@@ -55,7 +56,6 @@ const BackgroundWrapper = styled("div")({
 });
 
 function Cover() {
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [name, setName] = useState("");
@@ -63,7 +63,6 @@ function Cover() {
   const [password, setPassword] = useState("");
   const [year, setYear] = useState("");
   const [branch, setBranch] = useState("");
-  const [err, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
@@ -74,98 +73,62 @@ function Cover() {
   const [branchError, setBranchError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(null);
   const [generatorOpen, setGeneratorOpen] = useState(false);
+  const { signup, showToast } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
   const toggleGenerator = () => setGeneratorOpen(!generatorOpen);
+
   const handleSubmit = async () => {
     // Validate required fields
     if (!name || !email || !password || !year || !branch) {
-      toast.warning("Please fill in all required fields", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      showToast("Please fill in all required fields", "warning");
       return;
     }
 
     if (!agreedToTerms) {
-      toast.warning("Please agree to the Terms and Conditions", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      showToast("Please agree to the Terms and Conditions", "warning");
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        BASE_URL + "/api/auth/signup",
-        {
-          name,
-          email,
-          password,
-          year,
-          branch,
-        },
-        { withCredentials: true }
-      );
-      console.log(res);
-      if (res.status !== 201) {
-        throw new Error("Registration failed");
-      }
-
-      toast.success("Registration successful! Redirecting to login...", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      const result = await signup({
+        name,
+        email,
+        password,
+        year,
+        branch,
       });
 
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        navigate("/authentication/sign-in");
-      }, 700);
+      if (result.success) {
+        showToast("Registration successful! Redirecting to login...", "success");
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          navigate("/authentication/sign-in");
+        }, 1500);
+      } else {
+        showToast(result.message, "error");
+        // Reset form fields on error
+        setName("");
+        setEmail("");
+        setPassword("");
+        setYear("");
+        setBranch("");
+        setAgreedToTerms(false);
+      }
     } catch (err) {
-      let errorMessage = "Registration failed";
-
-      if (err.response) {
-        if (err.response.status === 400) {
-          errorMessage = err.response.data.message || "Validation error";
-        } else if (err.response.status === 409) {
-          errorMessage = "Email already exists";
-        } else if (err.response.status === 500) {
-          errorMessage = "Server error. Please try again later";
-        }
-      }
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-
-      setError(err);
-      // Reset form fields
+      showToast("An unexpected error occurred", "error");
+      // Reset form fields on error
       setName("");
       setEmail("");
       setPassword("");
       setYear("");
       setBranch("");
       setAgreedToTerms(false);
+    } finally {
       setIsLoading(false);
     }
   };
