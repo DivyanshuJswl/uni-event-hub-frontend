@@ -11,9 +11,7 @@ import MDButton from "components/MDButton";
 import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import brandImage from "../../assets/images/Untitled design_prev_ui.png";
 import {
   useMaterialUIController,
@@ -21,6 +19,7 @@ import {
   setTransparentSidenav,
   setWhiteSidenav,
 } from "context";
+import { useAuth } from "context/AuthContext";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -28,61 +27,25 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const { developerMode } = controller; // Added developerMode from context
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
+  const { token, user, role, logout, showToast } = useAuth();
 
-  // Logout function
   const handleLogout = async () => {
-    // Make API call to backend logout first
-    const token = localStorage.getItem("token");
-    try {
-      if (token) {
-        await axios.post(
-          `${BASE_URL}/api/auth/logout`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      }
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Logout failed. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
-    }
+    const result = await logout();
 
-    localStorage.clear();
-
-    if (!localStorage.getItem("token")) {
-      // Update toast to success
-      toast.success("Logout successful!", {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-
-      // Redirect after toast closes
+    if (result.success) {
+      showToast("Logged out successfully", "success");
       setTimeout(() => {
         navigate("/authentication/sign-in");
       }, 1000);
+    } else {
+      showToast("Logout failed. Please try again.", "error");
     }
   };
 
   // Get user authentication status and role
-  const isAuthenticated = !!localStorage.getItem("token");
-  const userRole = localStorage.getItem("role");
+  const isAuthenticated = !!token;
+  const userRole = role;
 
   let textColor = "white";
 

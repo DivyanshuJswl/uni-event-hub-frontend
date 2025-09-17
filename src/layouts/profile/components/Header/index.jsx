@@ -19,6 +19,7 @@ import MDButton from "components/MDButton"; // Import MDButton
 
 // Material Dashboard 2 React base styles
 import breakpoints from "assets/theme/base/breakpoints";
+import { useAuth } from "context/AuthContext";
 
 // Images
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,8 @@ function Header({ name, avatar, children }) {
   const [tabValue, setTabValue] = useState(0);
   const [isOrganizer, setIsOrganizer] = useState(false); // State to track organizer status
   const navigate = useNavigate();
+  const { role, token } = useAuth();
+
   useEffect(() => {
     // A function that sets the orientation state of the tabs.
     function handleTabsOrientation() {
@@ -45,11 +48,10 @@ function Header({ name, avatar, children }) {
 
     // Call the handleTabsOrientation function to set the state with the initial value.
     handleTabsOrientation();
-    const org = localStorage.getItem("role");
-    if (org === "organizer") {
-      setIsOrganizer(true); // Set organizer status based on localStorage
+    if (role === "organizer") {
+      setIsOrganizer(true);
     } else {
-      setIsOrganizer(false); // Reset organizer status if not found
+      setIsOrganizer(false);
     }
 
     // Remove event listener on cleanup
@@ -60,9 +62,7 @@ function Header({ name, avatar, children }) {
 
   // Handle becoming an organizer
   const handleBecomeOrganizer = async () => {
-    const token = localStorage.getItem("token");
     setIsOrganizer(true);
-    // Additional logic for becoming an organizer would go here
     try {
       const res = await axios.patch(
         BASE_URL + "/api/roles/upgrade-to-organizer",
@@ -74,16 +74,14 @@ function Header({ name, avatar, children }) {
       console.log(res?.data);
     } catch (err) {
       if (err.response?.status === 401) {
-        // Token is invalid/expired - force logout
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("role");
         navigate("/authentication/sign-in");
       }
       console.log(err);
     }
-    localStorage.setItem("role", "organizer");
+    sessionStorage.setItem("role", "organizer");
     console.log("User requested to become an organizer");
-    //navigate("/authentication/sign-in");
   };
 
   return (
@@ -116,7 +114,15 @@ function Header({ name, avatar, children }) {
       >
         <Grid container spacing={3} alignItems="center">
           <Grid item>
-            <MDAvatar src={avatar || `https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915034/abstract-user-flat-4_liw6zf.png`} alt="profile-image" size="xl" shadow="sm" />
+            <MDAvatar
+              src={
+                avatar ||
+                `https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915034/abstract-user-flat-4_liw6zf.png`
+              }
+              alt="profile-image"
+              size="xl"
+              shadow="sm"
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={5}>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
@@ -161,10 +167,6 @@ function Header({ name, avatar, children }) {
                 )}
               </MDBox>
 
-              <MDTypography variant="button" color="text" fontWeight="regular">
-                {}
-                {/* Student details */}
-              </MDTypography>
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={4} sx={{ ml: "auto" }}>

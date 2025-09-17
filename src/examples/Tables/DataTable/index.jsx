@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from "react";
+import React, { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import { useTable, usePagination, useGlobalFilter, useAsyncDebounce, useSortBy } from "react-table";
 import Table from "@mui/material/Table";
@@ -246,9 +246,16 @@ function DataTable({
     state: { pageIndex, pageSize, globalFilter },
   } = tableInstance;
 
-  useEffect(() => setPageSize(defaultValue || 5), [defaultValue]);
+  const setEntriesPerPage = useCallback(
+    (value) => {
+      setPageSize(value);
+    },
+    [setPageSize]
+  );
 
-  const setEntriesPerPage = (value) => setPageSize(value);
+  useEffect(() => {
+    setPageSize(defaultValue || 5);
+  }, []);
 
   const renderPagination = pageOptions.map((option) => (
     <MDPagination
@@ -261,12 +268,25 @@ function DataTable({
     </MDPagination>
   ));
 
-  const handleInputPagination = ({ target: { value } }) =>
-    value > pageOptions.length || value < 0 ? gotoPage(0) : gotoPage(Number(value));
+  const handleInputPagination = useCallback(
+    (event) => {
+      const value = event.target.value;
+      const pageNum = Number(value) - 1;
+
+      if (value === "" || isNaN(pageNum)) return;
+
+      if (pageNum < 0) {
+        gotoPage(0);
+      } else if (pageNum >= pageOptions.length) {
+        gotoPage(pageOptions.length - 1);
+      } else {
+        gotoPage(pageNum);
+      }
+    },
+    [gotoPage, pageOptions.length]
+  );
 
   const customizedPageOptions = pageOptions.map((option) => option + 1);
-
-  const handleInputPaginationValue = ({ target: value }) => gotoPage(Number(value.value - 1));
 
   const [search, setSearch] = useState(globalFilter);
 
@@ -471,7 +491,7 @@ function DataTable({
                     max: customizedPageOptions.length,
                   }}
                   value={customizedPageOptions[pageIndex]}
-                  onChange={(handleInputPagination, handleInputPaginationValue)}
+                  onChange={handleInputPagination}
                   sx={{
                     "& .MuiInputBase-input": {
                       color: darkMode ? "white" : "text.primary",

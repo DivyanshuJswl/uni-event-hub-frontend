@@ -22,14 +22,14 @@ if (!clientId) {
 root.render(
   <ErrorBoundary>
     <BrowserRouter> 
-      {/* <AuthProvider> */}
+      <AuthProvider>
       <MaterialUIControllerProvider>
         <GoogleOAuthProvider clientId={clientId}>
           <App />
           <Analytics />
         </GoogleOAuthProvider>
       </MaterialUIControllerProvider>
-      {/* </AuthProvider> */}
+      </AuthProvider>
     </BrowserRouter>
   </ErrorBoundary>
 );

@@ -18,9 +18,10 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 import routes from "routes";
+import { useAuth } from 'context/AuthContext';
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { role, isLoading } = useAuth();
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -43,15 +44,6 @@ export default function App() {
       stylisPlugins: [rtlPlugin],
     });
     setRtlCache(cacheRtl);
-  }, []);
-
-  // Show loading screen for 3 seconds
-  useEffect(() => {
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 600);
-
-    return () => clearTimeout(loadingTimer);
   }, []);
 
   // Sidenav mouse handlers
@@ -119,7 +111,6 @@ export default function App() {
       </Icon>
     </MDBox>
   );
-  const userRole = localStorage.getItem("role");
   // Main content
   const mainContent = (
     <>
@@ -140,7 +131,12 @@ export default function App() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
-        <Route path="*" element={<Navigate to={userRole=="organizer" ? "/organizer-dashboard" : "/user-dashboard"} />} />
+        <Route
+          path="*"
+          element={
+            <Navigate to={role == "organizer" ? "/organizer-dashboard" : "/user-dashboard"} />
+          }
+        />
       </Routes>
     </>
   );

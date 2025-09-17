@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import MDTypography from "components/MDTypography";
+import { useAuth } from "context/AuthContext";
 
 const CreateEvent = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -41,6 +42,7 @@ const CreateEvent = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [createdEvent, setCreatedEvent] = useState(null);
+  const { token } = useAuth();
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -90,7 +92,7 @@ const CreateEvent = () => {
 
       const eventResponse = await axios.post(`${BASE_URL}/api/events/create`, eventData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         withCredentials: true,
@@ -112,7 +114,7 @@ const CreateEvent = () => {
           formData,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
             withCredentials: true,
@@ -128,7 +130,7 @@ const CreateEvent = () => {
             { imageUrl },
             {
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
               withCredentials: true,

@@ -45,8 +45,7 @@ const Explore = () => {
 
       setEvents(fetchedEvents);
       setError(null);
-
-      console.log("Events fetched:", fetchedEvents);
+      
     } catch (err) {
       console.error("Error fetching events:", err);
       setError(err.response?.data?.message || err.message || "Failed to fetch events");

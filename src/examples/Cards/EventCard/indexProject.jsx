@@ -25,6 +25,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
 import axios from "axios";
+import { useAuth } from "context/AuthContext";
 
 function EventCard({
   image,
@@ -48,6 +49,7 @@ function EventCard({
   const isMobile = useMediaQuery("(max-width:600px)");
   const [registerBtn, setRegisterBtn] = useState("Register Now");
   const [err, setError] = useState();
+  const { token } = useAuth();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -56,7 +58,6 @@ function EventCard({
     if (isFull || new Date() > new Date(date)) return;
     setRegisterBtn((prev) => (prev === "Register Now" ? "Unenroll" : "Register Now"));
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.post(
         `${BASE_URL}/api/events/enroll/${_id}`,
         {},

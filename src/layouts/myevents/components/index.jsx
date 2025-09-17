@@ -11,8 +11,10 @@ import Tooltip from "@mui/material/Tooltip";
 import DataTable from "examples/Tables/DataTable";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "context/AuthContext"; // Import auth context
 
 function MyParticipatedEvents() {
+  const { token, user } = useAuth(); // Use auth context
   const defaultEventImage =
     "https://res.cloudinary.com/dh5cebjwj/image/upload/v1750793771/samples/animals/kitten-playing.gif";
   const [tableData, setTableData] = useState({
@@ -32,19 +34,16 @@ function MyParticipatedEvents() {
   // Function to get user data from various storage locations
   const getUserData = () => {
     // Check for regular login (student data)
-    const studentData = localStorage.getItem("student");
     if (studentData) {
       try {
-        const student = JSON.parse(studentData);
-        const token = localStorage.getItem("token");
-        return { id: student.id, token, type: "regular" };
+        return { id: user.id, token, type: "regular" };
       } catch (e) {
         console.error("Error parsing student data:", e);
       }
     }
 
     // Check for user profile data (common in many apps)
-    const userProfile = localStorage.getItem("userProfile") || localStorage.getItem("user");
+    const userProfile = sessionStorage.getItem("userProfile") || sessionStorage.getItem("user");
 
     if (userProfile) {
       try {

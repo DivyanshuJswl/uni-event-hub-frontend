@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Fuse from "fuse.js";
-import axios from "axios";
-import { toast } from "react-toastify";
 
 // @material-ui core components
 import AppBar from "@mui/material/AppBar";
@@ -40,9 +38,8 @@ import {
   setDarkMode,
   setDeveloperMode,
 } from "context";
+import { useAuth } from "context/AuthContext";
 
-// Environment configuration
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
@@ -53,6 +50,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const route = useLocation().pathname.split("/").slice(1);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
   const navigate = useNavigate();
+  const { token, user, role, logout, showToast } = useAuth();
 
   // Search functionality states
   const [searchData, setSearchData] = useState([]);
@@ -89,8 +87,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
 
     setSearchData(mockSearchData);
 
-    // Load recent searches from localStorage
-    const savedSearches = localStorage.getItem("recentSearches");
+    // Load recent searches from sessionStorage
+    const savedSearches = sessionStorage.getItem("recentSearches");
     if (savedSearches) {
       setRecentSearches(JSON.parse(savedSearches));
     }
@@ -169,7 +167,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
       ...recentSearches.filter((item) => item.id !== result.id).slice(0, 4),
     ];
     setRecentSearches(newRecentSearches);
-    localStorage.setItem("recentSearches", JSON.stringify(newRecentSearches));
+    sessionStorage.setItem("recentSearches", JSON.stringify(newRecentSearches));
 
     // Close search and navigate
     setSearchOpen(false);
@@ -182,43 +180,16 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleLogout = async () => {
     handleProfileMenuClose();
 
-    if (localStorage.getItem("role") !== "organizer") {
-      try {
-        await axios.get(`${BASE_URL}/api/auth/logout`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-      } catch (error) {
-        console.error("Logout failed:", error);
-        toast.error("Logout failed. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        return;
-      }
+    const result = await logout();
+
+    if (result.success) {
+      showToast("Logged out successfully", "success");
+      setTimeout(() => {
+        navigate("/authentication/sign-in");
+      }, 1000);
+    } else {
+      showToast("Logout failed. Please try again.", "error");
     }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("student");
-
-    toast.success("Logout successful!", {
-      position: "top-right",
-      autoClose: 1000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-
-    setTimeout(() => {
-      navigate("/authentication/sign-in");
-    }, 1000);
   };
 
   // Styles for the navbar icons
@@ -235,9 +206,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
   });
 
   // User data
-  const student = localStorage.getItem("student");
-  const avatarUrl = student ? JSON.parse(student).avatar : null;
-  const isAuthenticated = !!localStorage.getItem("token");
+  const avatarUrl = user?.avatar || null;
+  const isAuthenticated = !!token;
 
   return (
     <AppBar

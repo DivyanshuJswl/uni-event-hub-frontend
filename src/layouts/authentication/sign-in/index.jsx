@@ -1,12 +1,10 @@
 import { useState } from "react";
-import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import { GoogleLogin } from "@react-oauth/google";
 
 // react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
-
+import { useAuth } from "context/AuthContext";
 // @mui material components
 import Card from "@mui/material/Card";
 import Switch from "@mui/material/Switch";
@@ -27,34 +25,32 @@ import { useMaterialUIController } from "context";
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
-// Images
-import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 import { Divider, Icon, InputAdornment } from "@mui/material";
 import ResetPasswordModal from "../forgotPassword";
 import HCaptchaComponent from "./hCaptcha";
 
 function Basic() {
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const bgImage = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758078677/bg-sign-in-basic_yj4cue.jpg";
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [resetOpen, setResetOpen] = useState(false);
-  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(
-    localStorage.getItem("rememberMe") === "true" || false
+    sessionStorage.getItem("rememberMe") === "true" || false
   );
   const [captchaToken, setCaptchaToken] = useState(null);
   const [captchaError, setCaptchaError] = useState("");
   const [resetCaptcha, setResetCaptcha] = useState(false);
+  const { login, googleLogin, showToast } = useAuth();
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
-      const savedEmail = localStorage.getItem("savedEmail");
-      const savedPassword = localStorage.getItem("savedPassword");
+      const savedEmail = sessionStorage.getItem("savedEmail");
+      const savedPassword = sessionStorage.getItem("savedPassword");
       if (savedEmail) setEmail(savedEmail);
       if (savedPassword) setPassword(savedPassword);
     }
@@ -63,101 +59,92 @@ function Basic() {
   const handleResetSubmit = (email) => {
     // TODO: Add your reset logic here (API call, toast, etc.)
     console.log("Reset password for:", email);
-    toast.success("Reset password link sent to " + email, {
-      position: "top-right",
-      autoClose: 1500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-
+    showToast("Reset password link sent to " + email, "success");
     setResetOpen(false);
   };
 
   const handleSubmit = async () => {
+    setCaptchaError("");
     if (!email || !password) {
-      toast.warning("Please fill in all fields", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      showToast("Please fill in all fields", "warning");
       return;
     }
     if (!captchaToken) {
       setCaptchaError("Please complete the captcha verification");
+      showToast("Please complete the captcha verification", "warning");
       return;
     }
 
     //  credentials if rememberMe is checked
     if (rememberMe) {
-      localStorage.setItem("savedEmail", email);
-      localStorage.setItem("savedPassword", password);
-      localStorage.setItem("rememberMe", "true");
+      sessionStorage.setItem("savedEmail", email);
+      sessionStorage.setItem("savedPassword", password);
+      sessionStorage.setItem("rememberMe", "true");
     } else {
-      localStorage.removeItem("savedEmail");
-      localStorage.removeItem("savedPassword");
-      localStorage.removeItem("rememberMe");
+      sessionStorage.removeItem("savedEmail");
+      sessionStorage.removeItem("savedPassword");
+      sessionStorage.removeItem("rememberMe");
     }
 
     try {
       setIsLoading(true);
-      const res = await axios.post(
-        BASE_URL + "/api/auth/login",
-        { email, password, captchaToken },
-        { withCredentials: true }
-      );
-      const { token, data } = res?.data;
-      const { student } = data;
-      const role = student?.role;
-      console.log(role);
-      console.log(res?.data);
-      localStorage.setItem("student", JSON.stringify(student));
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-      toast.success("Login successful! Redirecting...", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      const result = await login({
+        email,
+        password,
+        captchaToken,
       });
 
-      setTimeout(() => {
-        navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
-      }, 500);
+      if (result.success) {
+        const { student } = result.data;
+        const role = student?.role;
+
+        showToast("Login successful! Redirecting...", "success");
+
+        setTimeout(() => {
+          navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
+        }, 500);
+      } else {
+        // Handle login failure from AuthContext
+        setResetCaptcha((prev) => !prev); // Trigger captcha reset
+        setCaptchaToken(null);
+        showToast(result.message);
+      }
     } catch (err) {
       setResetCaptcha((prev) => !prev); // Trigger captcha reset
       setCaptchaToken(null);
       console.log(err);
-      let errorMessage = "Login failed";
-
-      if (err.response) {
-        if (err.response.status === 401) {
-          errorMessage = "Invalid email or password";
-        } else if (err.response.status === 500) {
-          errorMessage = "Server error. Please try again later";
-        } else {
-          errorMessage = err.response.data.message || "Login failed";
-        }
-      }
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-
-      setError(err);
+      showToast("An unexpected error occurred");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const result = await googleLogin(credentialResponse);
+
+      if (result.success) {
+        const { isNewUser, role } = result;
+
+        showToast(
+          isNewUser ? "Welcome! Account created successfully." : "Login successful! Redirecting...",
+          "success"
+        );
+
+        setTimeout(() => {
+          navigate(
+            isNewUser && role === "participant"
+              ? "/complete-profile"
+              : role === "participant"
+                ? "/user-dashboard"
+                : "/organizer-dashboard"
+          );
+        }, 700);
+      } else {
+        showToast(result.message);
+      }
+    } catch (error) {
+      showToast("Google login failed");
     }
   };
 
@@ -169,26 +156,14 @@ function Basic() {
     const newRememberMe = !rememberMe;
     setRememberMe(newRememberMe);
     if (!newRememberMe) {
-      localStorage.removeItem("savedEmail");
-      localStorage.removeItem("savedPassword");
+      sessionStorage.removeItem("savedEmail");
+      sessionStorage.removeItem("savedPassword");
     }
   };
 
   return (
     <BasicLayout image={bgImage}>
-      {/* Toast Container */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-
+      <ToastContainer />
       <Card>
         <MDBox
           variant="gradient"
@@ -312,10 +287,11 @@ function Basic() {
                 variant="caption"
                 color="error"
                 sx={{
-                  mt: -1,
+                  mt: -2,
                   mb: 1,
                   display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
                 <Icon // padding right
@@ -323,10 +299,10 @@ function Basic() {
                   fontSize="small"
                 >
                   error
-                </Icon>{" "}
-                {captchaError}
+                </Icon>
+                <div>{captchaError}</div>
               </MDTypography>
-            )}{" "}
+            )}
             <MDBox mt={2} mb={1} fullWidth>
               <MDButton
                 onClick={handleSubmit}
@@ -354,60 +330,9 @@ function Basic() {
                 shape="pill"
                 type="standard"
                 logo_alignment="center"
-                onSuccess={async (credentialResponse) => {
-                  // console.log("Google credential response:", credentialResponse);
-                  if (!credentialResponse || !credentialResponse.credential) {
-                    console.error("No credential received from Google");
-                    return;
-                  }
-                  // This is the ID token (JWT)
-                  const idToken = credentialResponse.credential;
-                  // Send to backend
-                  const res = await axios.post(`${BASE_URL}/api/auth/google`, {
-                    credential: idToken,
-                  });
-                  // console.log("Google login response:", res);
-                  if (!res?.data || !res.data.token) {
-                    throw new Error("Invalid response from Google login");
-                  }
-                  const { token, data, isNewUser } = res?.data; // Add isNewUser flag from backend
-                  const { student } = data;
-                  const role = student?.role;
-                  localStorage.setItem("token", token);
-                  localStorage.setItem("role", role);
-                  localStorage.setItem("student", JSON.stringify(student));
-                  toast.success(
-                    isNewUser
-                      ? "Welcome! Account created successfully."
-                      : "Login successful! Redirecting...",
-                    {
-                      position: "top-right",
-                      autoClose: 2000,
-                      hideProgressBar: false,
-                      closeOnClick: true,
-                      pauseOnHover: true,
-                      draggable: true,
-                    }
-                  );
-                  setTimeout(() => {
-                    navigate(
-                      isNewUser && role === "participant"
-                        ? "/complete-profile" // Redirect new users to profile completion
-                        : role === "participant"
-                          ? "/user-dashboard"
-                          : "/organizer-dashboard"
-                    );
-                  }, 700);
-                }}
+                onSuccess={handleGoogleLogin}
                 onError={() => {
-                  toast.error("Google login failed. Please try again.", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                  });
+                  showToast("Google login failed. Please try again.");
                 }}
               />
             </MDBox>

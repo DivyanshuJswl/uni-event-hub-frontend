@@ -11,7 +11,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
-
+import { useAuth } from "context/AuthContext";
 // Custom components
 import CreateEvent from "./createEvent";
 import { Alert } from "@mui/material";
@@ -26,8 +26,8 @@ function Tables() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  const stu = localStorage.getItem("student");
-  const name = JSON.parse(stu).name;
+  const {user, token } = useAuth();
+  const name = user.name;
 
   const fetchEvents = async () => {
     try {
@@ -35,7 +35,7 @@ function Tables() {
       const res = await axios.get(`${BASE_URL}/api/events`, {
         withCredentials: true,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       setEvents(res?.data?.data?.events || []);

@@ -4,15 +4,15 @@ import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
 import { useMaterialUIController } from "context";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "context/AuthContext";
 
 const WelcomeBox = () => {
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
   const navigate = useNavigate();
-
-  // Get user data from localStorage
-  const user = localStorage.getItem("student") ? JSON.parse(localStorage.getItem("student")) : null;
-  const userRole = localStorage.getItem("role");
+  const { user, role } = useAuth();
+  // Get user data from sessionStorage
+  const userRole = role;
 
   // Check if user is an organizer
   const isOrganizer = userRole === "organizer";

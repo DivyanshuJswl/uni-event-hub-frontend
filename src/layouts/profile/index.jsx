@@ -16,7 +16,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DefaultProjectCard from "examples/Cards/EventCard/DefaultProjectCard";
-
+import { useAuth } from "context/AuthContext";
 // Overview page components
 import Header from "layouts/profile/components/Header";
 import PlatformSettings from "layouts/profile/components/PlatformSettings";
@@ -26,13 +26,13 @@ import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
 
 function Overview() {
   // Images
+  const { user, token } = useAuth();
   const team1 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-1_a7rqfy.jpg";
   const team2 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-2_aq8yoc.jpg";
   const team3 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg";
   const team4 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-4_efvdcl.jpg";
-  // Get student data from localStorage
-  const student = JSON.parse(localStorage.getItem("student"));
-  const token = localStorage.getItem("token");
+  // Get student data from sessionStorage
+  const student = user;
 
   if (!student || !token) {
     return (
@@ -53,7 +53,7 @@ function Overview() {
     year: student.year,
     email: student.email,
     branch: student.branch,
-    metaMaskAddress: student.metaMaskAddress || "Not connected",
+    metaMaskAddress: "Not connected",
     role: student.role,
     isVerified: student.isVerified ? "Verified" : "Not Verified",
   };
@@ -96,7 +96,7 @@ function Overview() {
               />
               <Divider orientation="vertical" sx={{ mx: 0, ml: 2 }} />
             </Grid>
-            <Grid item xs={12} md={4} xl={4}>
+            <Grid item xs={12} md={6} xl={4}>
               <MetaMaskIntegration />
             </Grid>
           </Grid>

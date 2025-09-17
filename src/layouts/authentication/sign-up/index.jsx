@@ -19,15 +19,9 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
-import {
-  Icon,
-  IconButton,
-  InputAdornment,
-  Switch,
-  Tooltip,
-} from "@mui/material";
+import { Icon, IconButton, InputAdornment, Switch, Tooltip } from "@mui/material";
 import PasswordGeneratorModal from "../components/PasswordGenerator";
-import zxcvbn from 'zxcvbn';
+import zxcvbn from "zxcvbn";
 import { Box } from "@mui/system";
 
 // Add this styled component above your Cover function
@@ -75,7 +69,7 @@ function Cover() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(
-    localStorage.getItem("rememberMe") === "true" || false
+    sessionStorage.getItem("rememberMe") === "true" || false
   );
   const [branchError, setBranchError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(null);
@@ -178,20 +172,20 @@ function Cover() {
 
   // Save credentials if rememberMe is checked
   if (rememberMe) {
-    localStorage.setItem("savedEmail", email);
-    localStorage.setItem("savedPassword", password);
-    localStorage.setItem("rememberMe", "true");
+    sessionStorage.setItem("savedEmail", email);
+    sessionStorage.setItem("savedPassword", password);
+    sessionStorage.setItem("rememberMe", "true");
   } else {
-    localStorage.removeItem("savedEmail");
-    localStorage.removeItem("savedPassword");
-    localStorage.removeItem("rememberMe");
+    sessionStorage.removeItem("savedEmail");
+    sessionStorage.removeItem("savedPassword");
+    sessionStorage.removeItem("rememberMe");
   }
   const handleSetRememberMe = () => {
     const newRememberMe = !rememberMe;
     setRememberMe(newRememberMe);
     if (!newRememberMe) {
-      localStorage.removeItem("savedEmail");
-      localStorage.removeItem("savedPassword");
+      sessionStorage.removeItem("savedEmail");
+      sessionStorage.removeItem("savedPassword");
     }
   };
   useEffect(() => {
