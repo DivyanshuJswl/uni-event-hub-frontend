@@ -218,8 +218,8 @@ function DataTable({
     ? entriesPerPage.entries.map((el) => el.toString())
     : ["5", "10", "15", "20", "25"];
 
-  const columns = useMemo(() => table.columns, [table]);
-  const data = useMemo(() => table.rows, [table]);
+  const columns = useMemo(() => table.columns, [table.columns]);
+  const data = useMemo(() => table.rows, [table.rows]);
 
   const tableInstance = useTable(
     { columns, data, initialState: { pageIndex: 0 } },
@@ -254,8 +254,10 @@ function DataTable({
   );
 
   useEffect(() => {
-    setPageSize(defaultValue || 5);
-  }, []);
+    if (pageSize !== (defaultValue || 5)) {
+      setPageSize(defaultValue || 5);
+    }
+  }, [defaultValue, pageSize, setPageSize]);
 
   const renderPagination = pageOptions.map((option) => (
     <MDPagination
@@ -288,7 +290,7 @@ function DataTable({
 
   const customizedPageOptions = pageOptions.map((option) => option + 1);
 
-  const [search, setSearch] = useState(globalFilter);
+  const [search, setSearch] = useState("");
 
   const onSearchChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);

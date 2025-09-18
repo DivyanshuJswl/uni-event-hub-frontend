@@ -45,7 +45,7 @@ function Basic() {
   const [captchaToken, setCaptchaToken] = useState(null);
   const [captchaError, setCaptchaError] = useState("");
   const [resetCaptcha, setResetCaptcha] = useState(false);
-  const { role, login, googleLogin, showToast } = useAuth();
+  const { login, googleLogin, showToast } = useAuth();
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
@@ -93,13 +93,12 @@ function Basic() {
         password,
         captchaToken,
       });
-
       if (result.success) {
         showToast("Login successful! Redirecting...", "success");
-
+        const role = result.data?.role;
         setTimeout(() => {
           navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
-        }, 500);
+        }, 1500);
       } else {
         setResetCaptcha((prev) => !prev); // Trigger captcha reset
         setCaptchaToken(null);

@@ -369,13 +369,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // In your AuthContext
   const updateProfilePicture = async (file) => {
     try {
       const formData = new FormData();
       formData.append("avatar", file);
 
-      const response = await axios.patch(`${BASE_URL} + /api/user/avatar`, formData, {
+      const response = await axios.patch(`${BASE_URL}/api/auth/avatar`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -383,16 +382,40 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      // Check response status correctly
+      if (response.status === 200) {
         // Update user context with new avatar
-        updateUser({ avatar: data.avatarUrl });
-        return { success: true, avatarUrl: data.avatarUrl };
+        updateUser({ avatar: response.data.avatarUrl });
+        return { success: true, avatarUrl: response.data.avatarUrl };
       } else {
         return { success: false, message: "Upload failed" };
       }
     } catch (error) {
-      return { success: false, message: error.message };
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const deleteProfilePicture = async () => {
+    try {
+      const response = await axios.delete(`${BASE_URL}/api/auth/avatar`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+
+      if (response.status === 200) {
+        // Update user context
+        updateUser({ avatar: null });
+        return { success: true };
+      } else {
+        return { success: false, message: "Failed to delete profile picture" };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error deleting profile picture",
+      };
     }
   };
 
@@ -426,6 +449,7 @@ export const AuthProvider = ({ children }) => {
     becomeOrganizer,
     updateWallet,
     updateProfilePicture,
+    deleteProfilePicture,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

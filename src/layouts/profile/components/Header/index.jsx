@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import PropTypes from "prop-types";
 
 // @mui material components
@@ -22,6 +22,9 @@ import MDButton from "components/MDButton";
 import breakpoints from "assets/theme/base/breakpoints";
 import { useAuth } from "context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ImageCropper from "./ImageCropper";
+import { useMaterialUIController } from "context";
+import PreviewModal from "./PreviewModal";
 
 function Header({ name, avatar, children, onAvatarUpdate }) {
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
@@ -29,10 +32,16 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [avatarMenu, setAvatarMenu] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
-  const { role, becomeOrganizer, showToast, updateProfilePicture } = useAuth();
+  const { role, becomeOrganizer, showToast, updateProfilePicture, deleteProfilePicture } =
+    useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
 
   useEffect(() => {
     function handleTabsOrientation() {
@@ -68,7 +77,12 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
     handleAvatarMenuClose();
   };
 
-  const handleFileUpload = async (event) => {
+  const handlePreviewClick = () => {
+    setPreviewModalOpen(true);
+    handleAvatarMenuClose();
+  };
+
+  const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -79,15 +93,24 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       showToast("Image size should be less than 5MB", "error");
       return;
     }
 
+    // Create a preview URL and open crop modal
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target.result);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedImageBlob) => {
     setIsUploading(true);
 
     try {
-      const result = await updateProfilePicture(file);
+      const result = await updateProfilePicture(croppedImageBlob);
 
       if (result.success) {
         showToast("Profile picture updated successfully!", "success");
@@ -102,8 +125,31 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
       console.error("Upload error:", error);
     } finally {
       setIsUploading(false);
-      // Reset file input
-      event.target.value = "";
+      setCropModalOpen(false);
+      setSelectedImage(null);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    setIsUploading(true);
+    handleAvatarMenuClose();
+
+    try {
+      const result = await deleteProfilePicture();
+
+      if (result.success) {
+        showToast("Profile picture removed successfully!", "success");
+        if (onAvatarUpdate) {
+          onAvatarUpdate(null);
+        }
+      } else {
+        showToast(result.message || "Failed to remove profile picture", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while removing photo", "error");
+      console.error("Delete error:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -177,7 +223,7 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Slightly lighter overlay
+                  backgroundColor: "rgba(0, 0, 0, 0.4)",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
@@ -190,13 +236,13 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                 <Icon
                   sx={{
                     fontSize: "2rem",
-                    color: "white", // Bright white color
+                    color: "white",
                     filter: `
-            drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)) 
-            drop-shadow(0 4px 4px rgba(0, 0, 0, 0.6))
-            drop-shadow(0 6px 6px rgba(0, 0, 0, 0.4))
-          `, // Multiple shadows for depth
-                    textShadow: "0 1px 3px rgba(0, 0, 0, 0.9)", // Additional text shadow
+                      drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)) 
+                      drop-shadow(0 4px 4px rgba(0, 0, 0, 0.6))
+                      drop-shadow(0 6px 6px rgba(0, 0, 0, 0.4))
+                    `,
+                    textShadow: "0 1px 3px rgba(0, 0, 0, 0.9)",
                   }}
                 >
                   photo_camera
@@ -226,17 +272,13 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
             <input
               type="file"
               ref={fileInputRef}
-              onChange={handleFileUpload}
+              onChange={handleFileSelect}
               accept="image/*"
               style={{ display: "none" }}
             />
 
             {/* Avatar menu */}
-            <Menu
-              anchorEl={avatarMenu}
-              open={Boolean(avatarMenu)}
-              onClose={handleAvatarMenuClose}
-            >
+            <Menu anchorEl={avatarMenu} open={Boolean(avatarMenu)} onClose={handleAvatarMenuClose}>
               <MenuItem onClick={handleFileInputClick}>
                 <Icon sx={{ mr: 1, color: "info.main" }}>photo_camera</Icon>
                 <MDTypography variant="button" fontWeight="medium">
@@ -244,14 +286,43 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                 </MDTypography>
               </MenuItem>
               {avatar && (
-                <MenuItem onClick={handleAvatarMenuClose}>
-                  <Icon sx={{ mr: 1, color: "error.main" }}>delete</Icon>
-                  <MDTypography variant="button" fontWeight="medium" color="error">
-                    Remove Photo
-                  </MDTypography>
-                </MenuItem>
+                <>
+                  <MenuItem onClick={handlePreviewClick}>
+                    <Icon sx={{ mr: 1, color: "info.main" }}>visibility</Icon>
+                    <MDTypography variant="button" fontWeight="medium">
+                      Preview Photo
+                    </MDTypography>
+                  </MenuItem>
+                  <MenuItem onClick={handleDeletePhoto}>
+                    <Icon sx={{ mr: 1, color: "error.main" }}>delete</Icon>
+                    <MDTypography variant="button" fontWeight="medium" color="error">
+                      Remove Photo
+                    </MDTypography>
+                  </MenuItem>
+                </>
               )}
             </Menu>
+
+            {/* Preview Modal */}
+            <PreviewModal
+              open={previewModalOpen}
+              onClose={() => setPreviewModalOpen(false)}
+              avatar={avatar}
+            />
+
+            {/* Crop Modal */}
+            <ImageCropper
+              open={cropModalOpen}
+              imageSrc={selectedImage}
+              onClose={() => {
+                setCropModalOpen(false);
+                setSelectedImage(null);
+              }}
+              onCropComplete={handleCropComplete}
+              aspect={1} // Square aspect for circular crop
+              darkMode={darkMode}
+              isUploading={isUploading}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={5}>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
