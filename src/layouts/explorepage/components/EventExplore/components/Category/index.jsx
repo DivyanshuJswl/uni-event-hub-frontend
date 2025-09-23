@@ -7,10 +7,6 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
-  {
-    /* "workshop", "seminar", "social", "hackathon", "cultural", "technology", */
-  }
-
   const categories = [
     { value: "all", label: "All Categories" },
     { value: "workshop", label: "Workshop" },
@@ -32,7 +28,7 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
         <InputLabel
           id="category-filter-label"
           sx={{
-            fontSize: "0.95rem",
+            // fontSize: "0.5rem",
             transform: "translate(14px, 16px) scale(1)", // Adjust for taller field
             "&.MuiInputLabel-shrink": {
               transform: "translate(14px, -6px) scale(0.75)",
@@ -52,8 +48,8 @@ const CategoryFilter = ({ categoryFilter, setCategoryFilter, setPage }) => {
           label="Filter by Category"
           sx={{
             color: darkMode ? "white" : "primary.dark",
-            height: "48px", // Increased from default height
-            borderRadius: "8px",
+            height: "2.6rem", // Increased from default height
+            borderRadius: "0.5rem",
             border: "2px",
             // Better vertical centering of content
             "& .MuiSelect-select": {

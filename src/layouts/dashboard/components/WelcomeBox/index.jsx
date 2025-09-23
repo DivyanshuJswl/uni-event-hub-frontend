@@ -63,7 +63,6 @@ const WelcomeBox = () => {
         </MDTypography>
         <MDTypography
           variant="button"
-          ml={1}
           color={darkMode ? "white" : "text"}
           fontWeight="light"
           py={3}

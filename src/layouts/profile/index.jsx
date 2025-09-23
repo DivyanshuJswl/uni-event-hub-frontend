@@ -23,8 +23,11 @@ import PlatformSettings from "layouts/profile/components/PlatformSettings";
 
 import MetaMaskIntegration from "./components/LinkMetaMask";
 import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
+import { useMaterialUIController } from "context";
 
 function Overview() {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
   // Images
   const { user, token } = useAuth();
   const team1 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-1_a7rqfy.jpg";
@@ -48,16 +51,6 @@ function Overview() {
     );
   }
 
-  // Format student data for display
-  const studentInfo = {
-    year: student.year,
-    email: student.email,
-    branch: student.branch,
-    metaMaskAddress: student.metaMaskAddress || "Not linked",
-    role: student.role,
-    isVerified: student.isVerified ? "Verified" : "Not Verified",
-  };
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -73,7 +66,6 @@ function Overview() {
               <ProfileInfoCard
                 title="Student Profile"
                 description="Here you can find your profile information and manage your projects."
-                info={studentInfo}
                 social={[
                   {
                     link: "https://www.facebook.com/",
@@ -91,8 +83,12 @@ function Overview() {
                     color: "instagram",
                   },
                 ]}
-                action={{ route: "/profile/edit", tooltip: "Edit Profile" }}
+                action={{
+                  tooltip: "Edit Profile",
+                  onRefresh: () => console.log("Refresh profile data"),
+                }}
                 shadow={false}
+                darkMode={darkMode}
               />
               <Divider orientation="vertical" sx={{ mx: 0, ml: 2 }} />
             </Grid>

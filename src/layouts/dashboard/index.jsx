@@ -10,7 +10,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import Typography from "@mui/material/Typography";
-import EventCard from "examples/Cards/EventCard/indexProject";
+import EventCard from "examples/Cards/EventCard";
 import EventSkeleton from "components/EventSkeleton";
 // Dashboard components
 import Projects from "layouts/dashboard/components/Projects";

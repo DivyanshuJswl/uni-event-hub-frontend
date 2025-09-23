@@ -339,7 +339,7 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                     startIcon={<Icon>event_available</Icon>}
                     sx={{ ml: 2 }}
                   >
-                    {isLoading ? "Processing..." : "Become an Organizer"}
+                    {isLoading ? "Processing..." : "Become Organizer"}
                   </MDButton>
                 ) : (
                   <MDBox

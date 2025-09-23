@@ -419,6 +419,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await axios.patch(`${BASE_URL}/api/auth/update-me`, profileData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+      updateUser(response.data.student);
+      return { success: true, data: response.data };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Update failed";
+      return { success: false, message: errorMessage };
+    }
+  };
+
   // Update user data
   const updateUser = (updatedData) => {
     const updatedUser = { ...user, ...updatedData };
@@ -448,6 +465,7 @@ export const AuthProvider = ({ children }) => {
     showToast,
     becomeOrganizer,
     updateWallet,
+    updateProfile,
     updateProfilePicture,
     deleteProfilePicture,
   };

@@ -12,19 +12,20 @@ import {
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import EventCard from "examples/Cards/EventCard/indexProject";
+import EventCard from "examples/Cards/EventCard";
 import { useMaterialUIController } from "context";
 import MDTypography from "components/MDTypography";
 import CategoryFilter from "./components/Category";
 import MDBox from "components/MDBox";
 import axios from "axios";
 import EventSkeleton from "components/EventSkeleton";
-import { border, borderRadius } from "@mui/system";
+import { useAuth } from "context/AuthContext";
 
 const Explore = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const { user } = useAuth(); 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
@@ -45,7 +46,6 @@ const Explore = () => {
 
       setEvents(fetchedEvents);
       setError(null);
-      
     } catch (err) {
       console.error("Error fetching events:", err);
       setError(err.response?.data?.message || err.message || "Failed to fetch events");
@@ -67,7 +67,7 @@ const Explore = () => {
       setError(null);
       await fetchEvents();
       console.log("Events refreshed successfully");
-      setPage(1); // Reset to first page when refreshing
+      setPage(1);
     } catch (err) {
       console.error("Error refreshing events:", err);
       setError(err.message);
@@ -88,9 +88,14 @@ const Explore = () => {
         setArticlesPerPage(12);
       } else {
         setArticlesPerPage(parseInt(value));
-        setPage(1); // Reset to first page when changing items per page
+        setPage(1);
       }
     }
+  };
+
+  // Check if user is enrolled in an event
+  const isUserEnrolled = (eventId) => {
+    return user?.enrolledEvents?.includes(eventId) || false;
   };
 
   // Filter events based on search term and category
@@ -139,6 +144,11 @@ const Explore = () => {
             }}
           >
             Discover upcoming events in your area
+            {user?.enrolledEvents?.length > 0 && (
+              <span style={{ color: "#2ca630ff", fontWeight: "bold", marginLeft: "8px" }}>
+                • Enrolled in {user.enrolledEvents.length} event(s)
+              </span>
+            )}
           </MDTypography>
         </Box>
 
@@ -179,6 +189,7 @@ const Explore = () => {
               categoryFilter={categoryFilter}
               setCategoryFilter={(category) => {
                 setCategoryFilter(category);
+                setPage(1);
               }}
               setPage={setPage}
             />
@@ -230,7 +241,6 @@ const Explore = () => {
 
         {/* Events Grid */}
         {loading ? (
-          // Skeleton loading state
           <Grid container spacing={4}>
             <EventSkeleton />
           </Grid>
@@ -270,9 +280,9 @@ const Explore = () => {
                       currentParticipants={event.participants.length}
                       organizerName={event.organizer.name}
                       organizerEmail={event.organizer.email}
-                      status={event.status}
                       isFull={event.isFull}
                       _id={event._id}
+                      isEnrolled={isUserEnrolled(event._id)}
                     />
                   </Grid>
                 ))

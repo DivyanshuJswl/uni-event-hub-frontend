@@ -1,5 +1,7 @@
 import React from "react";
-import { Grid, Link, IconButton, Box } from "@mui/material";
+import { Grid, IconButton, Box } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import { Link } from "@mui/material";
 import { useMaterialUIController } from "context";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -17,7 +19,7 @@ const Footer = () => {
   ];
 
   const quickLinks = [
-    { label: "Browse Events", url: "/events" },
+    { label: "Browse Events", url: "/explore" },
     { label: "Create Event", url: "/create-event" },
     { label: "My Certificates", url: "/my-certificate" },
     { label: "Leaderboard", url: "/leaderboard" },
@@ -121,7 +123,7 @@ const Footer = () => {
                   Made with ❤️ by:
                 </MDTypography>
                 <MDTypography variant="body2" color="text" sx={{ lineHeight: 1.6 }}>
-                  Suhail Sama • Divyanshu Jaiswal
+                  Divyanshu Jaiswal • Suhail Sama
                 </MDTypography>
               </MDBox>
             </Box>
@@ -142,10 +144,11 @@ const Footer = () => {
             {quickLinks.map((link, index) => (
               <Grid item xs={6} key={index}>
                 <Link
-                  href={link.url}
+                  component={RouterLink}
+                  to={link.url}
                   underline="none"
                   sx={{
-                    color: "text",
+                    color: "text.main",
                     fontSize: "0.9rem",
                     display: "flex",
                     alignItems: "center",
@@ -205,7 +208,7 @@ const Footer = () => {
                 }}
               />
               <MDTypography variant="body2" color="text" sx={{ fontSize: "0.9rem" }}>
-                suhailsama89@gmail.com
+                ansh12jais@gmail.com
               </MDTypography>
             </MDBox>
           </MDBox>

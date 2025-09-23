@@ -24,6 +24,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios";
 import { useAuth } from "context/AuthContext";
 
@@ -38,35 +39,85 @@ function EventCard({
   currentParticipants,
   organizerName,
   organizerEmail,
-  status,
   isFull,
   _id,
+  isEnrolled = false,
 }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [registerBtn, setRegisterBtn] = useState("Register Now");
+  const [registerBtn, setRegisterBtn] = useState(isEnrolled ? "Unenroll" : "Register Now");
+  const [isCurrentlyEnrolled, setIsCurrentlyEnrolled] = useState(isEnrolled);
   const [err, setError] = useState();
   const { token } = useAuth();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const calculateStatus = () => {
+    const now = new Date();
+    const eventDate = new Date(date);
+    const eventEnd = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000); // Assume 2 hours duration
+
+    if (now < eventDate) {
+      return "upcoming";
+    } else if (now >= eventDate && now <= eventEnd) {
+      return "ongoing";
+    } else {
+      return "completed";
+    }
+  };
+
+  const status = calculateStatus();
+  // const isFull = currentParticipants >= maxParticipants;
+  const getStatusColor = () => {
+    switch (status) {
+      case "upcoming":
+        return "primary";
+      case "ongoing":
+        return "secondary";
+      case "completed":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const statusColor = getStatusColor();
+
   const handleRegister = async () => {
-    if (isFull || new Date() > new Date(date)) return;
-    setRegisterBtn((prev) => (prev === "Register Now" ? "Unenroll" : "Register Now"));
+    if (isFull || status === "completed") return;
+
     try {
-      const res = await axios.post(
-        `${BASE_URL}/api/events/enroll/${_id}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        }
-      );
-      console.log(res.data);
+      if (isCurrentlyEnrolled) {
+        // Unenroll logic
+        const res = await axios.post(
+          `${BASE_URL}/api/events/unenroll/${_id}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
+        );
+        console.log(res.data);
+        setIsCurrentlyEnrolled(false);
+        setRegisterBtn("Register Now");
+      } else {
+        // Enroll logic
+        const res = await axios.post(
+          `${BASE_URL}/api/events/enroll/${_id}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
+        );
+        console.log(res.data);
+        setIsCurrentlyEnrolled(true);
+        setRegisterBtn("Unenroll");
+      }
     } catch (err) {
       setError(err);
       console.log(err);
@@ -84,19 +135,45 @@ function EventCard({
 
   return (
     <div>
-      {/* Clickable Card */}
+      {/* Clickable Card with Enrollment Highlight */}
       <Card
         onClick={handleOpen}
         sx={{
           cursor: "pointer",
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
           backgroundColor: darkMode ? "background.default" : "background.paper",
+          position: "relative",
           "&:hover": {
             transform: "translateY(-5px)",
             boxShadow: darkMode ? "0 10px 20px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.1)",
           },
         }}
       >
+        {/* Enrollment Badge */}
+        {isCurrentlyEnrolled && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              zIndex: 10,
+            }}
+          >
+            <Chip
+              icon={<CheckCircleIcon />}
+              label="Enrolled"
+              color="success"
+              size="small"
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: darkMode ? "rgba(76, 175, 80, 0.9)" : "rgba(76, 175, 80, 0.9)",
+                color: "white",
+                backdropFilter: "blur(10px)",
+              }}
+            />
+          </Box>
+        )}
+
         <MDBox padding="1rem">
           <MDBox position="relative">
             <MDBox
@@ -125,15 +202,7 @@ function EventCard({
             />
             <Chip
               label={status}
-              color={
-                status === "upcoming"
-                  ? "secondary"
-                  : status === "ongoing"
-                    ? "success"
-                    : status === "completed"
-                      ? "default"
-                      : "default"
-              }
+              color={statusColor}
               size="small"
               sx={{
                 position: "absolute",
@@ -141,8 +210,6 @@ function EventCard({
                 right: 10,
                 fontWeight: "bold",
                 textTransform: "uppercase",
-                backgroundColor: darkMode ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.9)",
-                color: darkMode ? "text.primary" : "text.primary",
               }}
             />
           </MDBox>
@@ -217,11 +284,11 @@ function EventCard({
             <MDBox display="flex" justifyContent="center" alignItems="center" padding="8px" mt={2}>
               <MDButton
                 variant="gradient"
-                color={isFull ? "error" : sidenavColor}
+                color={isCurrentlyEnrolled ? "success" : isFull ? "error" : sidenavColor}
                 size="medium"
-                disabled={isFull}
+                disabled={isFull && !isCurrentlyEnrolled}
               >
-                {isFull ? "FULLY BOOKED" : "SHOW DETAILS"}
+                {isCurrentlyEnrolled ? "VIEW DETAILS" : isFull ? "FULLY BOOKED" : "SHOW DETAILS"}
               </MDButton>
             </MDBox>
           </MDBox>
@@ -308,25 +375,28 @@ function EventCard({
                       <MDTypography variant="h6" color={darkMode ? "white" : "dark"}>
                         Participation Status
                       </MDTypography>
-                      <Chip
-                        label={status}
-                        color={
-                          status === "upcoming"
-                            ? "secondary"
-                            : status === "ongoing"
-                              ? "success"
-                              : "default"
-                        }
-                        size="medium"
-                        sx={{
-                          fontWeight: "bold",
-                          textTransform: "uppercase",
-                          backgroundColor: darkMode
-                            ? "rgba(255, 255, 255, 0.9)"
-                            : "rgba(255, 255, 255, 0.9)",
-                          color: darkMode ? "text.primary" : "text.primary",
-                        }}
-                      />
+                      <Box display="flex" gap={1}>
+                        {isCurrentlyEnrolled && (
+                          <Chip
+                            icon={<CheckCircleIcon />}
+                            label="Enrolled"
+                            color="success"
+                            size="medium"
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                          />
+                        )}
+                        <Chip
+                          label={status}
+                          color={statusColor}
+                          size="medium"
+                          sx={{
+                            fontWeight: "bold",
+                            textTransform: "uppercase",
+                          }}
+                        />
+                      </Box>
                     </Box>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
                       <MDTypography variant="body2" color="text">
@@ -347,7 +417,7 @@ function EventCard({
                         borderRadius: 5,
                       }}
                     />
-                    {isFull && (
+                    {isFull && !isCurrentlyEnrolled && (
                       <MDTypography
                         variant="caption"
                         color="error"
@@ -430,17 +500,25 @@ function EventCard({
                   <MDButton
                     onClick={handleRegister}
                     variant="gradient"
-                    color={isFull || new Date() > new Date(date) ? "error" : sidenavColor}
+                    color={
+                      isCurrentlyEnrolled
+                        ? "error"
+                        : isFull || new Date() > new Date(date)
+                          ? "error"
+                          : sidenavColor
+                    }
                     size="large"
                     fullWidth
-                    disabled={isFull}
+                    disabled={isFull && !isCurrentlyEnrolled}
                     sx={{ mt: 2 }}
                   >
-                    {isFull
-                      ? "Event Full"
-                      : new Date() > new Date(date)
-                        ? "Event is Over Now"
-                        : registerBtn}
+                    {isCurrentlyEnrolled
+                      ? "Unenroll from Event"
+                      : isFull
+                        ? "Event Full"
+                        : new Date() > new Date(date)
+                          ? "Event is Over Now"
+                          : "Register Now"}
                   </MDButton>
                 </Grid>
               </Grid>
@@ -463,9 +541,9 @@ EventCard.propTypes = {
   currentParticipants: PropTypes.number.isRequired,
   organizerName: PropTypes.string.isRequired,
   organizerEmail: PropTypes.string.isRequired,
-  status: PropTypes.string.isRequired,
   isFull: PropTypes.bool.isRequired,
   _id: PropTypes.string.isRequired,
+  isEnrolled: PropTypes.bool, // New prop
 };
 
 export default EventCard;
