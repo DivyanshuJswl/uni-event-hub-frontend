@@ -121,7 +121,7 @@ const Footer = () => {
                   Made with ❤️ by:
                 </MDTypography>
                 <MDTypography variant="body2" color="text" sx={{ lineHeight: 1.6 }}>
-                  Divyanshu Jaiswal • Suhail Sama
+                  Suhail Sama • Divyanshu Jaiswal
                 </MDTypography>
               </MDBox>
             </Box>
@@ -205,7 +205,7 @@ const Footer = () => {
                 }}
               />
               <MDTypography variant="body2" color="text" sx={{ fontSize: "0.9rem" }}>
-                ansh12jais@gmail.com
+                suhailsama89@gmail.com
               </MDTypography>
             </MDBox>
           </MDBox>
