@@ -30,6 +30,7 @@ import SignUp from "layouts/authentication/sign-up";
 import MyEvents from "layouts/myevents";
 import Publish from "layouts/certificatepublisher";
 import ExplorePage from "layouts/explorepage";
+import OrganizedEvents from "layouts/organizedevents";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -93,6 +94,15 @@ const routes = [
     icon: <Icon fontSize="small">event</Icon>,
     route: "/create-event",
     component: <Tables />,
+    roles: ["organizer"],
+  },
+  {
+    type: "collapse",
+    name: "Organized Events",
+    key: "organized-events",
+    icon: <Icon fontSize="small">event_available</Icon>,
+    route: "/organized-events",
+    component: <OrganizedEvents />,
     roles: ["organizer"],
   },
 

@@ -396,7 +396,7 @@ const CreateEvent = () => {
                               variant="outlined"
                               sx={{
                                 borderRadius: 2,
-                                height: "2.5rem",
+                                height: "2.75rem",
                               }}
                             >
                               <MenuItem value="workshop">Workshop</MenuItem>

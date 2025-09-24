@@ -14,6 +14,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
+import Grid from "@mui/material/Grid";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
@@ -27,8 +28,8 @@ const modalStyle = (darkMode) => ({
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  minWidth: 400,
-  maxWidth: "90vw",
+  minWidth: 500,
+  maxWidth: "95vw",
   maxHeight: "90vh",
   overflowY: "auto",
   bgcolor: darkMode ? "background.default" : "background.paper",
@@ -67,10 +68,10 @@ const formatUserData = (user) => {
   if (!user) return {};
 
   return {
-    name: user.name || "Not set",
-    year: user.year || "Not set",
-    email: user.email || "Not set",
-    branch: user.branch || "Not set",
+    name: user.name || "",
+    year: user.year || "",
+    email: user.email || "",
+    branch: user.branch || "",
     metaMaskAddress: user.metaMaskAddress || "Not linked",
     role: user.role || "Not set",
     isVerified: user.isVerified ? "Verified" : "Not Verified",
@@ -88,23 +89,31 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
   const userInfo = formatUserData(user);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ ...userInfo });
-  const [originalData, setOriginalData] = useState({ ...userInfo });
-  const [editingField, setEditingField] = useState(null);
-  const [tempValue, setTempValue] = useState("");
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    year: "",
+    branch: "",
+  });
+  const [editErrors, setEditErrors] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMessage, setEditMessage] = useState({ type: "", text: "" });
 
-  // Reset form when modal opens/closes or when user data changes
+  // Reset form when modal opens or when user data changes
   useEffect(() => {
     const formattedUserData = formatUserData(user);
-    setFormData({ ...formattedUserData });
-    setOriginalData({ ...formattedUserData });
+    setEditForm({
+      name: formattedUserData.name,
+      email: formattedUserData.email,
+      year: formattedUserData.year,
+      branch: formattedUserData.branch,
+    });
   }, [user, editModalOpen]);
 
   const handleOpenEditModal = () => {
     setEditModalOpen(true);
+    setEditErrors({});
+    setEditMessage({ type: "", text: "" });
     if (action && action.onClick) {
       action.onClick();
     }
@@ -112,53 +121,32 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
-    setEditingField(null);
-    setErrors({});
-    setMessage({ type: "", text: "" });
+    setEditErrors({});
+    setEditMessage({ type: "", text: "" });
   };
 
-  const startEditing = (field) => {
-    setEditingField(field);
-    setTempValue(formData[field] || "");
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-  };
-
-  const cancelEditing = () => {
-    setEditingField(null);
-    setTempValue("");
-    setErrors((prev) => ({ ...prev, [editingField]: "" }));
-  };
-
-  const validateField = (field, value) => {
-    // Skip validation for "Not set" or "Not linked" placeholder values
-    if (value === "Not set" || value === "Not linked" || value === "Not Verified") {
-      return "This field is required";
-    }
-
-    const trimmedValue = value.toString().trim();
-
+  const validateEditField = (field, value) => {
     switch (field) {
       case "email":
-        if (!trimmedValue) return "Email is required";
-        if (!validateEmail(trimmedValue)) return "Please enter a valid email address";
+        if (!value.trim()) return "Email is required";
+        if (!validateEmail(value.trim())) return "Please enter a valid email address";
         return "";
 
       case "name":
-        if (!trimmedValue) return "Name is required";
-        if (!validateName(trimmedValue)) return "Name must be between 2 and 50 characters";
+        if (!value.trim()) return "Name is required";
+        if (!validateName(value.trim())) return "Name must be between 2 and 50 characters";
         return "";
 
       case "year":
-        if (!trimmedValue) return "Year is required";
-        const yearNum = parseInt(trimmedValue);
+        if (!value) return "Year is required";
+        const yearNum = parseInt(value);
         if (isNaN(yearNum)) return "Year must be a number";
         if (!validateYear(yearNum)) return `Year must be between ${MIN_YEAR} and ${MAX_YEAR}`;
         return "";
 
       case "branch":
-        if (!trimmedValue) return "Branch is required";
-        if (!validateBranch(trimmedValue))
-          return `Branch must be one of: ${ALLOWED_BRANCHES.join(", ")}`;
+        if (!value) return "Branch is required";
+        if (!validateBranch(value)) return `Branch must be one of: ${ALLOWED_BRANCHES.join(", ")}`;
         return "";
 
       default:
@@ -166,97 +154,66 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
     }
   };
 
-  const saveFieldEdit = () => {
-    if (!editingField) return;
+  const handleEditFieldChange = (field, value) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
 
-    const error = validateField(editingField, tempValue);
-    if (error) {
-      setErrors((prev) => ({ ...prev, [editingField]: error }));
-      return;
-    }
-
-    const trimmedValue = tempValue.toString().trim();
-    let finalValue = trimmedValue;
-
-    if (editingField === "year") {
-      finalValue = parseInt(trimmedValue);
-    } else if (editingField === "branch") {
-      finalValue = trimmedValue.toUpperCase();
-    }
-
-    setFormData((prev) => ({ ...prev, [editingField]: finalValue }));
-    setEditingField(null);
-    setTempValue("");
-    setErrors((prev) => ({ ...prev, [editingField]: "" }));
-  };
-
-  const handleTempValueChange = (value) => {
-    setTempValue(value);
     // Clear error when user starts typing
-    if (errors[editingField]) {
-      setErrors((prev) => ({ ...prev, [editingField]: "" }));
+    if (editErrors[field]) {
+      setEditErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const hasChanges = () => {
-    return Object.keys(formData).some((key) => {
-      // Compare values, handling different data types
-      const originalVal = originalData[key];
-      const newVal = formData[key];
+    const currentData = formatUserData(user);
+    return Object.keys(editForm).some((key) => {
+      const currentVal = currentData[key];
+      const newVal = editForm[key];
 
-      if (typeof originalVal === "number" || typeof newVal === "number") {
-        return Number(originalVal) !== Number(newVal);
+      if (typeof currentVal === "number" || typeof newVal === "number") {
+        return Number(currentVal) !== Number(newVal);
       }
-      return originalVal !== newVal;
+      return currentVal !== newVal;
     });
   };
 
   const handleSubmit = async () => {
     // Validate all fields before submission
     const newErrors = {};
-    Object.keys(formData).forEach((field) => {
-      if (field !== "metaMaskAddress" && field !== "isVerified" && field !== "role") {
-        const error = validateField(field, formData[field] || "");
-        if (error) newErrors[field] = error;
-      }
+    Object.keys(editForm).forEach((field) => {
+      const error = validateEditField(field, editForm[field]);
+      if (error) newErrors[field] = error;
     });
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setMessage({ type: "error", text: "Please fix the errors before submitting" });
+      setEditErrors(newErrors);
+      setEditMessage({ type: "error", text: "Please fix the errors before submitting" });
       return;
     }
 
     if (!hasChanges()) {
-      setMessage({ type: "info", text: "No changes detected" });
+      setEditMessage({ type: "info", text: "No changes detected" });
       return;
     }
 
-    setLoading(true);
-    setMessage({ type: "", text: "" });
+    setEditLoading(true);
+    setEditMessage({ type: "", text: "" });
 
     try {
-      // Prepare data for API call - only include fields that are editable
+      // Prepare data for API call - only include fields that have changed
       const updateData = {};
-      const editableFields = ["name", "email", "year", "branch"];
+      Object.keys(editForm).forEach((key) => {
+        const currentVal = formatUserData(user)[key];
+        const newVal = editForm[key];
 
-      editableFields.forEach((key) => {
-        if (formData[key] !== originalData[key]) {
-          updateData[key] = formData[key];
+        if (currentVal !== newVal) {
+          updateData[key] = key === "year" ? parseInt(newVal) : newVal;
         }
       });
-
-      // Check if there are actually any changes to submit
-      if (Object.keys(updateData).length === 0) {
-        setMessage({ type: "info", text: "No changes to update" });
-        setLoading(false);
-        return;
-      }
 
       const response = await updateProfile(updateData);
 
       if (response.success) {
-        setMessage({ type: "success", text: "Profile updated successfully!" });
+        setEditMessage({ type: "success", text: "Profile updated successfully!" });
 
         // Close modal after successful update
         setTimeout(() => {
@@ -271,26 +228,18 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
       }
     } catch (error) {
       console.error("Update error:", error);
-      setMessage({
+      setEditMessage({
         type: "error",
         text: error.message || "Failed to update profile. Please try again.",
       });
     } finally {
-      setLoading(false);
+      setEditLoading(false);
     }
   };
 
   // Format specific fields with special display logic
   const formatValue = (key, value) => {
     switch (key) {
-      case "name":
-        return value || "Not set";
-      case "email":
-        return value || "Not set";
-      case "year":
-        return value || "Not set";
-      case "branch":
-        return value || "Not set";
       case "metaMaskAddress":
         return value && value !== "Not linked" ? (
           <Tooltip title={value} placement="top">
@@ -319,79 +268,6 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
     }
   };
 
-  // Render appropriate input field based on field type
-  const renderInputField = () => {
-    if (editingField === "branch") {
-      return (
-        <FormControl fullWidth>
-          <Select
-            value={tempValue === "Not set" ? "" : tempValue}
-            onChange={(e) => handleTempValueChange(e.target.value)}
-            error={!!errors[editingField]}
-            sx={{ height: "2.5rem" }}
-          >
-            {ALLOWED_BRANCHES.map((branch) => (
-              <MenuItem key={branch} value={branch}>
-                {branch}
-              </MenuItem>
-            ))}
-          </Select>
-          {errors[editingField] && (
-            <MDTypography variant="caption" color="error">
-              {errors[editingField]}
-            </MDTypography>
-          )}
-        </FormControl>
-      );
-    } else if (editingField === "year") {
-      return (
-        <FormControl fullWidth>
-          <Select
-            value={tempValue === "Not set" ? "" : tempValue}
-            onChange={(e) => handleTempValueChange(e.target.value)}
-            error={!!errors[editingField]}
-            sx={{ height: "2.5rem" }}
-          >
-            {Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i).map((year) => (
-              <MenuItem key={year} value={year}>
-                {year}
-              </MenuItem>
-            ))}
-          </Select>
-          {errors[editingField] && (
-            <MDTypography variant="caption" color="error">
-              {errors[editingField]}
-            </MDTypography>
-          )}
-        </FormControl>
-      );
-    } else {
-      return (
-        <MDInput
-          value={tempValue === "Not set" ? "" : tempValue}
-          onChange={(e) => handleTempValueChange(e.target.value)}
-          error={!!errors[editingField]}
-          helperText={errors[editingField]}
-          fullWidth
-          sx={{
-            background: "#fff",
-            input: { color: "#222" },
-            borderRadius: 1,
-            boxShadow: "0 1px 4px rgba(33,203,243,0.08)",
-            border: errors[editingField] ? "1px solid #f44336" : "1px solid #e0e0e0",
-          }}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              saveFieldEdit();
-            }
-          }}
-          type={editingField === "email" ? "email" : "text"}
-          placeholder={`Enter your ${editingField}`}
-        />
-      );
-    }
-  };
-
   // Prepare the info items for rendering - only show the filtered fields
   const renderItems = Object.entries(userInfo).map(([key, value]) => {
     const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
@@ -412,75 +288,6 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
     );
   });
 
-  // Render editable fields in the modal
-  const renderEditableFields = () => {
-    const editableFields = ["name", "email", "year", "branch"];
-
-    return editableFields.map((key) => {
-      const value = formData[key] || "";
-      const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-      const isEditing = editingField === key;
-
-      return (
-        <MDBox key={key} mb={1.5}>
-          <MDBox display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
-            <MDTypography variant="body2" fontWeight="bold" color="text">
-              {formattedKey}
-            </MDTypography>
-            {!isEditing ? (
-              <Tooltip title="Edit field">
-                <IconButton
-                  size="small"
-                  onClick={() => startEditing(key)}
-                  sx={{ color: "primary.main" }}
-                >
-                  <Icon fontSize="small">edit</Icon>
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <MDBox>
-                <Tooltip title="Save">
-                  <IconButton
-                    size="small"
-                    onClick={saveFieldEdit}
-                    sx={{ color: "success.main", mr: 1 }}
-                  >
-                    <Icon fontSize="small">check</Icon>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Cancel">
-                  <IconButton size="small" onClick={cancelEditing} sx={{ color: "error.main" }}>
-                    <Icon fontSize="small">close</Icon>
-                  </IconButton>
-                </Tooltip>
-              </MDBox>
-            )}
-          </MDBox>
-
-          {isEditing ? (
-            <MDBox>{renderInputField()}</MDBox>
-          ) : (
-            <MDBox
-              sx={{
-                p: 1,
-                border: "1px solid #e0e0e0",
-                borderRadius: 1,
-                backgroundColor: "#fafafa",
-                minHeight: "42px",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <MDTypography variant="button" sx={{ color: "#222" }}>
-                {formatValue(key, value)}
-              </MDTypography>
-            </MDBox>
-          )}
-        </MDBox>
-      );
-    });
-  };
-
   const renderSocial = social.map(({ link, icon, color }) => (
     <MDBox
       key={color}
@@ -497,6 +304,171 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
       {icon}
     </MDBox>
   ));
+
+  // Render Edit Profile Modal following the same pattern as OrganizerEventCard
+  const renderEditProfileModal = () => (
+    <Modal
+      open={editModalOpen}
+      onClose={handleCloseEditModal}
+      aria-labelledby="edit-profile-title"
+      sx={{
+        backdropFilter: "blur(8px) brightness(0.7)",
+        backgroundColor: "rgba(0,0,0,0.35)",
+        zIndex: 1300,
+      }}
+      closeAfterTransition
+    >
+      <Fade in={editModalOpen}>
+        <Box sx={modalStyle(darkMode)}>
+          {/* Header */}
+          <MDBox
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            px={3}
+            py={2}
+            sx={{
+              background: "linear-gradient(90deg, #1976d2 0%, #21cbf3 100%)",
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+            }}
+          >
+            <MDBox display="flex" alignItems="center" gap={1}>
+              <Icon sx={{ color: "white" }}>edit</Icon>
+              <MDTypography variant="h6" color="white" fontWeight="bold">
+                Edit Profile
+              </MDTypography>
+            </MDBox>
+            <IconButton onClick={handleCloseEditModal} size="small" sx={{ color: "white" }}>
+              <Icon>close</Icon>
+            </IconButton>
+          </MDBox>
+
+          {/* Content */}
+          <MDBox px={4} py={3}>
+            {editMessage.text && (
+              <Alert severity={editMessage.type || "info"} sx={{ mb: 2 }}>
+                {editMessage.text}
+              </Alert>
+            )}
+
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <MDBox mb={2}>
+                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                    Full Name
+                  </MDTypography>
+                  <MDInput
+                    value={editForm.name}
+                    onChange={(e) => handleEditFieldChange("name", e.target.value)}
+                    error={!!editErrors.name}
+                    helperText={editErrors.name}
+                    fullWidth
+                    placeholder="Enter your full name"
+                  />
+                </MDBox>
+              </Grid>
+
+              <Grid item xs={12}>
+                <MDBox mb={2}>
+                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                    Email Address
+                  </MDTypography>
+                  <MDInput
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => handleEditFieldChange("email", e.target.value)}
+                    error={!!editErrors.email}
+                    helperText={editErrors.email}
+                    fullWidth
+                    placeholder="Enter your email address"
+                  />
+                </MDBox>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <MDBox mb={2}>
+                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                    Academic Year
+                  </MDTypography>
+                  <FormControl fullWidth error={!!editErrors.year}>
+                    <Select
+                      value={editForm.year}
+                      onChange={(e) => handleEditFieldChange("year", e.target.value)}
+                      displayEmpty
+                      sx={{ height: "2.75rem" }}
+                    >
+                      <MenuItem value="">Select year</MenuItem>
+                      {Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i).map(
+                        (year) => (
+                          <MenuItem key={year} value={year}>
+                            Year {year}
+                          </MenuItem>
+                        )
+                      )}
+                    </Select>
+                    {editErrors.year && (
+                      <MDTypography variant="caption" color="error">
+                        {editErrors.year}
+                      </MDTypography>
+                    )}
+                  </FormControl>
+                </MDBox>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <MDBox mb={2}>
+                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                    Branch
+                  </MDTypography>
+                  <FormControl fullWidth error={!!editErrors.branch}>
+                    <Select
+                      value={editForm.branch}
+                      onChange={(e) => handleEditFieldChange("branch", e.target.value)}
+                      displayEmpty
+                      sx={{ height: "2.75rem" }}
+                    >
+                      <MenuItem value="">Select branch</MenuItem>
+                      {ALLOWED_BRANCHES.map((branch) => (
+                        <MenuItem key={branch} value={branch}>
+                          {branch}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {editErrors.branch && (
+                      <MDTypography variant="caption" color="error">
+                        {editErrors.branch}
+                      </MDTypography>
+                    )}
+                  </FormControl>
+                </MDBox>
+              </Grid>
+            </Grid>
+
+            <MDBox display="flex" justifyContent="flex-end" mt={3} gap={1}>
+              <MDButton
+                variant="outlined"
+                color="secondary"
+                onClick={handleCloseEditModal}
+                disabled={editLoading}
+              >
+                Cancel
+              </MDButton>
+              <MDButton
+                variant="gradient"
+                color="info"
+                onClick={handleSubmit}
+                disabled={editLoading || !hasChanges()}
+                startIcon={editLoading ? <CircularProgress size={16} /> : null}
+              >
+                {editLoading ? "Updating..." : "Update Profile"}
+              </MDButton>
+            </MDBox>
+          </MDBox>
+        </Box>
+      </Fade>
+    </Modal>
+  );
 
   return (
     <>
@@ -547,79 +519,8 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
         </MDBox>
       </Card>
 
-      {/* Edit Profile Modal */}
-      <Modal
-        open={editModalOpen}
-        onClose={handleCloseEditModal}
-        aria-labelledby="edit-profile-title"
-        sx={{
-          backdropFilter: "blur(8px) brightness(0.7)",
-          backgroundColor: "rgba(0,0,0,0.35)",
-          zIndex: 1300,
-        }}
-        closeAfterTransition
-      >
-        <Fade in={editModalOpen}>
-          <Box sx={modalStyle(darkMode)}>
-            {/* Header */}
-            <MDBox
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              px={3}
-              py={2}
-              sx={{
-                background: "linear-gradient(90deg, #1976d2 0%, #21cbf3 100%)",
-                borderTopLeftRadius: 12,
-                borderTopRightRadius: 12,
-              }}
-            >
-              <MDBox display="flex" alignItems="center" gap={1}>
-                <Icon sx={{ color: "white" }}>edit</Icon>
-                <MDTypography variant="h6" color="white" fontWeight="bold">
-                  Edit Profile
-                </MDTypography>
-              </MDBox>
-              <IconButton onClick={handleCloseEditModal} size="small" sx={{ color: "white" }}>
-                <Icon>close</Icon>
-              </IconButton>
-            </MDBox>
-
-            {/* Content */}
-            <MDBox px={4} py={3}>
-              {message.text && (
-                <Alert severity={message.type || "info"} sx={{ mb: 2 }}>
-                  {message.text}
-                </Alert>
-              )}
-
-              <form>
-                {renderEditableFields()}
-
-                <MDBox display="flex" justifyContent="flex-end" mt={3} gap={1}>
-                  <MDButton
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleCloseEditModal}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </MDButton>
-                  <MDButton
-                    variant="gradient"
-                    color="info"
-                    onClick={handleSubmit}
-                    disabled={loading || !hasChanges()}
-                    startIcon={loading ? <CircularProgress size={16} /> : null}
-                  >
-                    {loading ? "Updating..." : "Update Details"}
-                  </MDButton>
-                </MDBox>
-              </form>
-            </MDBox>
-          </Box>
-        </Fade>
-      </Modal>
+      {/* Render Edit Profile Modal */}
+      {renderEditProfileModal()}
     </>
   );
 }
