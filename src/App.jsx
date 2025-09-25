@@ -18,7 +18,8 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 import routes from "routes";
-import { useAuth } from 'context/AuthContext';
+import { useAuth } from "context/AuthContext";
+import ResetPasswordPage from "layouts/authentication/resetPassword";
 
 export default function App() {
   const { role, isLoading } = useAuth();
@@ -131,10 +132,15 @@ export default function App() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
+        {/* Only redirect truly unmatched routes, not those that match a dynamic route like /reset-password/:token */}
         <Route
           path="*"
           element={
-            <Navigate to={role == "organizer" ? "/organizer-dashboard" : "/user-dashboard"} />
+            window.location.pathname.startsWith("/reset-password/") ? (
+              <ResetPasswordPage />
+            ) : (
+              <Navigate to={role == "organizer" ? "/organizer-dashboard" : "/user-dashboard"} />
+            )
           }
         />
       </Routes>

@@ -36,6 +36,8 @@ import OrganizedEvents from "layouts/organizedevents";
 import Icon from "@mui/material/Icon";
 import GoogleFormData from "layouts/getcertificate";
 import DashboardOrg from "layouts/dashboardorganizer";
+import EventDetailsPage from "layouts/event-details";
+import ResetPasswordPage from "layouts/authentication/resetPassword";
 
 const routes = [
   {
@@ -66,6 +68,15 @@ const routes = [
     component: <ExplorePage />,
     public: true,
   },
+  {
+    type: "route",
+    name: "Reset Password",
+    key: "reset-password",
+    route: "/reset-password/:token",
+    component: <ResetPasswordPage />,
+    public: true,
+    hidden: true,
+  },
 
   // User routes (visible to users with role 'user')
   {
@@ -76,6 +87,16 @@ const routes = [
     route: "/my-events",
     component: <MyEvents />,
     roles: ["participant"],
+  },
+  {
+    type: "route",
+    name: "Event Details",
+    key: "event-details",
+    route: "/events/:eventId",
+    icon: <Icon fontSize="small">info</Icon>,
+    component: <EventDetailsPage />,
+    public: true,
+    hidden: true, // This hides it from the sidebar navigation
   },
   {
     type: "collapse",

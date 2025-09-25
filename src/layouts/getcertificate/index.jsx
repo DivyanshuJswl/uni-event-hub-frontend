@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import axios from "axios";
+import React from "react";
 import { CircularProgress } from "@mui/material";
 import { Verified } from "@mui/icons-material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -11,17 +9,19 @@ import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
 import MDAlert from "components/MDAlert";
 import HackathonTable from "./HackathonTable";
+import { useHackathonWinners } from "./hooks/useHackathonWinners";
+import { withAuth } from "context/AuthContext";
 
 // Reusable components
 function LoadingIndicator() {
   return (
-    <MDBox display="flex" justifyContent="center" mt={4}>
-      <CircularProgress sx={{ color: "white" }} />
+    <MDBox display="flex" height="25vh" justifyContent="center" alignItems="center" m={3}>
+      <CircularProgress m="50px" sx={{ color: "white"}} />
     </MDBox>
   );
 }
 
-function ErrorDisplay({ error, apiKey }) {
+function ErrorDisplay({ error, hasApiKey }) {
   return (
     <MDBox mx="auto" p={3} maxWidth="800px">
       <MDAlert color="error" mb={3}>
@@ -30,7 +30,7 @@ function ErrorDisplay({ error, apiKey }) {
         </MDTypography>
         {error}
       </MDAlert>
-      {!apiKey && (
+      {!hasApiKey && (
         <MDAlert color="warning">
           <MDTypography variant="body2" color="white">
             Please ensure you have a .env file with VITE_GOOGLE_API_KEY set.
@@ -40,11 +40,6 @@ function ErrorDisplay({ error, apiKey }) {
     </MDBox>
   );
 }
-
-ErrorDisplay.propTypes = {
-  error: PropTypes.string.isRequired,
-  apiKey: PropTypes.string,
-};
 
 function EmptyState() {
   return (
@@ -60,50 +55,8 @@ function EmptyState() {
 }
 
 const HackathonWinners = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const apiKey = (import.meta.env.VITE_VITE_GOOGLE_API_KEY || "").trim();
-  const sheetId = (import.meta.env.VITE_GOOGLE_SHEET_ID || "").trim();
-  const range = "Form Responses 1";
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-
-  useEffect(() => {
-    if (!apiKey) {
-      setError("Google API key is missing");
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        // Actual API call would look like:
-        setLoading(true);
-        setError(null);
-        const response = await axios.get(url);
-        if (response.data?.values) {
-          const [headers, ...rows] = response.data.values;
-          const formattedData = rows.map((row) => ({
-            timestamp: row[0],
-            name: row[3],
-            metamaskId: row[2],
-            certificateId: row[4] || "N/A",
-          }));
-          setData(formattedData);
-        } else {
-          setError("No data found in the sheet");
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(`Failed to fetch data: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [url, apiKey]);
+  const { data, loading, error, stats } = useHackathonWinners();
+  const hasApiKey = Boolean((import.meta.env.VITE_GOOGLE_API_KEY || import.meta.env.VITE_VITE_GOOGLE_API_KEY || "").trim());
 
   return (
     <DashboardLayout>
@@ -117,13 +70,17 @@ const HackathonWinners = () => {
             Verify All
           </MDButton>
         </MDBox>
-        <MDBox mb={3} display="flex">
-          <HackathonTable data={data} loading={loading} error={error} />
-        </MDBox>
+        {loading && <LoadingIndicator />}
+        {!loading && error && <ErrorDisplay error={error} hasApiKey={hasApiKey} />}
+        {!loading && !error && (
+          <MDBox mb={3} display="flex">
+            <HackathonTable data={data} />
+          </MDBox>
+        )}
         {!loading && !error && (
           <MDBox mt={3}>
             <MDTypography variant="body2" fontStyle="italic">
-              {data.length} certificates issued. All certificates are stored on IPFS and verifiable
+              {stats.total} certificates issued. All certificates are stored on IPFS and verifiable
               on-chain.
             </MDTypography>
           </MDBox>
@@ -134,4 +91,4 @@ const HackathonWinners = () => {
   );
 };
 
-export default HackathonWinners;
+export default withAuth(HackathonWinners, "participant");

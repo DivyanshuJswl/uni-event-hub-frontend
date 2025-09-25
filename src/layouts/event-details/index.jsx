@@ -1,4 +1,6 @@
+// layouts/event-details/index.jsx
 import React from "react";
+
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 
@@ -6,19 +8,18 @@ import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import MyParticipatedEvents from "./components";
-import { withAuth } from "context/AuthContext";
+import EventDetails from "./components";
 
-function MyEvents() {
+function EventDetailsPage() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={2}>
-        <MyParticipatedEvents />
+        <EventDetails />
       </MDBox>
       <Footer />
     </DashboardLayout>
   );
 }
 
-export default withAuth(MyEvents, "participant");
+export default EventDetailsPage;

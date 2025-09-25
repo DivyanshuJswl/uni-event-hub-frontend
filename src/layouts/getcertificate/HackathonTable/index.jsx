@@ -1,122 +1,109 @@
 import PropTypes from "prop-types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Tooltip,
-  Chip,
-  CircularProgress,
-} from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tooltip, Chip } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import Icon from "@mui/material/Icon";
 import CertificateActions from "../CertificateAction";
-import MDAlert from "components/MDAlert";
 
-function HackathonTable({ data, loading, error }) {
-  if (loading) {
-    return (
-      <MDBox display="flex" justifyContent="center" alignItems="center" height="200px">
-        <CircularProgress sx={{ color: "white" }} />
+function HeaderCell({ children }) {
+  return (
+    <TableCell align="center">
+      <MDTypography variant="h6" fontWeight="bold">
+        {children}
+      </MDTypography>
+    </TableCell>
+  );
+}
+
+HeaderCell.propTypes = { children: PropTypes.node.isRequired };
+
+function WinnerCell({ name }) {
+  return (
+    <TableCell>
+      <MDBox display="flex" gap={1} alignItems="center">
+        <Icon color="info">person</Icon>
+        <MDTypography variant="body2" fontWeight="medium">{name}</MDTypography>
       </MDBox>
-    );
-  }
+    </TableCell>
+  );
+}
 
-  if (error) {
-    return (
-      <MDBox mx="auto" p={3} maxWidth="800px">
-        <MDAlert color="error">
-          <MDTypography variant="h6" color="white">
-            Error
-          </MDTypography>
-          {error}
-        </MDAlert>
+WinnerCell.propTypes = { name: PropTypes.string.isRequired };
+
+function MetamaskCell({ metamaskId }) {
+  return (
+    <TableCell>
+      <Tooltip title="View on Blockchain">
+        <Chip label={metamaskId} size="small" sx={{ bgcolor: "secondary.main", color: "white", fontFamily: "monospace" }} />
+      </Tooltip>
+    </TableCell>
+  );
+}
+
+MetamaskCell.propTypes = { metamaskId: PropTypes.string.isRequired };
+
+function CertificateIdCell({ certificateId }) {
+  return (
+    <TableCell>
+      <MDTypography variant="caption" fontFamily="monospace">{certificateId}</MDTypography>
+    </TableCell>
+  );
+}
+
+CertificateIdCell.propTypes = { certificateId: PropTypes.string.isRequired };
+
+function ActionsCell({ certificateId }) {
+  return (
+    <TableCell>
+      <MDBox display="flex" justifyContent="center">
+        <CertificateActions certificateId={certificateId} />
       </MDBox>
-    );
-  }
+    </TableCell>
+  );
+}
 
-  if (data.length === 0) {
-    return (
-      <MDBox mx="auto" p={3} textAlign="center" maxWidth="800px">
-        <MDTypography variant="h5" gutterBottom color="white">
-          No Data Available
-        </MDTypography>
-        <MDTypography variant="body2" color="white">
-          The Google Sheet is empty or couldn&apos;t be loaded.
-        </MDTypography>
-      </MDBox>
-    );
-  }
+ActionsCell.propTypes = { certificateId: PropTypes.string.isRequired };
 
+function TimestampCell({ timestamp }) {
+  return (
+    <TableCell>
+      <MDTypography variant="body2">
+        {new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(new Date(timestamp))}
+      </MDTypography>
+    </TableCell>
+  );
+}
+
+TimestampCell.propTypes = { timestamp: PropTypes.string.isRequired };
+
+export default function HackathonTable({ data }) {
   return (
     <TableContainer component={Paper} sx={{ boxShadow: "none", backgroundColor: "transparent" }}>
-      <MDBox mb={2} display="flex" justifyContent="space-between" alignItems="center">
+      <MDBox mb={2}>
         <Table aria-label="hackathon winners table">
           <TableHead>
             <TableRow>
-              {["Winner", "Metamask ID", "Certificate ID", "Actions"].map((header, index) => (
-                <TableCell key={index} align="center">
-                  <MDTypography variant="h6" fontWeight="bold">
-                    {header}
-                  </MDTypography>
-                </TableCell>
+              {["Winner", "Metamask ID", "Certificate ID", "Actions", "Timestamp"].map((header) => (
+                <HeaderCell key={header}>{header}</HeaderCell>
               ))}
             </TableRow>
           </TableHead>
-
           <TableBody>
             {data.map((row, index) => (
               <TableRow key={index}>
-                {row.metamaskId && (
-                  <TableCell>
-                    <MDBox display="flex">
-                      <Icon color="info">person</Icon>
-                      <MDTypography variant="body2" fontWeight="medium">
-                        {row.name}
-                      </MDTypography>
-                    </MDBox>
-                  </TableCell>
-                )}
-
-                {row.metamaskId && (
-                  <TableCell>
-                    <Tooltip title="View on Blockchain">
-                      <Chip
-                        label={row.metamaskId}
-                        size="small"
-                        sx={{ bgcolor: "secondary.main", color: "white", fontFamily: "monospace" }}
-                      />
-                    </Tooltip>
-                  </TableCell>
-                )}
-                <TableCell>
-                  <MDTypography variant="caption" fontFamily="monospace">
-                    {row.certificateId}
-                  </MDTypography>
-                </TableCell>
-
-                <TableCell>
-                  <MDBox display="flex" justifyContent="center">
-                    <CertificateActions certificateId={row.certificateId} />
-                  </MDBox>
-                </TableCell>
-                <TableCell>
-                  <MDTypography variant="body2">
-                    {new Intl.DateTimeFormat("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    }).format(new Date(row.timestamp))}
-                  </MDTypography>
-                </TableCell>
+                <WinnerCell name={row.name} />
+                <MetamaskCell metamaskId={row.metamaskId} />
+                <CertificateIdCell certificateId={row.certificateId} />
+                <ActionsCell certificateId={row.certificateId} />
+                <TimestampCell timestamp={row.timestamp} />
               </TableRow>
             ))}
           </TableBody>
@@ -135,10 +122,4 @@ HackathonTable.propTypes = {
       certificateId: PropTypes.string.isRequired,
     })
   ).isRequired,
-  loading: PropTypes.bool.isRequired,
-  error: PropTypes.string,
 };
-HackathonTable.defaultProps = {
-  error: null,
-};
-export default HackathonTable;

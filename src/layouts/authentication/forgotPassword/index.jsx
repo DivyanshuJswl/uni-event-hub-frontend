@@ -9,6 +9,8 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
+import { useAuth } from "context/AuthContext";
+import axios from "axios";
 
 const style = {
   position: "fixed",
@@ -30,22 +32,20 @@ export default function ResetPasswordModal({ open, onClose, onSubmit }) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-
+  const { showToast } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate async reset logic
     try {
-      // Call your backend API
-      const response = await axios.post({ BASE_URL } + "/api/auth/forgot-password", { email });
-
-      if (response.data.success) {
+      const response = await axios.post(BASE_URL + "/api/password/forgot", { email });
+      if (response.data.message) {
         setSent(true);
         onSubmit && onSubmit(email);
       }
     } catch (error) {
       console.error("Error sending reset email:", error);
-      // Add error handling (show toast/alert)
+      // TODO: Show error toast/alert
+      // showToast();
     } finally {
       setLoading(false);
     }
