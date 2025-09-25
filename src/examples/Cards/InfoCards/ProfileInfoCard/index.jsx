@@ -28,7 +28,7 @@ const modalStyle = (darkMode) => ({
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  minWidth: 500,
+  minWidth: 300,
   maxWidth: "95vw",
   maxHeight: "90vh",
   overflowY: "auto",

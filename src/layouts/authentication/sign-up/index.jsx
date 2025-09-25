@@ -23,7 +23,6 @@ import zxcvbn from "zxcvbn";
 import { Box } from "@mui/system";
 import { useAuth } from "context/AuthContext";
 
-
 const bgImage = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758117993/bg-sign-up-cover_on4sqw.jpg";
 // Add this styled component above your Cover function
 const BackgroundWrapper = styled("div")({
@@ -213,7 +212,7 @@ function Cover() {
         pauseOnHover
       />
 
-      <Card sx={{ maxWidth: 375, zIndex: 10 }}>
+      <Card sx={{ maxWidth: 400, zIndex: 10, mx: "auto" }}>
         <MDBox
           variant="gradient"
           bgColor="info"

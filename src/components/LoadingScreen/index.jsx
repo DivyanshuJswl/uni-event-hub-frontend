@@ -8,7 +8,7 @@ const fadeIn = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { transfoQrm: scale(1); opacity: 1; }
+  0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.05); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
 `;

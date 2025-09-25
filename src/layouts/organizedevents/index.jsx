@@ -14,6 +14,8 @@ import {
   Typography,
   CircularProgress as MUICircularProgress,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -23,7 +25,7 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import EventSkeleton from "components/EventSkeleton";
 import { useMaterialUIController } from "context";
-import { useAuth } from "context/AuthContext";
+import { useAuth, withRole } from "context/AuthContext";
 import OrganizerEventCard from "examples/Cards/OrganizerEventCard";
 import { useNavigate } from "react-router-dom";
 
@@ -33,6 +35,8 @@ function OrganizedEvents() {
   const { darkMode } = controller;
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -193,100 +197,136 @@ function OrganizedEvents() {
                   setPage(1);
                 }}
                 variant={statusFilter === s.key ? "filled" : "outlined"}
-                sx={{ mb: 1, borderRadius: "8px", fontWeight: 400, fontSize: "0.875rem" }}
+                sx={{
+                  mb: 1,
+                  borderRadius: "8px",
+                  fontWeight: 400,
+                  fontSize: "0.75rem",
+                  "& .MuiChip-label": {
+                    px: 1,
+                  },
+                }}
               />
             ))}
           </Stack>
 
-          {/* Search and Controls */}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              mb: 4,
-              flexDirection: { xs: "column", md: "row" },
-              alignItems: { md: "center" },
-              justifyContent: { md: "space-between" },
-            }}
-          >
-            <MDBox display="flex" maxWidth="20rem" gap={2} flexGrow={1}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search your events..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
+          {/* Search and Controls - Fixed Layout */}
+          <Grid container spacing={2} alignItems="center" mb={4}>
+            {/* Search Field - Takes full width on small screens, half on medium+ */}
+            <Grid item xs={12} md={6}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={2}
+                sx={{
+                  justifyContent: isSmall ? "center" : "flex-start",
+                  width: "100%",
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Icon fontSize="small" color={darkMode ? "white" : "black"}>
-                        search
-                      </Icon>
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    borderRadius: 2,
-                    backgroundColor: darkMode ? "" : "white",
+              >
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  placeholder="Search your events..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setPage(1);
+                  }}
+                  fullWidth={isSmall}
+                  sx={{
+                    width: isSmall ? "15rem" : "400px",
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Icon fontSize="small" color={darkMode ? "white" : "black"}>
+                          search
+                        </Icon>
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: 2,
+                      backgroundColor: darkMode ? "" : "white",
+                      "& .MuiInputBase-input": {
+                        color: darkMode ? "white" : "text.primary",
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </Grid>
+
+            {/* Controls - Takes full width on small screens, half on medium+ */}
+            <Grid item xs={12} md={6}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={2}
+                sx={{
+                  justifyContent: isSmall ? "center" : "flex-end",
+                  flexWrap: isSmall ? "wrap" : "nowrap",
+                  width: "100%",
+                }}
+              >
+                <TextField
+                  label="Items per page"
+                  type="number"
+                  value={inputValue}
+                  onChange={handleItemsPerPageChange}
+                  size="small"
+                  inputProps={{ min: 1, max: 12 }}
+                  sx={{
+                    width: isSmall ? "120px" : "140px",
                     "& .MuiInputBase-input": {
                       color: darkMode ? "white" : "text.primary",
                     },
-                  },
-                }}
-              />
-            </MDBox>
+                    "& .MuiInputLabel-root": {
+                      color: darkMode ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
+                    },
+                  }}
+                />
 
-            <MDBox display="flex" alignItems="center" gap={2}>
-              <TextField
-                label="Items per page"
-                type="number"
-                value={inputValue}
-                onChange={handleItemsPerPageChange}
-                size="small"
-                inputProps={{ min: 1, max: 12 }}
-                sx={{
-                  width: 120,
-                  "& .MuiInputBase-input": {
-                    color: darkMode ? "white" : "text.primary",
-                  },
-                }}
-              />
-
-              <Button
-                variant="outlined"
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 400,
-                  borderWidth: "1px",
-                  color: darkMode ? "primary.main" : "primary.main",
-                  borderColor: darkMode ? "primary.main" : "primary.main",
-                  "&:hover": {
-                    borderColor: darkMode ? "primary.dark" : "primary.dark",
-                    backgroundColor: darkMode
-                      ? "rgba(25, 118, 210, 0.08)"
-                      : "rgba(25, 118, 210, 0.04)",
-                  },
-                  "&.Mui-disabled": {
-                    borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
-                    color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
-                  },
-                }}
-                onClick={handleRefresh}
-                disabled={loading || refreshing || !organizerId}
-                startIcon={
-                  refreshing ? (
-                    <MUICircularProgress size={20} color="inherit" />
-                  ) : (
-                    <Icon>refresh</Icon>
-                  )
-                }
-              >
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </Button>
-            </MDBox>
-          </Box>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    borderRadius: "8px",
+                    fontWeight: 400,
+                    borderWidth: "1px",
+                    color: darkMode ? "primary.main" : "primary.main",
+                    borderColor: darkMode ? "primary.main" : "primary.main",
+                    minWidth: "auto",
+                    px: 2,
+                    "&:hover": {
+                      borderColor: darkMode ? "primary.dark" : "primary.dark",
+                      backgroundColor: darkMode
+                        ? "rgba(25, 118, 210, 0.08)"
+                        : "rgba(25, 118, 210, 0.04)",
+                    },
+                    "&.Mui-disabled": {
+                      borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                      color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                    },
+                  }}
+                  onClick={handleRefresh}
+                  disabled={loading || refreshing || !organizerId}
+                  startIcon={
+                    refreshing ? (
+                      <MUICircularProgress size={20} color="inherit" />
+                    ) : (
+                      <Icon>refresh</Icon>
+                    )
+                  }
+                >
+                  <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                    {refreshing ? "Refreshing..." : "Refresh"}
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                    {refreshing ? "" : "Refresh"}
+                  </Box>
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
 
           {/* Events Grid */}
           {loading ? (
@@ -389,4 +429,4 @@ function OrganizedEvents() {
   );
 }
 
-export default OrganizedEvents;
+export default withRole(OrganizedEvents, "organizer");

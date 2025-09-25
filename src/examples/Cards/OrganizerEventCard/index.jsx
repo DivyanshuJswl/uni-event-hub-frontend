@@ -55,16 +55,17 @@ const modalStyle = (darkMode) => ({
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  minWidth: 500,
+  minWidth: 300,
   maxWidth: "95vw",
   maxHeight: "90vh",
   overflowY: "auto",
   bgcolor: darkMode ? "background.default" : "background.paper",
   borderRadius: 3,
-  boxShadow: 24,
+  boxShadow: 20,
   p: 0,
   zIndex: 1301,
   outline: "none",
+  WebkitOverflowScrolling: "touch",
 });
 
 // Constants for validation
@@ -444,6 +445,10 @@ function OrganizerEventCard({ event, onUpdated }) {
         backdropFilter: "blur(8px) brightness(0.7)",
         backgroundColor: "rgba(0,0,0,0.35)",
         zIndex: 1300,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 1,
       }}
       closeAfterTransition
     >
@@ -636,7 +641,7 @@ function OrganizerEventCard({ event, onUpdated }) {
       closeAfterTransition
     >
       <Fade in={manageModalOpen}>
-        <Box sx={{ ...modalStyle(darkMode), minWidth: 600 }}>
+        <Box sx={modalStyle(darkMode)}>
           {/* Header */}
           <MDBox
             display="flex"
@@ -721,28 +726,73 @@ function OrganizerEventCard({ event, onUpdated }) {
               ) : (
                 <List sx={{ maxHeight: 300, overflow: "auto" }}>
                   {details.participants.map((participant, index) => (
-                    <ListItem key={participant._id || index} divider>
-                      <Avatar sx={{ width: 40, height: 40, mr: 2 }}>
-                        {participant.name?.charAt(0) || participant.email?.charAt(0) || "U"}
-                      </Avatar>
-                      <ListItemText
-                        primary={participant.name || "Unknown User"}
-                        secondary={participant.email || participant._id}
-                      />
-                      <ListItemSecondaryAction>
-                        <Tooltip title="Remove participant">
-                          <MDButton
-                            size="small"
-                            color="error"
-                            variant="outlined"
-                            disabled={participantActionBusy}
-                            onClick={() => modifyParticipant("remove", participant._id)}
-                            startIcon={<PersonRemoveIcon />}
+                    <ListItem
+                      key={participant._id || index}
+                      divider
+                      sx={{
+                        py: 1,
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* Participant Info - Takes full available space */}
+                      <MDBox sx={{ flex: 1, minWidth: 0, mr: 2 }}>
+                        <MDTypography
+                          variant="button"
+                          fontWeight="medium"
+                          color="text"
+                          sx={{
+                            fontSize: { xs: "0.875rem", sm: "0.875rem" },
+                            display: "block",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {participant.name || "Unknown User"}
+                        </MDTypography>
+                        <MDTypography
+                          variant="caption"
+                          color="secondary"
+                          sx={{
+                            fontSize: { xs: "0.75rem", sm: "0.75rem" },
+                            display: "block",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {participant.email || participant._id}
+                        </MDTypography>
+                      </MDBox>
+
+                      {/* Action Button - Icon only on mobile */}
+                      <Tooltip title="Remove participant">
+                        <MDButton
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          disabled={participantActionBusy}
+                          onClick={() => modifyParticipant("remove", participant._id)}
+                          sx={{
+                            minWidth: "auto",
+                            px: { xs: 1, sm: 2 },
+                            width: { xs: "32px", sm: "auto" }, // Fixed width on mobile
+                            height: { xs: "32px", sm: "auto" },
+                            "& .MuiButton-startIcon": {
+                              margin: { xs: 0, sm: "inherit" }, // Remove margin on mobile
+                            },
+                          }}
+                        >
+                          {/* Show only icon on mobile, icon + text on desktop */}
+                          <PersonRemoveIcon sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }} />
+                          <Box
+                            component="span"
+                            sx={{ display: { xs: "none", sm: "inline" }, ml: 1 }}
                           >
                             Remove
-                          </MDButton>
-                        </Tooltip>
-                      </ListItemSecondaryAction>
+                          </Box>
+                        </MDButton>
+                      </Tooltip>
                     </ListItem>
                   ))}
                 </List>

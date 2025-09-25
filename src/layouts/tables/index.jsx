@@ -11,7 +11,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
-import { useAuth } from "context/AuthContext";
+import { useAuth, withRole } from "context/AuthContext";
 // Custom components
 import CreateEvent from "./createEvent";
 import { Alert } from "@mui/material";
@@ -236,4 +236,4 @@ function Tables() {
   );
 }
 
-export default Tables;
+export default withRole(Tables, "organizer");

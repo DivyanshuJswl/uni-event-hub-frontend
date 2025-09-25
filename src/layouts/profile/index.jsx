@@ -1,6 +1,5 @@
 // @mui material components
 import Grid from "@mui/material/Grid";
-import Divider from "@mui/material/Divider";
 
 // @mui icons
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -34,10 +33,8 @@ function Overview() {
   const team2 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-2_aq8yoc.jpg";
   const team3 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg";
   const team4 = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-4_efvdcl.jpg";
-  // Get student data from sessionStorage
-  const student = user;
 
-  if (!student || !token) {
+  if (!user || !token) {
     return (
       <DashboardLayout>
         <DashboardNavbar />
@@ -55,14 +52,13 @@ function Overview() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox mb={2} />
-      <Header name={student.name} avatar={student.avatar}>
+      <Header name={user.name} avatar={user.avatar}>
         <MDBox mt={5} mb={3}>
           <Grid container spacing={1}>
             <Grid item xs={12} md={6} xl={4}>
-              <PlatformSettings role={student.role} />
+              <PlatformSettings role={user.role} />
             </Grid>
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
-              <Divider orientation="vertical" sx={{ ml: -2, mr: 2 }} />
               <ProfileInfoCard
                 title="Student Profile"
                 description="Here you can find your profile information and manage your projects."
@@ -90,7 +86,6 @@ function Overview() {
                 shadow={false}
                 darkMode={darkMode}
               />
-              <Divider orientation="vertical" sx={{ mx: 0, ml: 2 }} />
             </Grid>
             <Grid item xs={12} md={6} xl={4}>
               <MetaMaskIntegration />
