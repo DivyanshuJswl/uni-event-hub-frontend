@@ -32,7 +32,7 @@ export default function ResetPasswordModal({ open, onClose, onSubmit }) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  const { showToast } = useAuth();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -44,8 +44,6 @@ export default function ResetPasswordModal({ open, onClose, onSubmit }) {
       }
     } catch (error) {
       console.error("Error sending reset email:", error);
-      // TODO: Show error toast/alert
-      // showToast();
     } finally {
       setLoading(false);
     }

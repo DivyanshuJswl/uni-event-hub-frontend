@@ -152,21 +152,7 @@ function Dashboard() {
               recommendedEvents.slice(0, 3).map((event) => (
                 <Grid item xs={12} md={6} lg={4} key={event._id}>
                   <MDBox mb={3}>
-                    <EventCard
-                      image={event.images?.[0]?.url || hack1}
-                      title={event.title}
-                      description={event.description}
-                      category={event.category}
-                      date={event.date}
-                      location={event.location}
-                      maxParticipants={event.maxParticipants}
-                      currentParticipants={event.participants?.length || 0}
-                      organizerName={event.organizer?.name}
-                      organizerEmail={event.organizer?.email}
-                      status={event.status}
-                      isFull={event.participants?.length >= event.maxParticipants}
-                      _id={event._id}
-                    />
+                    <EventCard event={event} />
                   </MDBox>
                 </Grid>
               ))

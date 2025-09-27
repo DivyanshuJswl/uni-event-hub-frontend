@@ -79,7 +79,12 @@ function Cover() {
   };
   const toggleGenerator = () => setGeneratorOpen(!generatorOpen);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    // Prevent default form submission behavior
+    if (e) {
+      e.preventDefault();
+    }
+
     // Validate required fields
     if (!name || !email || !password || !year || !branch) {
       showToast("Please fill in all required fields", "warning");
@@ -232,7 +237,7 @@ function Cover() {
           </MDTypography>
         </MDBox>
         <MDBox pt={2} pb={2} px={3}>
-          <MDBox component="form" role="form">
+          <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
                 onChange={(e) => setName(e.target.value)}
@@ -437,9 +442,9 @@ function Cover() {
             </MDBox>
             <MDBox mt={2} mb={1}>
               <MDButton
+                type="submit"
                 variant="gradient"
                 color="info"
-                onClick={handleSubmit}
                 fullWidth
                 disabled={isLoading}
                 sx={{

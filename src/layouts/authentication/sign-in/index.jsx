@@ -30,7 +30,8 @@ import ResetPasswordModal from "../forgotPassword";
 import HCaptchaComponent from "./hCaptcha";
 
 function Basic() {
-  const bgImage = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758078677/bg-sign-in-basic_yj4cue.jpg";
+  const bgImage =
+    "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758078677/bg-sign-in-basic_yj4cue.jpg";
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const [resetOpen, setResetOpen] = useState(false);
@@ -46,6 +47,8 @@ function Basic() {
   const [captchaError, setCaptchaError] = useState("");
   const [resetCaptcha, setResetCaptcha] = useState(false);
   const { login, googleLogin, showToast } = useAuth();
+  const production = import.meta.env.VITE_NODE_ENV === "development";
+
   // Load saved credentials if rememberMe was checked
   useState(() => {
     if (rememberMe) {
@@ -57,25 +60,28 @@ function Basic() {
   }, []);
 
   const handleResetSubmit = (email) => {
-    // TODO: Add your reset logic here (API call, toast, etc.)
     console.log("Reset password for:", email);
     showToast("Reset password link sent to " + email, "success");
     setResetOpen(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+
     setCaptchaError("");
     if (!email || !password) {
       showToast("Please fill in all fields", "warning");
       return;
     }
-    if (!captchaToken) {
+    if (production && !captchaToken) {
       setCaptchaError("Please complete the captcha verification");
       showToast("Please complete the captcha verification", "warning");
       return;
     }
 
-    //  credentials if rememberMe is checked
+    // Save credentials if rememberMe is checked
     if (rememberMe) {
       sessionStorage.setItem("savedEmail", email);
       sessionStorage.setItem("savedPassword", password);
@@ -193,7 +199,7 @@ function Basic() {
           </Grid>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
-          <MDBox component="form" role="form">
+          <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
                 onChange={(e) => setEmail(e.target.value)}
@@ -262,21 +268,23 @@ function Basic() {
                 onSubmit={handleResetSubmit}
               />
             </MDBox>
-            <HCaptchaComponent
-              onVerify={(token) => {
-                setCaptchaToken(token);
-                setCaptchaError("");
-              }}
-              onError={() => {
-                setCaptchaToken(null);
-                setCaptchaError("Captcha verification failed");
-              }}
-              onExpire={() => {
-                setCaptchaToken(null);
-                setCaptchaError("Captcha expired - please verify again");
-              }}
-              reset={resetCaptcha}
-            />
+            {production && (
+              <HCaptchaComponent
+                onVerify={(token) => {
+                  setCaptchaToken(token);
+                  setCaptchaError("");
+                }}
+                onError={() => {
+                  setCaptchaToken(null);
+                  setCaptchaError("Captcha verification failed");
+                }}
+                onExpire={() => {
+                  setCaptchaToken(null);
+                  setCaptchaError("Captcha expired - please verify again");
+                }}
+                reset={resetCaptcha}
+              />
+            )}
             {captchaError && (
               <MDTypography
                 variant="caption"
@@ -289,10 +297,7 @@ function Basic() {
                   alignItems: "center",
                 }}
               >
-                <Icon // padding right
-                  sx={{ mr: 0.8, color: "error.main" }} // Adjust color based on theme
-                  fontSize="small"
-                >
+                <Icon sx={{ mr: 0.8, color: "error.main" }} fontSize="small">
                   error
                 </Icon>
                 <div>{captchaError}</div>
@@ -300,7 +305,7 @@ function Basic() {
             )}
             <MDBox mt={2} mb={1} fullWidth>
               <MDButton
-                onClick={handleSubmit}
+                type="submit"
                 variant="gradient"
                 color="info"
                 fullWidth

@@ -176,7 +176,12 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    // Prevent default form submission behavior
+    if (e) {
+      e.preventDefault();
+    }
+
     // Validate all fields before submission
     const newErrors = {};
     Object.keys(editForm).forEach((field) => {
@@ -234,6 +239,14 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
       });
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  // Handle Enter key press in form fields
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Prevent default form submission
+      handleSubmit(); // Trigger form submission
     }
   };
 
@@ -344,8 +357,8 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
             </IconButton>
           </MDBox>
 
-          {/* Content */}
-          <MDBox px={4} py={3}>
+          {/* Content - Wrap with form element */}
+          <MDBox component="form" onSubmit={handleSubmit} px={4} py={3}>
             {editMessage.text && (
               <Alert severity={editMessage.type || "info"} sx={{ mb: 2 }}>
                 {editMessage.text}
@@ -361,6 +374,7 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
                   <MDInput
                     value={editForm.name}
                     onChange={(e) => handleEditFieldChange("name", e.target.value)}
+                    onKeyPress={handleKeyPress}
                     error={!!editErrors.name}
                     helperText={editErrors.name}
                     fullWidth
@@ -378,6 +392,7 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
                     type="email"
                     value={editForm.email}
                     onChange={(e) => handleEditFieldChange("email", e.target.value)}
+                    onKeyPress={handleKeyPress}
                     error={!!editErrors.email}
                     helperText={editErrors.email}
                     fullWidth
@@ -455,9 +470,9 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
                 Cancel
               </MDButton>
               <MDButton
+                type="submit"
                 variant="gradient"
                 color="info"
-                onClick={handleSubmit}
                 disabled={editLoading || !hasChanges()}
                 startIcon={editLoading ? <CircularProgress size={16} /> : null}
               >

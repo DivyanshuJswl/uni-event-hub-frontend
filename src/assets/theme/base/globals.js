@@ -21,6 +21,14 @@ const globals = {
   "a.link:hover, .link:hover, a.link:focus, .link:focus": {
     color: `${info.main} !important`,
   },
+
+  "*::-webkit-scrollbar": {
+    display: "none",
+  },
+  "*": {
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE & Edge legacy
+  },
 };
 
 export default globals;

@@ -17,6 +17,10 @@ import {
   ListItemText,
   ListItemAvatar,
   Snackbar,
+  Card,
+  CardContent,
+  Typography,
+  Link as MuiLink,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -29,6 +33,12 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Close as CloseIcon,
+  Link as LinkIcon,
+  Settings as SettingsIcon,
+  Notifications as NotificationsIcon,
+  CardMembership as CertificateIcon,
+  CalendarToday as CalendarIcon,
+  Update as UpdateIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 
@@ -38,6 +48,7 @@ import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import { useAuth } from "context/AuthContext";
 import EventDetailsSkeleton from "./EventDetailsSkeleton";
+import dayjs from "dayjs";
 
 function EventDetails() {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -76,7 +87,6 @@ function EventDetails() {
 
       setEvent(res.data.data.event);
 
-      // Check if user is enrolled
       if (user && res.data.data.event.participants) {
         const enrolled = res.data.data.event.participants.some(
           (participant) => participant._id === user.id || participant === user.id
@@ -106,7 +116,6 @@ function EventDetails() {
 
       setIsEnrolled(true);
       showSnackbar("Successfully enrolled in the event!");
-      // Refresh event details to get updated participant count
       await fetchEventDetails();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to enroll in event";
@@ -128,7 +137,6 @@ function EventDetails() {
 
       setIsEnrolled(false);
       showSnackbar("Successfully unenrolled from the event!");
-      // Refresh event details to get updated participant count
       await fetchEventDetails();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to unenroll from event";
@@ -227,18 +235,16 @@ function EventDetails() {
     event.featuredImage?.url ||
     event.images?.[0]?.url ||
     "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=60";
-  const formattedDate = new Date(event.date).toLocaleString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+
+  const formattedDate = dayjs(event.date).format("MMMM D, YYYY h:mm A");
+  const createdDate = dayjs(event.createdAt).format("MMM D, YYYY");
+  const updatedDate = dayjs(event.updatedAt).format("MMM D, YYYY");
+  const daysUntil =
+    event.daysUntil !== undefined ? event.daysUntil : dayjs(event.date).diff(dayjs(), "day");
+  const isOrganizer = user?.email === event.organizer?.email;
 
   return (
     <Container maxWidth="xl">
-      {/* Header with Back Button */}
       <MDBox display="flex" alignItems="center" mb={3}>
         <IconButton onClick={() => navigate(-1)} sx={{ mr: 2 }} component={Link} to={-1}>
           <ArrowBackIcon color={sidenavColor} />
@@ -269,6 +275,93 @@ function EventDetails() {
               boxShadow: 3,
             }}
           />
+
+          {/* Event Settings Card */}
+          <Card
+            sx={{ mt: 3, backgroundColor: darkMode ? "background.default" : "background.paper" }}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <SettingsIcon color="secondary" sx={{ mr: 1 }} />
+                <MDTypography variant="h6" fontWeight="bold">
+                  Event Settings
+                </MDTypography>
+              </Box>
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center">
+                    <CheckCircleIcon
+                      color={event.enableRegistration ? "success" : "disabled"}
+                      sx={{ mr: 1 }}
+                    />
+                    <MDTypography variant="body2">
+                      Registration: {event.enableRegistration ? "Enabled" : "Disabled"}
+                    </MDTypography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center">
+                    <CertificateIcon
+                      color={event.digitalCertificates ? "info" : "disabled"}
+                      sx={{ mr: 1 }}
+                    />
+                    <MDTypography variant="body2">
+                      Certificates: {event.digitalCertificates ? "Yes" : "No"}
+                    </MDTypography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center">
+                    <NotificationsIcon
+                      color={event.sendReminders ? "warning" : "disabled"}
+                      sx={{ mr: 1 }}
+                    />
+                    <MDTypography variant="body2">
+                      Reminders: {event.sendReminders ? "Enabled" : "Disabled"}
+                    </MDTypography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center">
+                    <CalendarIcon color="primary" sx={{ mr: 1 }} />
+                    <MDTypography variant="body2">
+                      {daysUntil > 0 ? `${daysUntil} days until` : "Event ongoing"}
+                    </MDTypography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          {/* Metadata Card */}
+          <Card
+            sx={{ mt: 2, backgroundColor: darkMode ? "background.default" : "background.paper" }}
+          >
+            <CardContent>
+              <MDTypography variant="h6" fontWeight="bold" mb={2}>
+                Event Metadata
+              </MDTypography>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                <Chip
+                  icon={<CalendarIcon />}
+                  label={`Created: ${createdDate}`}
+                  variant="outlined"
+                  size="medium"
+                  color="warning"
+                />
+                {event.createdAt !== event.updatedAt && (
+                  <Chip
+                    icon={<UpdateIcon />}
+                    label={`Updated: ${updatedDate}`}
+                    variant="outlined"
+                    size="medium"
+                    color="info"
+                  />
+                )}
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Event Details */}
@@ -302,6 +395,24 @@ function EventDetails() {
               </MDTypography>
             </Box>
 
+            {/* Event URL */}
+            {event.eventURL && (
+              <Box display="flex" alignItems="center" mb={2}>
+                <LinkIcon color="secondary" sx={{ mr: 1 }} />
+                <MuiLink
+                  href={
+                    event.eventURL.startsWith("http") ? event.eventURL : `https://${event.eventURL}`
+                  }
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <MDTypography variant="body2" color="primary">
+                    {event.eventURL}
+                  </MDTypography>
+                </MuiLink>
+              </Box>
+            )}
+
             <Divider sx={{ my: 2 }} />
 
             {/* Date and Time */}
@@ -314,6 +425,11 @@ function EventDetails() {
                 <MDTypography variant="body2" color="text">
                   {formattedDate}
                 </MDTypography>
+                {daysUntil > 0 && (
+                  <MDTypography variant="caption" color="primary">
+                    {daysUntil} days until event
+                  </MDTypography>
+                )}
               </Box>
             </Box>
 
@@ -387,7 +503,18 @@ function EventDetails() {
                 >
                   Log In to Enroll
                 </MDButton>
-              ) : canEnroll ? (
+              ) : isOrganizer ? (
+                <MDButton
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  component={Link}
+                  to="/organized-events"
+                >
+                  Manage Your Event
+                </MDButton>
+              ) : 
+              canEnroll ? (
                 <MDButton
                   variant="gradient"
                   color="success"
@@ -458,16 +585,56 @@ function EventDetails() {
               Event Description
             </MDTypography>
             <MDTypography
-              variant="body1"
+              variant="body2"
               color="text"
-              sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}
+              sx={{ whiteSpace: "pre-wrap", lineHeight: 1 }}
             >
               {event.description || "No description provided for this event."}
             </MDTypography>
           </Paper>
         </Grid>
 
-        {/* Participants List (Only for Organizers) */}
+        {/* Gallery if multiple images exist */}
+        {event.images && event.images.length > 1 && (
+          <Grid item xs={12}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                backgroundColor: darkMode ? "background.default" : "background.paper",
+              }}
+            >
+              <MDTypography variant="h5" fontWeight="bold" mb={2}>
+                Event Gallery ({event.images.length} images)
+              </MDTypography>
+              <Grid container spacing={2}>
+                {event.images.map((img, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Box
+                      component="img"
+                      src={img.url}
+                      alt={`${event.title} - Image ${index + 1}`}
+                      sx={{
+                        width: "100%",
+                        height: 200,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                        cursor: "pointer",
+                        transition: "transform 0.3s ease",
+                        "&:hover": {
+                          transform: "scale(1.05)",
+                        },
+                      }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Participants List */}
         {user?.id === event.organizer?._id &&
           event.participants &&
           event.participants.length > 0 && (
@@ -503,7 +670,6 @@ function EventDetails() {
           )}
       </Grid>
 
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

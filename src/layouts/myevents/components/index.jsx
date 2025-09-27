@@ -20,13 +20,14 @@ import { useMaterialUIController } from "context";
 import { useAuth } from "context/AuthContext";
 import ParticipatedEventCard from "examples/Cards/ParticipatedEventCard";
 import EventSkeleton from "components/EventSkeleton";
+import { useNavigate } from "react-router-dom";
 
 function MyParticipatedEvents() {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const { user, token } = useAuth();
-
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
@@ -51,7 +52,7 @@ function MyParticipatedEvents() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         withCredentials: true,
       });
-
+      console.log(res?.data?.data?.events);
       setEvents(res?.data?.data?.events || []);
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Failed to fetch participated events");
@@ -70,14 +71,15 @@ function MyParticipatedEvents() {
 
     try {
       setUnenrollLoading(eventId);
-      await axios.post(
-        `${BASE_URL}/api/events/unenroll/${_id}`,
+      const res = await axios.post(
+        `${BASE_URL}/api/events/unenroll/${eventId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         }
       );
+      console.log(res);
       // Remove the event from the list
       setEvents((prev) => prev.filter((event) => event._id !== eventId));
     } catch (err) {
@@ -189,13 +191,12 @@ function MyParticipatedEvents() {
         </Box>
 
         {/* Statistics Chips */}
-        <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap" }}>
+        <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap" }}>
           {[
             { key: "all", label: `All: ${stats.total}`, color: "primary" },
             { key: "upcoming", label: `Upcoming: ${stats.upcoming}`, color: "secondary" },
             { key: "ongoing", label: `Ongoing: ${stats.ongoing}`, color: "warning" },
             { key: "completed", label: `Completed: ${stats.completed}`, color: "success" },
-            { key: "cancelled", label: `Cancelled: ${stats.cancelled}`, color: "error" },
           ].map((s) => (
             <Chip
               key={s.key}
@@ -206,7 +207,15 @@ function MyParticipatedEvents() {
                 setPage(1);
               }}
               variant={statusFilter === s.key ? "filled" : "outlined"}
-              sx={{ mb: 1 }}
+              sx={{
+                mb: 1,
+                borderRadius: "8px",
+                fontWeight: 400,
+                fontSize: "0.75rem",
+                "& .MuiChip-label": {
+                  px: 1,
+                },
+              }}
             />
           ))}
         </Stack>
@@ -284,7 +293,7 @@ function MyParticipatedEvents() {
                       <Button
                         variant="contained"
                         color="primary"
-                        href="/explore"
+                        onClick={() => navigate("/explore")}
                         sx={{ borderRadius: 2 }}
                       >
                         Explore Events
