@@ -221,6 +221,19 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             LOG OUT
           </MDButton>
         )}
+
+        <MDButton
+          component="a"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfxvfz-KIGL_5K6vOdyK5RgW0vHUJA8HE6xkGU0gE94HesnAA/viewform?usp=sharing&ouid=110758534365460544145"
+          target="_blank"
+          rel="noreferrer"
+          variant="gradient"
+          color="primary"
+          fullWidth
+          sx={{ mb: 1 }}
+        >
+          Feedback Form
+        </MDButton>
         <MDButton
           component="a"
           href="https://www.linkedin.com/in/divyanshujswl/"
