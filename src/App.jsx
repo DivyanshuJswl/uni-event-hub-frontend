@@ -1,3 +1,4 @@
+// App.jsx - Updated imports and main content
 import { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
@@ -20,9 +21,12 @@ import brandDark from "assets/images/logo-ct-dark.png";
 import routes from "routes";
 import { useAuth } from "context/AuthContext";
 import ResetPasswordPage from "layouts/authentication/resetPassword";
+import { ChatProvider } from "context/ChatContext";
+import FloatingChatButton from "components/FloatingChatButton";
+import ChatWindow from "components/ChatWindow";
 
 export default function App() {
-  const { role, isLoading } = useAuth();
+  const { role, isLoading, user, token } = useAuth();
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -88,8 +92,8 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  // Configurator button
-  const configsButton = (
+  // Configurator button - Only show if user is logged in
+  const configsButton = user ? (
     <MDBox
       display="flex"
       justifyContent="center"
@@ -111,10 +115,11 @@ export default function App() {
         settings
       </Icon>
     </MDBox>
-  );
+  ) : null;
+
   // Main content
   const mainContent = (
-    <>
+    <ChatProvider>
       {layout === "dashboard" && (
         <>
           <Sidenav
@@ -130,9 +135,17 @@ export default function App() {
         </>
       )}
       {layout === "vr" && <Configurator />}
+      
+      {/* AI Chat Components - Only show if user is authenticated */}
+      {user && (
+        <>
+          <FloatingChatButton />
+          <ChatWindow />
+        </>
+      )}
+      
       <Routes>
         {getRoutes(routes)}
-        {/* Only redirect truly unmatched routes, not those that match a dynamic route like /reset-password/:token */}
         <Route
           path="*"
           element={
@@ -144,7 +157,7 @@ export default function App() {
           }
         />
       </Routes>
-    </>
+    </ChatProvider>
   );
 
   return (
