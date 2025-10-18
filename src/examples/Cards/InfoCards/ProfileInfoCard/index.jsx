@@ -81,7 +81,7 @@ const formatUserData = (user) => {
 function ProfileInfoCard({ title, description, social, action, shadow, darkMode }) {
   const { socialMediaColors } = colors;
   const { size } = typography;
-
+ 
   // Use API context for making API calls
   const { updateProfile, user } = useAuth();
 

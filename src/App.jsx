@@ -135,7 +135,7 @@ export default function App() {
         </>
       )}
       {layout === "vr" && <Configurator />}
-      
+
       {/* AI Chat Components - Only show if user is authenticated */}
       {user && (
         <>
@@ -143,7 +143,7 @@ export default function App() {
           <ChatWindow />
         </>
       )}
-      
+
       <Routes>
         {getRoutes(routes)}
         <Route
