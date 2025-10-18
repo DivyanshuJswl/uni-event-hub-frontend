@@ -139,11 +139,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
-  // Handler functions
-  const handleDeveloperModeToggle = () => {
-    setDeveloperMode(dispatch, !developerMode);
-  };
-
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
@@ -421,21 +416,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>
-
-              <IconButton
-                size="small"
-                color={developerMode ? "warning" : "inherit"}
-                onClick={handleDeveloperModeToggle}
-                title="Toggle Developer Mode"
-              >
-                <Icon sx={iconsStyle}>code</Icon>
-              </IconButton>
-
-              {developerMode && (
-                <MDTypography variant="caption" color="warning" fontWeight="bold" sx={{ ml: 0.5 }}>
-                  DEV
-                </MDTypography>
-              )}
             </MDBox>
           </MDBox>
         )}

@@ -130,13 +130,7 @@ src/
 - dotenv (for environment variables)
 
 ## npm install
-
-## required env var
-
-VITE_GOOGLE_CLIENT_ID=your-google-oauth-client-id
-VITE_VITE_GOOGLE_API_KEY=your-google-sheets-api-key
-VITE_GOOGLE_SHEET_ID=your-google-sheet-id
-
+## npm run dev
 ---
 
 ## Acknowledgements

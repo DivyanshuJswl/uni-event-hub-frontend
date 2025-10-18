@@ -215,6 +215,7 @@ function Cover() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        theme={darkMode ? "dark" : "light"}
       />
 
       <Card sx={{ maxWidth: 400, zIndex: 10, mx: "auto" }}>

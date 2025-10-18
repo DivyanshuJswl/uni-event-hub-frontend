@@ -1,21 +1,17 @@
 import React from "react";
-import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import { withAuth } from "context/AuthContext";
-import MyCertificates from "./component";
+import CertificateVerification from "./component";
 
-const HackathonWinners = () => {
+const VerifyCertificate = () => {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox py={2}>
-        <MyCertificates />
-      </MDBox>
+      <CertificateVerification />
       <Footer />
     </DashboardLayout>
   );
 };
 
-export default withAuth(HackathonWinners, "participant");
+export default VerifyCertificate;

@@ -177,7 +177,7 @@ export const AuthProvider = ({ children }) => {
     }, delay);
   };
 
-  const showToast = (message, type = "error") => {
+  const showToast = (message, type = "error", theme = "dark") => {
     const toastConfig = {
       position: "top-right",
       autoClose: 3000,
@@ -185,6 +185,7 @@ export const AuthProvider = ({ children }) => {
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
+      theme: theme
     };
 
     // Dismiss any existing toasts before showing new one
@@ -373,7 +374,7 @@ export const AuthProvider = ({ children }) => {
   const becomeOrganizer = async () => {
     try {
       const response = await axios.patch(
-        `${BASE_URL}/api/roles/upgrade-to-organizer`,
+        `${BASE_URL}/api/auth/upgrade-to-organizer`,
         {},
         {
           headers: {

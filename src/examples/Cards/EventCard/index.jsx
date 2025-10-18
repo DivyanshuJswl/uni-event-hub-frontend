@@ -139,6 +139,7 @@ function EventCard({ event, isEnrolled = false }) {
       <Card
         onClick={handleOpen}
         sx={{
+          height: "100%",
           cursor: "pointer",
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
           backgroundColor: darkMode ? "background.default" : "background.paper",
@@ -517,7 +518,11 @@ function EventCard({ event, isEnrolled = false }) {
                   >
                     Event Description
                   </MDTypography>
-                  <MDTypography variant="body1" color="text" sx={{ mb: 3, whiteSpace: "pre-wrap", lineHeight: 1 }}>
+                  <MDTypography
+                    variant="body1"
+                    color="text"
+                    sx={{ mb: 3, whiteSpace: "pre-wrap", lineHeight: 1 }}
+                  >
                     {description}
                   </MDTypography>
 

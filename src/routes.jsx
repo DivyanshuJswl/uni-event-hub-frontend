@@ -38,6 +38,7 @@ import GoogleFormData from "layouts/getcertificate";
 import DashboardOrg from "layouts/dashboardorganizer";
 import EventDetailsPage from "layouts/event-details";
 import ResetPasswordPage from "layouts/authentication/resetPassword";
+import VerifyCertificate from "layouts/verifycertificate";
 
 const routes = [
   {
@@ -75,6 +76,14 @@ const routes = [
     route: "/reset-password/:token",
     component: <ResetPasswordPage />,
     public: true,
+    hidden: true,
+  },
+  {
+    type: "route",
+    name: "Verify Certificate",
+    key: "verify-certificate",
+    route: "/verify/:certificateId",
+    component: <VerifyCertificate />,
     hidden: true,
   },
 
@@ -163,7 +172,6 @@ const routes = [
     route: "/authentication/sign-in",
     component: <SignIn />,
     public: true,
-    devOnly: true, // Only for development purposes
     hideWhenAuthenticated: true, // Hide when user is authenticated
   },
   {
@@ -174,7 +182,6 @@ const routes = [
     route: "/authentication/sign-up",
     component: <SignUp />,
     public: true,
-    devOnly: true, // Only for development purposes
     hideWhenAuthenticated: true, // Hide when user is authenticated
   },
 ];
