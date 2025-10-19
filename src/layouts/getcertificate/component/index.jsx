@@ -216,7 +216,7 @@ const MyCertificates = () => {
             px={isMobile ? 2 : 3}
             py={isMobile ? 1.5 : 2}
             sx={{
-              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
+              background: `linear-gradient(90deg, ${theme.palette.info.main} 0%, ${theme.palette.info.focus} 100%)`,
               borderTopLeftRadius: isMobile ? 8 : 12,
               borderTopRightRadius: isMobile ? 8 : 12,
             }}

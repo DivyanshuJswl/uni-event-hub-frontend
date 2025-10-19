@@ -13,7 +13,7 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 import { useAuth, withRole } from "context/AuthContext";
 // Custom components
-import CreateEvent from "./createEvent";
+import CreateEvent from "./component";
 import { Alert } from "@mui/material";
 
 // Data fetching
@@ -21,7 +21,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 
-function Tables() {
+function createEvent() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -236,4 +236,4 @@ function Tables() {
   );
 }
 
-export default withRole(Tables, "organizer");
+export default withRole(createEvent, "organizer");

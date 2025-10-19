@@ -22,7 +22,6 @@
 
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
-import Tables from "layouts/tables";
 import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
@@ -31,6 +30,7 @@ import MyEvents from "layouts/myevents";
 import Publish from "layouts/certificatepublisher";
 import ExplorePage from "layouts/explorepage";
 import OrganizedEvents from "layouts/organizedevents";
+import CreateEvents from "layouts/createEvents";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -123,7 +123,7 @@ const routes = [
     key: "create-event",
     icon: <Icon fontSize="small">event</Icon>,
     route: "/create-event",
-    component: <Tables />,
+    component: <CreateEvents />,
     roles: ["organizer"],
   },
   {
@@ -148,7 +148,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Mint Certificate",
+    name: "Publish Certificates",
     key: "publish-certificate",
     icon: <Icon fontSize="small">publish</Icon>,
     route: "/publish-certificate",

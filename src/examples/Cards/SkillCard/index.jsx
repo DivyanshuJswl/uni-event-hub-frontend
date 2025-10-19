@@ -37,11 +37,9 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
   return (
     <Card
       sx={{
-        mb: 2,
+        p: 2,
         boxShadow: 2,
-        backgroundColor: darkMode ? "background.default" : "background.paper",
         "&:hover": {
-          boxShadow: darkMode ? 4 : 3,
           transform: "translateY(-2px)",
           transition: "all 0.2s ease-in-out",
         },
@@ -80,7 +78,7 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
         </MDTypography>
 
         {(demand || avgSalary) && (
-          <Box display="flex" gap={1} mb={0.5} flexWrap="wrap">
+          <Box display="flex" gap={1} flexWrap="wrap">
             {demand && (
               <MDTypography variant="caption" color="text" fontWeight="medium">
                 📈 {demand} Job Demand
@@ -94,7 +92,7 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
           </Box>
         )}
       </CardContent>
-      <CardActions sx={{ justifyContent: "end" }}>
+      <CardActions sx={{ justifyContent: "end", transform: "translateY(-20px)" }}>
         <Button
           size="small"
           endIcon={<Icon>arrow_forward</Icon>}

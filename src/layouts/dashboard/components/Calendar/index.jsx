@@ -1,9 +1,5 @@
-// @mui material components
-import Card from "@mui/material/Card";
-
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
 import MDCalendar from "components/MDCalendar";
 
 // Axios for API calls
@@ -41,7 +37,7 @@ function Projects() {
         justifyContent: "center",
       }}
     >
-      <MDCalendar color="success" events={events} loading={loading} />
+      <MDCalendar events={events} loading={loading} />
     </MDBox>
   );
 }

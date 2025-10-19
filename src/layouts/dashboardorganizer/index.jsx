@@ -12,8 +12,8 @@ import Footer from "examples/Footer";
 import Typography from "@mui/material/Typography";
 import EventCard from "examples/Cards/EventCard";
 // Dashboard components
-import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
+import Projects from "layouts/dashboard/components/Calendar";
+import OrdersOverview from "layouts/dashboard/components/UpcomingEvents";
 import WelcomeBox from "layouts/dashboard/components/WelcomeBox";
 import LeaderboardTable from "layouts/dashboard/components/Leaderboard";
 import EventSkeleton from "components/EventSkeleton";
@@ -83,35 +83,26 @@ function DashboardOrg() {
               recommendedEvents.slice(0, 3).map((event) => (
                 <Grid item xs={12} md={6} lg={4} key={event._id}>
                   <MDBox mb={3}>
-                    <EventCard
-                      event={event}
-                    />
+                    <EventCard event={event} />
                   </MDBox>
                 </Grid>
               ))
             )}
           </Grid>
         </MDBox>
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <MDBox>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={5} lg={8}>
-                <Projects />
-              </Grid>
-              <Grid item xs={12} md={7} lg={4}>
-                <OrdersOverview events={events} loading={loading} />
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <LeaderboardTable />
-              </Grid>
+        <MDBox>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={8}>
+              <Projects />
             </Grid>
-          </MDBox>
-        </motion.div>
+            <Grid item xs={12} md={6} lg={4}>
+              <OrdersOverview events={events} loading={loading} />
+            </Grid>
+            <Grid item xs={12} md={12} lg={12}>
+              <LeaderboardTable />
+            </Grid>
+          </Grid>
+        </MDBox>
       </MDBox>
       <Footer />
     </DashboardLayout>

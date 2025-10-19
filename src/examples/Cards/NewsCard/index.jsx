@@ -24,7 +24,6 @@ function NewsCard({ name, source, description, author, publishedAt, image, link 
       sx={{
         mb: 2,
         boxShadow: 3,
-        backgroundColor: darkMode ? "background.default" : "background.paper",
         "&:hover": {
           boxShadow: darkMode ? 6 : 4,
           transform: "translateY(-2px)",

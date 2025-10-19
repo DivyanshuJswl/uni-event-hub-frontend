@@ -186,7 +186,7 @@ function BillingInformation() {
             </MDTypography>
           </MDBox>
         ) : (
-          <MDBox component="ul" display="flex" flexDirection="column" p={1} m={0}>
+          <MDBox component="ul" display="flex" flexDirection="column" p={1} gap={2}>
             {skills.map((skill) => (
               <SkillCard
                 key={skill.id}

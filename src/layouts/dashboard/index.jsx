@@ -13,8 +13,8 @@ import Typography from "@mui/material/Typography";
 import EventCard from "examples/Cards/EventCard";
 import EventSkeleton from "components/EventSkeleton";
 // Dashboard components
-import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
+import Projects from "layouts/dashboard/components/Calendar";
+import OrdersOverview from "layouts/dashboard/components/UpcomingEvents";
 import WelcomeBox from "./components/WelcomeBox";
 import LeaderboardTable from "./components/Leaderboard";
 import { useNavigate } from "react-router-dom";
@@ -167,10 +167,10 @@ function Dashboard() {
         >
           <MDBox>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={5} lg={8}>
+              <Grid item xs={12} md={6} lg={8}>
                 <Projects />
               </Grid>
-              <Grid item xs={12} md={7} lg={4}>
+              <Grid item xs={12} md={6} lg={4}>
                 <OrdersOverview events={events} loading={loading} />
               </Grid>
               <Grid item xs={12} md={12} lg={12}>

@@ -356,7 +356,6 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                     </Icon>
                     <MDTypography
                       varient="gradient"
-                      color="white"
                       fontWeight="regular"
                       fontSize="0.875rem"
                     >

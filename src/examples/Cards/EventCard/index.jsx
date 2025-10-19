@@ -142,7 +142,6 @@ function EventCard({ event, isEnrolled = false }) {
           height: "100%",
           cursor: "pointer",
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
           position: "relative",
           "&:hover": {
             transform: "translateY(-5px)",

@@ -1,11 +1,13 @@
 const colors = {
   background: {
-    default: "#f8f4e9", // Light beige
+    default: "#f8f4e9ff", // Light beige
+    sidenav: "#f0f0f0ff",
+    card: "#f8f8f8ff"
   },
 
   text: {
-    main: "#212121", // Almost black
-    focus: "#424242", // Dark gray
+    main: "#000", // Almost black
+    focus: "#000000ff", // Dark gray
   },
 
   transparent: {
@@ -18,9 +20,9 @@ const colors = {
   },
 
   black: {
-    light: "#2e2e2e", // Very dark gray
+    light: "#0c0c0c", // Very dark gray (near black)
     main: "#000000", // Pure black
-    focus: "#1a1a1a", // Very dark gray
+    focus: "#000000", // Pure black
   },
 
   primary: {
@@ -59,8 +61,8 @@ const colors = {
   },
 
   dark: {
-    main: "#333333", // Charcoal gray
-    focus: "#1e1e1e", // Very dark gray
+    main: "#101010ff", // Charcoal gray
+    focus: "#000000ff", // Very dark gray
   },
 
   grey: {
@@ -81,8 +83,8 @@ const colors = {
       state: "#1976d2", // Medium blue
     },
     secondary: {
-      main: "#ba68c8", // Soft purple
-      state: "#9c27b0", // Medium purple
+      main: "#747b8a", // Grayish blue
+      state: "#495361", // Dark slate
     },
     info: {
       main: "#4fc3f7", // Light sky blue

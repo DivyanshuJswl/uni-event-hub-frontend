@@ -24,7 +24,7 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
           padding: 2,
           mb: 2,
           backgroundColor: darkMode ? "background.default" : "background.paper",
-          borderRadius: 2,
+          borderRadius: 3,
           boxShadow: darkMode ? "0 4px 20px rgba(0, 0, 0, 0.12)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
         }}
       >
@@ -53,7 +53,7 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
         padding: 2,
         mb: 2,
         backgroundColor: darkMode ? "background.default" : "background.paper",
-        borderRadius: 2,
+        borderRadius: 3,
         boxShadow: darkMode ? "0 4px 20px rgba(0, 0, 0, 0.12)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
         transition: "all 0.2s ease-in-out",
         "&:hover": {
@@ -115,7 +115,7 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
         >
           <MDTypography
             variant="h6"
-            color={darkMode ? "white" : "primary"}
+            color={darkMode ? "white" : "black.main"}
             sx={{
               fontWeight: 600,
               lineHeight: 1.3,
@@ -194,7 +194,6 @@ const UpcomingEvents = ({ events = [], loading = false }) => {
           mb: 3,
           borderRadius: 2,
           boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.12)" : "0 8px 32px rgba(0, 0, 0, 0.05)",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
         }}
       >
         <Skeleton variant="text" width="60%" height={32} sx={{ mb: 3, borderRadius: 1 }} />
@@ -212,13 +211,12 @@ const UpcomingEvents = ({ events = [], loading = false }) => {
         mb: 3,
         borderRadius: 2,
         boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.12)" : "0 8px 32px rgba(0, 0, 0, 0.05)",
-        backgroundColor: darkMode ? "background.default" : "background.paper",
       }}
     >
       <Typography
         variant="h5"
         gutterBottom
-        color={darkMode ? "white" : "primary"}
+        color={darkMode ? "white" : "black.main"}
         sx={{
           fontWeight: 700,
           mb: 3,

@@ -6,13 +6,13 @@
 
 const colors = {
   background: {
-    default: "#12161f", // Dark navy blue (almost black)
-    sidenav: "#1a1f2b", // Dark slate blue
-    card: "#1e2432", // Dark gunmetal blue
+    default: "#000000", // Dark navy blue (almost black)
+    sidenav: "#050505", // Dark slate blue
+    card: "#0a0a0a", // Dark gunmetal blue
   },
 
   text: {
-    main: "rgba(255, 255, 255, 0.87)", // Semi-transparent white
+    main: "#fff", // Semi-transparent white
     focus: "rgba(255, 255, 255, 1)", // Pure white
   },
 
@@ -21,24 +21,24 @@ const colors = {
   },
 
   white: {
-    main: "#e4e6eb", // Soft off-white
+    main: "#fafafa", // Soft off-white
     focus: "#ffffff", // Pure white
   },
 
   black: {
-    light: "#121212", // Very dark gray (near black)
+    light: "#0c0c0c", // Very dark gray (near black)
     main: "#000000", // Pure black
     focus: "#000000", // Pure black
   },
 
   primary: {
-    main: "#1A73E8", // Bright azure blue
+    main: "#006effff", // Bright azure blue
     focus: "#1A73E8", // Bright azure blue
   },
 
   secondary: {
-    main: "#7b809a", // Cool grayish blue
-    focus: "#8f93a9", // Lighter grayish blue
+    main: "#00afe9cb", // Cool grayish blue
+    focus: "#00bfffff", // Lighter grayish blue
   },
 
   info: {
@@ -62,7 +62,7 @@ const colors = {
   },
 
   light: {
-    main: "#f0f2f566", // Very light gray with transparency
+    main: "#ffffff69", // Very light gray with transparency
     focus: "#f0f2f566", // Very light gray with transparency
   },
 
@@ -100,7 +100,7 @@ const colors = {
     },
 
     success: {
-      main: "#66BB6A", // Soft green
+      main: "#38c23eff", // Soft green
       state: "#43A047", // Forest green
     },
 

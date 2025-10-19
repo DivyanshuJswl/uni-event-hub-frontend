@@ -822,11 +822,10 @@ function OrganizerEventCard({ event, onUpdated }) {
         onClick={handleOpen}
         sx={{
           cursor: "pointer",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
           position: "relative",
           "&:hover": {
             transform: "translateY(-5px)",
+            transition: "transform 0.3s ease, box-shadow 0.3s ease",
             boxShadow: darkMode ? "0 10px 20px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.1)",
           },
         }}

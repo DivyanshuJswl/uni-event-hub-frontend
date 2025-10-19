@@ -314,7 +314,6 @@ const CreateEvent = () => {
               borderRadius: 3,
               boxShadow: darkMode ? 1 : 3,
               overflow: "visible",
-              backgroundColor: "background.default",
             }}
           >
             <CardContent sx={{ p: 4 }}>

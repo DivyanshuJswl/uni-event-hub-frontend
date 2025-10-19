@@ -1,4 +1,5 @@
 // @mui material components
+import React from "react";
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import Icon from "@mui/material/Icon";
@@ -91,6 +92,7 @@ function NewsSection() {
   );
 
   return (
+    
     <Card
       sx={{
         borderRadius: 3,

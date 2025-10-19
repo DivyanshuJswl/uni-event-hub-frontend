@@ -59,10 +59,8 @@ const MDCalendar = ({ events = [], loading = false }) => {
 
     return {
       calendar: {
-        backgroundColor: darkMode
-          ? "#12161f" // Rich dark background
-          : "linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)", // Pure white
-        color: darkMode ? "#e0e0e0" : "#2d3748", // Softer text colors
+        backgroundColor: "background.card", // Rich dark background
+        color: darkMode ? "white.main" : "grey.900", // Softer text colors
         boxShadow: darkMode ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
       },
       header: {
@@ -116,7 +114,6 @@ const MDCalendar = ({ events = [], loading = false }) => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: 700,
           mx: "auto",
           p: 3,
           borderRadius: 3,
@@ -238,7 +235,6 @@ const MDCalendar = ({ events = [], loading = false }) => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 700,
         mx: "auto",
         p: 3,
         borderRadius: 3,
