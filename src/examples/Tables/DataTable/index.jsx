@@ -32,18 +32,23 @@ function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }
   }, [children]);
 
   const cellContent = (
-    <MDBox
+    <MDTypography
       ref={textRef}
+      variant="caption"
+      fontWeight="bold"
       sx={{
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
         maxWidth: "100%",
         display: "block",
+        textTransform: "uppercase",
+        fontSize: "0.75rem",
+        letterSpacing: "0.5px",
       }}
     >
       {children}
-    </MDBox>
+    </MDTypography>
   );
 
   return (
@@ -54,20 +59,17 @@ function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }
       px={2}
       sx={({ palette: { light }, borders: { borderWidth } }) => ({
         borderBottom: `${borderWidth[1]} solid ${light.main}`,
+        backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.04)",
       })}
     >
       <MDBox
         {...rest}
         position="relative"
         textAlign={align}
-        color={isDark ? "white" : "black"}
-        sx={({ typography: { size, fontWeightBold } }) => ({
-          fontSize: size.xxs,
-          fontWeight: fontWeightBold,
-          textTransform: "uppercase",
+        sx={{
           cursor: sorted && "pointer",
           userSelect: sorted && "none",
-        })}
+        }}
       >
         {isOverflowing ? (
           <Tooltip title={children} placement="top" arrow>
@@ -83,9 +85,7 @@ function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }
             top={0}
             right={align !== "right" ? "16px" : 0}
             left={align === "right" ? "-5px" : "unset"}
-            sx={({ typography: { size } }) => ({
-              fontSize: size.lg,
-            })}
+            sx={{ fontSize: "1.25rem" }}
           >
             <MDBox
               position="absolute"
@@ -127,9 +127,6 @@ DataTableHeadCell.propTypes = {
 
 // DataTableBodyCell Component
 function DataTableBodyCell({ noBorder, align, children, darkMode }) {
-  const [controller] = useMaterialUIController();
-  const { darkMode: contextDarkMode } = controller;
-  const isDark = darkMode !== undefined ? darkMode : contextDarkMode;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -142,11 +139,10 @@ function DataTableBodyCell({ noBorder, align, children, darkMode }) {
     }
   }, [children]);
 
-  // For PC, allow text to wrap as paragraphs
-  // For mobile, keep the existing behavior
   const cellContent = (
-    <MDBox
+    <MDTypography
       ref={textRef}
+      variant="body2"
       sx={{
         overflow: "hidden",
         textOverflow: isMobile ? "ellipsis" : "clip",
@@ -154,10 +150,12 @@ function DataTableBodyCell({ noBorder, align, children, darkMode }) {
         wordBreak: "break-word",
         display: "block",
         lineHeight: 1.4,
+        fontSize: "0.875rem",
+        fontWeight: "regular",
       }}
     >
       {children}
-    </MDBox>
+    </MDTypography>
   );
 
   return (
@@ -166,10 +164,8 @@ function DataTableBodyCell({ noBorder, align, children, darkMode }) {
       textAlign={align}
       py={1.5}
       px={2}
-      sx={({ palette: { light }, typography: { size }, borders: { borderWidth } }) => ({
-        fontSize: size.sm,
+      sx={({ palette: { light }, borders: { borderWidth } }) => ({
         borderBottom: noBorder ? "none" : `${borderWidth[1]} solid ${light.main}`,
-        color: isDark ? "white" : "text.primary",
       })}
     >
       <MDBox display="inline-block" width="100%" sx={{ verticalAlign: "middle" }}>
@@ -266,7 +262,9 @@ function DataTable({
       onClick={() => gotoPage(Number(option))}
       active={pageIndex === option}
     >
-      {option + 1}
+      <MDTypography variant="button" fontWeight="medium">
+        {option + 1}
+      </MDTypography>
     </MDPagination>
   ));
 
@@ -322,21 +320,31 @@ function DataTable({
   }
 
   return (
-    <TableContainer sx={{ boxShadow: "none", overflowX: "auto" }}>
+    <TableContainer
+      sx={{
+        boxShadow: "none",
+        overflowX: "auto",
+        borderRadius: 2,
+        border: darkMode ? "1px solid rgba(255, 255, 255, 0.12)" : "1px solid rgba(0, 0, 0, 0.12)",
+      }}
+    >
       {entriesPerPage || canSearch ? (
         <MDBox
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          p={isMobile ? 1 : 3}
+          p={isMobile ? 1.5 : 3}
           sx={{
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.02)",
             flexDirection: isMobile ? "column" : "row",
             gap: isMobile ? 2 : 0,
+            borderBottom: darkMode
+              ? "1px solid rgba(255, 255, 255, 0.08)"
+              : "1px solid rgba(0, 0, 0, 0.08)",
           }}
         >
           {entriesPerPage && (
-            <MDBox display="flex" alignItems="center">
+            <MDBox display="flex" alignItems="center" gap={1}>
               <Autocomplete
                 disableClearable
                 value={pageSize.toString()}
@@ -349,7 +357,8 @@ function DataTable({
                   width: "5rem",
                   "& .MuiInputBase-root": {
                     backgroundColor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.04)",
-                    color: darkMode ? "white" : "text.primary",
+                    color: "text.main",
+                    borderRadius: 1,
                   },
                 }}
                 renderInput={(params) => (
@@ -357,19 +366,20 @@ function DataTable({
                     {...params}
                     sx={{
                       "& .MuiInputBase-input": {
-                        color: darkMode ? "white" : "text.primary",
+                        color: "text.main",
+                        fontSize: "0.875rem",
                       },
                     }}
                   />
                 )}
               />
-              <MDTypography variant="caption" color="text">
-                &nbsp;&nbsp;entries per page
+              <MDTypography variant="button" color="text" fontWeight="regular">
+                entries per page
               </MDTypography>
             </MDBox>
           )}
           {canSearch && (
-            <MDBox width={isMobile ? "100%" : "12rem"} ml={isMobile ? 0 : "auto"}>
+            <MDBox width={isMobile ? "100%" : "16rem"}>
               <MDInput
                 placeholder="Search..."
                 value={search}
@@ -382,6 +392,10 @@ function DataTable({
                 sx={{
                   "& .MuiInputBase-input": {
                     color: darkMode ? "white" : "text.primary",
+                    fontSize: "0.875rem",
+                  },
+                  "& .MuiInputBase-root": {
+                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.04)",
                   },
                 }}
               />
@@ -389,6 +403,7 @@ function DataTable({
           )}
         </MDBox>
       ) : null}
+
       <Table {...getTableProps()} sx={{ tableLayout: isMobile ? "auto" : "fixed" }}>
         <MDBox component="thead">
           {headerGroups.map((headerGroup) => {
@@ -398,7 +413,7 @@ function DataTable({
                 key={headerGroupKey}
                 {...headerGroupProps}
                 sx={{
-                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.2)",
+                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)",
                 }}
               >
                 {headerGroup.headers.map((column) => {
@@ -422,6 +437,7 @@ function DataTable({
             );
           })}
         </MDBox>
+
         <TableBody {...getTableBodyProps()}>
           {page.map((row, rowIndex) => {
             prepareRow(row);
@@ -431,9 +447,14 @@ function DataTable({
                 key={rowKey}
                 {...rowProps}
                 sx={{
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: "background.default",
+                  transition: "all 0.2s ease-in-out",
                   "&:hover": {
                     backgroundColor: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.02)",
+                    transform: "translateY(-1px)",
+                    boxShadow: darkMode
+                      ? "0 2px 8px rgba(255, 255, 255, 0.1)"
+                      : "0 2px 8px rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
@@ -462,18 +483,23 @@ function DataTable({
         flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
         alignItems={{ xs: "flex-start", sm: "center" }}
-        p={!showTotalEntries && pageOptions.length === 1 ? 0 : isMobile ? 1 : 3}
+        p={!showTotalEntries && pageOptions.length === 1 ? 0 : isMobile ? 2 : 3}
         sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.02)",
+          borderTop: darkMode
+            ? "1px solid rgba(255, 255, 255, 0.08)"
+            : "1px solid rgba(0, 0, 0, 0.08)",
+          gap: { xs: 2, sm: 0 },
         }}
       >
         {showTotalEntries && (
-          <MDBox mb={{ xs: 3, sm: 0 }}>
-            <MDTypography variant="button" color="text" fontWeight="regular">
+          <MDBox>
+            <MDTypography variant="button" color="text" fontWeight="medium">
               Showing {entriesStart} to {entriesEnd} of {rows.length} entries
             </MDTypography>
           </MDBox>
         )}
+
         {pageOptions.length > 1 && (
           <MDPagination
             variant={pagination.variant ? pagination.variant : "gradient"}
@@ -484,6 +510,7 @@ function DataTable({
                 <Icon sx={{ fontWeight: "bold" }}>chevron_left</Icon>
               </MDPagination>
             )}
+
             {renderPagination.length > 6 ? (
               <MDBox width="5rem" mx={1}>
                 <MDInput
@@ -494,9 +521,17 @@ function DataTable({
                   }}
                   value={customizedPageOptions[pageIndex]}
                   onChange={handleInputPagination}
+                  size="small"
                   sx={{
                     "& .MuiInputBase-input": {
-                      color: darkMode ? "white" : "text.primary",
+                      color: "text.primary",
+                      fontSize: "0.875rem",
+                      textAlign: "center",
+                    },
+                    "& .MuiInputBase-root": {
+                      backgroundColor: darkMode
+                        ? "rgba(255, 255, 255, 0.08)"
+                        : "rgba(0, 0, 0, 0.04)",
                     },
                   }}
                 />
@@ -504,6 +539,7 @@ function DataTable({
             ) : (
               renderPagination
             )}
+
             {canNextPage && (
               <MDPagination item onClick={() => nextPage()}>
                 <Icon sx={{ fontWeight: "bold" }}>chevron_right</Icon>

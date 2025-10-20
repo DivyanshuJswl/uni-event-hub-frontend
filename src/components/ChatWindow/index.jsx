@@ -495,7 +495,7 @@ const ChatWindow = () => {
                 flexGrow: 1,
                 overflow: "auto",
                 p: 1.5,
-                backgroundColor: darkMode ? "background.default" : "grey.50",
+                backgroundColor: "background.default",
                 display: "flex",
                 flexDirection: "column",
               }}

@@ -59,7 +59,7 @@ const modalStyle = (darkMode) => ({
   maxWidth: "95vw",
   maxHeight: "90vh",
   overflowY: "auto",
-  bgcolor: darkMode ? "background.default" : "background.paper",
+  bgcolor: "background.default",
   borderRadius: 3,
   boxShadow: 20,
   p: 0,
@@ -1044,7 +1044,7 @@ function OrganizerEventCard({ event, onUpdated }) {
               position: "relative",
               width: isMobile ? "90vw" : "70vw",
               maxHeight: "90vh",
-              bgcolor: darkMode ? "background.paper" : "background.default",
+              bgcolor: "background.default",
               boxShadow: 24,
               borderRadius: "16px",
               overflow: "auto",
@@ -1077,7 +1077,7 @@ function OrganizerEventCard({ event, onUpdated }) {
             </IconButton>
 
             {/* Modal Content */}
-            <Card sx={{ backgroundColor: darkMode ? "background.default" : "background.paper" }}>
+            <Card sx={{ backgroundColor: "background.default" }}>
               <Grid container spacing={4} sx={{ padding: 4 }}>
                 <Grid item xs={12} md={6}>
                   <Box

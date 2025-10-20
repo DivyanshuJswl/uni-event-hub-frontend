@@ -163,7 +163,9 @@ export default function App() {
   return (
     <>
       {isLoading ? (
-        <LoadingScreen />
+        <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
+          <LoadingScreen />
+        </ThemeProvider>
       ) : direction === "rtl" ? (
         <CacheProvider value={rtlCache}>
           <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>

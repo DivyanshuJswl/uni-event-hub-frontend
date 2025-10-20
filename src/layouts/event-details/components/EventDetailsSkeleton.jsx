@@ -67,7 +67,7 @@ function EventDetailsSkeleton() {
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: "background.default",
               boxShadow: darkMode
                 ? "0 4px 20px rgba(0, 0, 0, 0.12)"
                 : "0 4px 20px rgba(0, 0, 0, 0.05)",
@@ -284,7 +284,7 @@ function EventDetailsSkeleton() {
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: "background.default",
               boxShadow: darkMode
                 ? "0 4px 20px rgba(0, 0, 0, 0.12)"
                 : "0 4px 20px rgba(0, 0, 0, 0.05)",
@@ -353,7 +353,7 @@ function EventDetailsSkeleton() {
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: "background.default",
               boxShadow: darkMode
                 ? "0 4px 20px rgba(0, 0, 0, 0.12)"
                 : "0 4px 20px rgba(0, 0, 0, 0.05)",

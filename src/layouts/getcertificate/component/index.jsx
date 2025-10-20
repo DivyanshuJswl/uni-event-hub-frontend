@@ -43,10 +43,10 @@ const getModalStyle = (darkMode, isMobile) => ({
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: isMobile ? "95vw" : "600px",
-  maxWidth: "95vw",
-  maxHeight: "90vh",
+  maxWidth: "90vw",
+  maxHeight: "85vh",
   overflowY: "auto",
-  bgcolor: darkMode ? "background.default" : "background.paper",
+  bgcolor: "background.default",
   borderRadius: isMobile ? 2 : 3,
   boxShadow: 24,
   p: 0,
@@ -289,7 +289,7 @@ const MyCertificates = () => {
                       <InfoItem
                         label="Certificate ID"
                         value={selectedCertificate.certificateId}
-                        icon={<Verified fontSize="small" />}
+                        icon={<Verified fontSize="small" color="primary" />}
                       />
 
                       <InfoItem
@@ -299,7 +299,7 @@ const MyCertificates = () => {
                           month: "long",
                           day: "numeric",
                         })}
-                        icon={<CalendarToday fontSize="small" />}
+                        icon={<CalendarToday fontSize="small" color="primary" />}
                       />
 
                       <InfoItem
@@ -315,14 +315,17 @@ const MyCertificates = () => {
                                 selectedCertificate.status === "issued"
                                   ? "success.main"
                                   : "grey.500",
-                              mt: 0.5,
+                              m: 1,
                             }}
                           />
                         }
                       />
 
                       {selectedCertificate.metaMaskAddress && (
-                        <InfoItem label="Linked Wallet" icon={<Link fontSize="small" />}>
+                        <InfoItem
+                          label="Linked Wallet"
+                          icon={<Link fontSize="small" color="primary" />}
+                        >
                           <Tooltip title={selectedCertificate.metaMaskAddress} placement="top">
                             <Chip
                               label={`${selectedCertificate.metaMaskAddress.substring(0, 6)}...${selectedCertificate.metaMaskAddress.substring(selectedCertificate.metaMaskAddress.length - 4)}`}
@@ -353,7 +356,7 @@ const MyCertificates = () => {
                       <InfoItem
                         label="Category"
                         value={selectedCertificate.event?.category}
-                        icon={<Verified fontSize="small" />}
+                        icon={<Verified fontSize="small" color="primary" />}
                       />
 
                       <InfoItem
@@ -367,19 +370,19 @@ const MyCertificates = () => {
                               })
                             : "Not specified"
                         }
-                        icon={<CalendarToday fontSize="small" />}
+                        icon={<CalendarToday fontSize="small" color="primary" />}
                       />
 
                       <InfoItem
                         label="Location"
                         value={selectedCertificate.event?.location}
-                        icon={<Place fontSize="small" />}
+                        icon={<Place fontSize="small" color="primary" />}
                       />
 
                       <InfoItem
                         label="Issued By"
                         value={selectedCertificate.issuer?.name}
-                        icon={<Person fontSize="small" />}
+                        icon={<Person fontSize="small" color="primary" />}
                       />
                     </MDBox>
                   </Grid>
@@ -721,7 +724,7 @@ const MyCertificates = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 0,
       }}

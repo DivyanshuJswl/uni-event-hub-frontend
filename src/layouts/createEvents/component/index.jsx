@@ -289,7 +289,7 @@ const CreateEvent = () => {
   return (
     <Box
       sx={{
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: 1,
         minHeight: "100vh",
       }}
@@ -322,7 +322,7 @@ const CreateEvent = () => {
                 gutterBottom
                 sx={{
                   fontWeight: 600,
-                  color: darkMode ? "white" : "primary.main",
+                  color: "text.main",
                   mb: 3,
                   textAlign: "center",
                 }}
@@ -335,7 +335,7 @@ const CreateEvent = () => {
                   sx={{
                     textAlign: "center",
                     p: 4,
-                    backgroundColor: darkMode ? "background.default" : "transparent",
+                    backgroundColor: "background.default",
                   }}
                 >
                   <Typography variant="h5" color="success.main" gutterBottom>
@@ -617,16 +617,21 @@ const CreateEvent = () => {
                         <Button
                           component="span"
                           variant="outlined"
-                          startIcon={<CloudUploadIcon />}
+                          startIcon={<CloudUploadIcon color="text" />}
                           fullWidth
                           sx={{
                             py: 1.5,
                             borderRadius: 2,
                             borderStyle: "dashed",
                             borderWidth: 2,
-                            borderColor: darkMode ? "grey.700" : "grey.400",
+                            color: "text.main",
+                            opacity: 0.5,
+                            borderColor: "grey.600",
                             "&:hover": {
-                              borderColor: darkMode ? "grey.600" : "grey.500",
+                              borderStyle: "groove",
+                              borderWidth: 0.5,
+                              borderColor: "primary.main",
+                              opacity: 0.6,
                             },
                           }}
                         >

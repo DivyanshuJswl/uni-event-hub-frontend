@@ -170,7 +170,7 @@ function MyParticipatedEvents() {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: 4,
       }}
     >
@@ -312,15 +312,28 @@ function MyParticipatedEvents() {
                     count={totalPages}
                     page={page}
                     onChange={(_, value) => setPage(value)}
-                    color="primary"
+                    variant="outlined"
                     shape="rounded"
                     sx={{
                       "& .MuiPaginationItem-root": {
-                        color: darkMode ? "white" : "text.primary",
+                        color: "text.main",
+                        borderColor: "primary.main",
+                        "&:hover": {
+                          backgroundColor: darkMode
+                            ? "rgba(255, 255, 255, 0.08)"
+                            : "rgba(0, 0, 0, 0.04)",
+                        },
                       },
-                      "& .MuiPaginationItem-root.Mui-selected": {
-                        backgroundColor: darkMode ? "primary.main" : "primary.main",
+                      "& .MuiPaginationItem-page.Mui-selected": {
+                        backgroundColor: "info.main",
                         color: "white",
+                        borderColor: "info.main",
+                        "&:hover": {
+                          backgroundColor: "info.dark",
+                        },
+                      },
+                      "& .MuiPaginationItem-ellipsis": {
+                        color: "text.main",
                       },
                     }}
                   />

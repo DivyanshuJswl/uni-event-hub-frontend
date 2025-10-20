@@ -57,8 +57,8 @@ const LeaderboardTable = () => {
       onClose={closeMenu}
       sx={{
         "& .MuiPaper-root": {
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          color: darkMode ? "white" : "text.primary",
+          backgroundColor: "background.default",
+          color: "text.main",
           boxShadow: darkMode ? "0 8px 24px rgba(0, 0, 0, 0.3)" : "0 8px 24px rgba(0, 0, 0, 0.1)",
         },
       }}
@@ -94,8 +94,8 @@ const LeaderboardTable = () => {
       onClose={closeFilterMenu}
       sx={{
         "& .MuiPaper-root": {
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          color: darkMode ? "white" : "text.primary",
+          backgroundColor: "background.default",
+          color: "text.main",
           boxShadow: darkMode ? "0 8px 24px rgba(0, 0, 0, 0.3)" : "0 8px 24px rgba(0, 0, 0, 0.1)",
         },
       }}
@@ -140,7 +140,7 @@ const LeaderboardTable = () => {
 
   // Custom styling for the table
   const tableStyles = {
-    backgroundColor: darkMode ? "background.default" : "background.paper",
+    backgroundColor: "background.default",
     "& .MuiTableRow-root:hover": {
       backgroundColor: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.02)",
     },
@@ -155,8 +155,7 @@ const LeaderboardTable = () => {
         borderRadius: 2,
         boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.24)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
         overflow: "hidden",
-            backgroundColor: darkMode ? "background.default" : "background.paper",
-
+        backgroundColor: "background.default",
       }}
     >
       {/* Header Section */}
@@ -169,16 +168,11 @@ const LeaderboardTable = () => {
           borderBottom: darkMode
             ? "1px solid rgba(255, 255, 255, 0.12)"
             : "1px solid rgba(0, 0, 0, 0.08)",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: "background.default",
         }}
       >
         <MDBox>
-          <MDTypography
-            variant="h5"
-            fontWeight="bold"
-            gutterBottom
-            color={darkMode ? "white" : "dark"}
-          >
+          <MDTypography variant="h5" fontWeight="bold" gutterBottom>
             Top Participants
           </MDTypography>
           <MDBox display="flex" alignItems="center" gap={1}>

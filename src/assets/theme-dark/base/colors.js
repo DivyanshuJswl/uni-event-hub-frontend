@@ -1,9 +1,3 @@
-/**
- * The base colors for the Material Dashboard 2 React.
- * You can add new color using this file.
- * You can customized the colors for the entire Material Dashboard 2 React using thie file.
- */
-
 const colors = {
   background: {
     default: "#000000", // Dark navy blue (almost black)
@@ -12,238 +6,171 @@ const colors = {
   },
 
   text: {
-    main: "#fff", // Semi-transparent white
-    focus: "rgba(255, 255, 255, 1)", // Pure white
+    main: "#EDEDED", // Softer white for readability (not #fff)
+    focus: "#FFFFFF", // Pure white for hover/active emphasis
   },
 
   transparent: {
-    main: "rgba(0, 0, 0, 0)", // Fully transparent
+    main: "rgba(0, 0, 0, 0)",
   },
 
   white: {
-    main: "#fafafa", // Soft off-white
-    focus: "#ffffff", // Pure white
+    main: "#FAFAFA",
+    focus: "#FFFFFF",
   },
 
   black: {
-    light: "#0c0c0c", // Very dark gray (near black)
-    main: "#000000", // Pure black
-    focus: "#000000", // Pure black
+    light: "#151515",
+    main: "#000000",
+    focus: "#000000",
   },
 
   primary: {
-    main: "#006effff", // Bright azure blue
-    focus: "#1A73E8", // Bright azure blue
+    main: "#1E88E5", // Clean Material Blue (cool accent)
+    focus: "#1565C0", // Slightly darker for hover states
   },
 
   secondary: {
-    main: "#00afe9cb", // Cool grayish blue
-    focus: "#00bfffff", // Lighter grayish blue
+    main: "#00A9E0", // Balanced cyan-blue
+    focus: "#00C2FF", // Vibrant hover version
   },
 
   info: {
-    main: "#1A73E8", // Bright azure blue
-    focus: "#1662C4", // Darker azure blue
+    main: "#2196F3",
+    focus: "#1976D2",
   },
 
   success: {
-    main: "#4CAF50", // Vibrant green
-    focus: "#67bb6a", // Softer green
+    main: "#43A047", // Fresh green
+    focus: "#2E7D32", // Deeper green for pressed states
   },
 
   warning: {
-    main: "#fb8c00", // Vibrant orange
-    focus: "#fc9d26", // Lighter orange
+    main: "#FB8C00",
+    focus: "#F57C00",
   },
 
   error: {
-    main: "#F44335", // Bright red
-    focus: "#f65f53", // Softer red
+    main: "#E53935",
+    focus: "#D32F2F",
   },
 
   light: {
-    main: "#ffffff69", // Very light gray with transparency
-    focus: "#f0f2f566", // Very light gray with transparency
+    main: "rgba(255,255,255,0.08)", // Subtle overlay for surfaces
+    focus: "rgba(255,255,255,0.12)", // Hover overlay
   },
 
   dark: {
-    main: "#344767", // Dark slate blue
-    focus: "#2c3c58", // Darker slate blue
+    main: "#1C1C1E", // Deep neutral dark
+    focus: "#121212", // True dark for hover areas
   },
 
   grey: {
-    100: "#f8f9fa", // Snow white
-    200: "#f0f2f5", // Ice white
-    300: "#dee2e6", // Light silver
-    400: "#ced4da", // Silver
-    500: "#adb5bd", // Cool gray
-    600: "#6c757d", // Medium gray
-    700: "#495057", // Charcoal gray
-    800: "#343a40", // Dark charcoal
-    900: "#212529", // Near black
+    100: "#F5F5F5",
+    200: "#EEEEEE",
+    300: "#E0E0E0",
+    400: "#BDBDBD",
+    500: "#9E9E9E",
+    600: "#757575",
+    700: "#616161",
+    800: "#424242",
+    900: "#212121",
   },
 
   gradients: {
     primary: {
-      main: "#EC407A", // Bright pink
-      state: "#D81B60", // Deep pink
+      main: "#42A5F5",
+      state: "#1976D2",
     },
-
     secondary: {
-      main: "#747b8a", // Grayish blue
-      state: "#495361", // Dark slate
+      main: "#607D8B",
+      state: "#455A64",
     },
-
     info: {
-      main: "#49a3f1", // Sky blue
-      state: "#1A73E8", // Azure blue
+      main: "#64B5F6",
+      state: "#1E88E5",
     },
-
     success: {
-      main: "#38c23eff", // Soft green
-      state: "#43A047", // Forest green
+      main: "#66BB6A",
+      state: "#388E3C",
     },
-
     warning: {
-      main: "#FFA726", // Light orange
-      state: "#FB8C00", // Vibrant orange
+      main: "#FFB74D",
+      state: "#FB8C00",
     },
-
     error: {
-      main: "#EF5350", // Soft red
-      state: "#E53935", // Bright red
+      main: "#E57373",
+      state: "#D32F2F",
     },
-
     light: {
-      main: "#EBEFF4", // Ice blue
-      state: "#CED4DA", // Silver
+      main: "#2E2E2E",
+      state: "#1C1C1E",
     },
-
     dark: {
-      main: "#323a54", // Dark navy
-      state: "#1a2035", // Midnight blue
+      main: "#2A2A2A",
+      state: "#101010",
     },
   },
 
   socialMediaColors: {
-    facebook: {
-      main: "#3b5998", // Classic Facebook blue
-      dark: "#344e86", // Dark Facebook blue
-    },
-
-    twitter: {
-      main: "#55acee", // Twitter blue
-      dark: "#3ea1ec", // Dark Twitter blue
-    },
-
-    instagram: {
-      main: "#125688", // Instagram deep blue
-      dark: "#0e456d", // Dark Instagram blue
-    },
-
-    linkedin: {
-      main: "#0077b5", // LinkedIn blue
-      dark: "#00669c", // Dark LinkedIn blue
-    },
-
-    pinterest: {
-      main: "#cc2127", // Pinterest red
-      dark: "#b21d22", // Dark Pinterest red
-    },
-
-    youtube: {
-      main: "#e52d27", // YouTube red
-      dark: "#d41f1a", // Dark YouTube red
-    },
-
-    vimeo: {
-      main: "#1ab7ea", // Vimeo blue
-      dark: "#13a3d2", // Dark Vimeo blue
-    },
-
-    slack: {
-      main: "#3aaf85", // Slack green
-      dark: "#329874", // Dark Slack green
-    },
-
-    dribbble: {
-      main: "#ea4c89", // Dribbble pink
-      dark: "#e73177", // Dark Dribbble pink
-    },
-
-    github: {
-      main: "#24292e", // GitHub dark gray
-      dark: "#171a1d", // Dark GitHub gray
-    },
-
-    reddit: {
-      main: "#ff4500", // Reddit orange
-      dark: "#e03d00", // Dark Reddit orange
-    },
-
-    tumblr: {
-      main: "#35465c", // Tumblr blue-gray
-      dark: "#2a3749", // Dark Tumblr blue-gray
-    },
+    facebook: { main: "#3B5998", dark: "#2D4373" },
+    twitter: { main: "#55ACEE", dark: "#2795E9" },
+    instagram: { main: "#E1306C", dark: "#C72E5E" },
+    linkedin: { main: "#0077B5", dark: "#005983" },
+    youtube: { main: "#FF0000", dark: "#CC0000" },
+    github: { main: "#24292E", dark: "#171A1D" },
   },
 
   badgeColors: {
     primary: {
-      background: "#f8b3ca", // Light pink
-      text: "#cc084b", // Deep pink
+      background: "#1E3A8A",
+      text: "#90CAF9",
     },
-
     secondary: {
-      background: "#d7d9e1", // Light gray-blue
-      text: "#6c757d", // Medium gray
+      background: "#37474F",
+      text: "#CFD8DC",
     },
-
     info: {
-      background: "#aecef7", // Light blue
-      text: "#095bc6", // Dark blue
+      background: "#1565C0",
+      text: "#E3F2FD",
     },
-
     success: {
-      background: "#bce2be", // Light green
-      text: "#339537", // Dark green
+      background: "#1B5E20",
+      text: "#C8E6C9",
     },
-
     warning: {
-      background: "#ffd59f", // Light orange
-      text: "#c87000", // Dark orange
+      background: "#E65100",
+      text: "#FFE0B2",
     },
-
     error: {
-      background: "#fcd3d0", // Light red
-      text: "#f61200", // Dark red
+      background: "#B71C1C",
+      text: "#FFCDD2",
     },
-
     light: {
-      background: "#ffffff", // Pure white
-      text: "#c7d3de", // Light gray-blue
+      background: "#2E2E2E",
+      text: "#E0E0E0",
     },
-
     dark: {
-      background: "#8097bf", // Soft blue
-      text: "#1e2e4a", // Dark navy
+      background: "#101010",
+      text: "#FFFFFF",
     },
   },
 
   coloredShadows: {
-    primary: "#e91e62", // Bright pink
-    secondary: "#110e0e", // Near black
-    info: "#00bbd4", // Cyan
-    success: "#4caf4f", // Green
-    warning: "#ff9900", // Amber
-    error: "#f44336", // Red
-    light: "#adb5bd", // Gray
-    dark: "#404040", // Dark gray
+    primary: "#1A73E8",
+    secondary: "#263238",
+    info: "#00ACC1",
+    success: "#43A047",
+    warning: "#FB8C00",
+    error: "#E53935",
+    light: "#9E9E9E",
+    dark: "#000000",
   },
 
-  inputBorderColor: "#d2d6da", // Light gray
+  inputBorderColor: "#2E2E2E",
 
   tabs: {
-    indicator: { boxShadow: "#ddd" }, // Light gray
+    indicator: { boxShadow: "#1E88E5" },
   },
 };
 

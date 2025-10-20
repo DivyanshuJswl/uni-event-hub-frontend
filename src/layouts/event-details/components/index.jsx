@@ -277,9 +277,7 @@ function EventDetails() {
           />
 
           {/* Event Settings Card */}
-          <Card
-            sx={{ mt: 3, backgroundColor: darkMode ? "background.default" : "background.paper" }}
-          >
+          <Card sx={{ mt: 3, backgroundColor: "background.default" }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
                 <SettingsIcon color="secondary" sx={{ mr: 1 }} />
@@ -335,9 +333,7 @@ function EventDetails() {
           </Card>
 
           {/* Metadata Card */}
-          <Card
-            sx={{ mt: 2, backgroundColor: darkMode ? "background.default" : "background.paper" }}
-          >
+          <Card sx={{ mt: 2, backgroundColor: "background.default" }}>
             <CardContent>
               <MDTypography variant="h6" fontWeight="bold" mb={2}>
                 Event Metadata
@@ -371,7 +367,7 @@ function EventDetails() {
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: "background.default",
             }}
           >
             {/* Title and Status */}
@@ -458,7 +454,7 @@ function EventDetails() {
                 </MDTypography>
                 {event.organizer?.email && (
                   <Box display="flex" alignItems="center" mt={0.5}>
-                    <EmailIcon fontSize="small" sx={{ mr: 0.5 }} />
+                    <EmailIcon fontSize="small" sx={{ mr: 0.5, color: "primary.main" }} />
                     <MDTypography variant="caption" color="text">
                       {event.organizer.email}
                     </MDTypography>
@@ -513,8 +509,7 @@ function EventDetails() {
                 >
                   Manage Your Event
                 </MDButton>
-              ) : 
-              canEnroll ? (
+              ) : canEnroll ? (
                 <MDButton
                   variant="gradient"
                   color="success"
@@ -578,7 +573,7 @@ function EventDetails() {
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: "background.default",
             }}
           >
             <MDTypography variant="h5" fontWeight="bold" mb={2}>
@@ -602,7 +597,7 @@ function EventDetails() {
               sx={{
                 p: 3,
                 borderRadius: 3,
-                backgroundColor: darkMode ? "background.default" : "background.paper",
+                backgroundColor: "background.default",
               }}
             >
               <MDTypography variant="h5" fontWeight="bold" mb={2}>
@@ -644,7 +639,7 @@ function EventDetails() {
                 sx={{
                   p: 3,
                   borderRadius: 3,
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: "background.default",
                 }}
               >
                 <MDTypography variant="h5" fontWeight="bold" mb={2}>

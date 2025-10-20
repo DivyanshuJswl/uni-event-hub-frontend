@@ -25,7 +25,7 @@ const Explore = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
@@ -121,7 +121,7 @@ const Explore = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: 4,
       }}
     >
@@ -132,17 +132,12 @@ const Explore = () => {
             variant="h3"
             sx={{
               fontWeight: 700,
-              color: darkMode ? "white" : "primary",
+              color: "text.main",
             }}
           >
             Explore Events
           </Typography>
-          <MDTypography
-            variant="subtitle1"
-            sx={{
-              color: darkMode ? "white" : "primary",
-            }}
-          >
+          <MDTypography variant="subtitle1" color="text">
             Discover upcoming events in your area
             {user?.enrolledEvents?.length > 0 && (
               <span style={{ color: "#2ca630ff", fontWeight: "bold", marginLeft: "8px" }}>
@@ -205,7 +200,7 @@ const Explore = () => {
                 width: 120,
                 mr: 2,
                 "& .MuiInputBase-input": {
-                  color: darkMode ? "white" : "text.primary",
+                  color: "text.main",
                 },
               }}
             />
@@ -215,10 +210,10 @@ const Explore = () => {
                 borderRadius: "8px",
                 fontWeight: 400,
                 borderWidth: "1px",
-                color: darkMode ? "primary.main" : "primary.main",
-                borderColor: darkMode ? "primary.main" : "primary.main",
+                color: "primary.main",
+                borderColor: "primary.main",
                 "&:hover": {
-                  borderColor: darkMode ? "primary.dark" : "primary.dark",
+                  borderColor: "primary.focus",
                   backgroundColor: darkMode
                     ? "rgba(25, 118, 210, 0.08)"
                     : "rgba(25, 118, 210, 0.04)",
@@ -265,10 +260,7 @@ const Explore = () => {
               {currentEvents.length > 0 ? (
                 currentEvents.map((event, index) => (
                   <Grid item xs={12} sm={6} md={4} key={event._id || index}>
-                    <EventCard
-                      event={event}
-                      isEnrolled={isUserEnrolled(event._id)}
-                    />
+                    <EventCard event={event} isEnrolled={isUserEnrolled(event._id)} />
                   </Grid>
                 ))
               ) : (
@@ -283,22 +275,35 @@ const Explore = () => {
             </Grid>
 
             {/* Pagination and Results Count */}
-            {filteredEvents.length > 0 && (
+            {filteredEvents.length > 0 && totalPages > 1 && (
               <>
                 <MDBox display="flex" justifyContent="center" mt={3} mb={2}>
                   <Pagination
                     count={totalPages}
                     page={page}
                     onChange={handlePageChange}
-                    color="primary"
+                    variant="outlined"
                     shape="rounded"
                     sx={{
                       "& .MuiPaginationItem-root": {
-                        color: darkMode ? "white" : "text.primary",
+                        color: "text.main",
+                        borderColor: "primary.main",
+                        "&:hover": {
+                          backgroundColor: darkMode
+                            ? "rgba(255, 255, 255, 0.08)"
+                            : "rgba(0, 0, 0, 0.04)",
+                        },
                       },
-                      "& .MuiPaginationItem-root.Mui-selected": {
-                        backgroundColor: darkMode ? "primary.main" : "primary.main",
+                      "& .MuiPaginationItem-page.Mui-selected": {
+                        backgroundColor: "info.main",
                         color: "white",
+                        borderColor: "info.main",
+                        "&:hover": {
+                          backgroundColor: "info.dark",
+                        },
+                      },
+                      "& .MuiPaginationItem-ellipsis": {
+                        color: "text.main",
                       },
                     }}
                   />

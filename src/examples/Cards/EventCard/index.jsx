@@ -331,7 +331,7 @@ function EventCard({ event, isEnrolled = false }) {
               position: "relative",
               width: isMobile ? "90vw" : "70vw",
               maxHeight: "90vh",
-              bgcolor: darkMode ? "background.paper" : "background.default",
+              bgcolor: "background.default",
               boxShadow: 24,
               borderRadius: "16px",
               overflow: "auto",

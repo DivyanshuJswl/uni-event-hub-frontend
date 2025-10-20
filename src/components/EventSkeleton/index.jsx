@@ -5,8 +5,8 @@ import { useMaterialUIController } from "context";
 import React from "react";
 
 const index = () => {
-    const [ controller ] = useMaterialUIController();
-    const { darkMode } = controller;
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
   return (
     <>
       {[1, 2, 3].map((item) => (
@@ -15,7 +15,7 @@ const index = () => {
             <Card
               sx={{
                 padding: 2,
-                backgroundColor: darkMode ? "background.default" : "background.paper",
+                backgroundColor: "background.default",
                 borderRadius: 2,
                 boxShadow: darkMode
                   ? "0 4px 20px rgba(0, 0, 0, 0.12)"

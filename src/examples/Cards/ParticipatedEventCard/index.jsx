@@ -63,7 +63,6 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
       sx={{
         cursor: "pointer",
         transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        backgroundColor: darkMode ? "background.default" : "background.paper",
         position: "relative",
         "&:hover": {
           transform: "translateY(-5px)",
@@ -111,14 +110,8 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
           <MDTypography
             variant="h6"
             textTransform="capitalize"
-            color={darkMode ? "white" : "dark"}
-            sx={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
+            gutterBottom
+            sx={{ fontWeight: "bold", lineHeight: 1.2 }}
           >
             {event.title}
           </MDTypography>
@@ -194,11 +187,11 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
             <MDButton
               variant="gradient"
               color="error"
-              size="small"
               fullWidth
+              size="medium"
               disabled={!canUnenroll || unenrollLoading}
               onClick={() => onUnenroll(event._id)}
-              startIcon={unenrollLoading ? <CircularProgress size={16} /> : <CancelIcon />}
+              startIcon={unenrollLoading ? <CircularProgress size={10} /> : <CancelIcon />}
             >
               {unenrollLoading ? "Unenrolling..." : "Unenroll"}
             </MDButton>

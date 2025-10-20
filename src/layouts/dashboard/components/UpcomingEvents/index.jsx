@@ -23,7 +23,6 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
           alignItems: "center",
           padding: 2,
           mb: 2,
-          backgroundColor: darkMode ? "background.default" : "background.paper",
           borderRadius: 3,
           boxShadow: darkMode ? "0 4px 20px rgba(0, 0, 0, 0.12)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
         }}
@@ -52,7 +51,7 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
         alignItems: "center",
         padding: 2,
         mb: 2,
-        backgroundColor: darkMode ? "background.default" : "background.paper",
+        backgroundColor: "background.default",
         borderRadius: 3,
         boxShadow: darkMode ? "0 4px 20px rgba(0, 0, 0, 0.12)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
         transition: "all 0.2s ease-in-out",
@@ -244,12 +243,12 @@ const UpcomingEvents = ({ events = [], loading = false }) => {
             color: darkMode ? "text.secondary" : "text.secondary",
           }}
         >
-          <Typography variant="body1" sx={{ mb: 1, opacity: 0.7 }}>
+          <MDTypography variant="body1" sx={{ mb: 1, opacity: 0.7 }}>
             No upcoming events
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.5 }}>
+          </MDTypography>
+          <MDTypography variant="body2" sx={{ opacity: 0.5 }}>
             Check back later for new events
-          </Typography>
+          </MDTypography>
         </Box>
       )}
     </Card>

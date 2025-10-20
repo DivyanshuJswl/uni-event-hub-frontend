@@ -24,14 +24,14 @@ const CropContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const modalStyle = (darkMode) => ({
+const modalStyle = () => ({
   position: "fixed",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   minWidth: 350,
   maxWidth: "90vw",
-  bgcolor: darkMode ? "background.default" : "background.paper",
+  bgcolor: "background.default",
   borderRadius: 3,
   boxShadow: 24,
   p: 0,
@@ -113,7 +113,7 @@ const ImageCropper = ({
       slots={{ backdrop: Backdrop }}
     >
       <Fade in={open}>
-        <Box sx={modalStyle(darkMode)}>
+        <Box sx={modalStyle()}>
           {/* Header */}
           <MDBox
             display="flex"
@@ -174,7 +174,12 @@ const ImageCropper = ({
               <MDButton variant="outlined" color="secondary" onClick={onClose}>
                 Cancel
               </MDButton>
-              <MDButton variant="gradient" color="info" onClick={handleCropComplete} disabled={isUploading}>
+              <MDButton
+                variant="gradient"
+                color="info"
+                onClick={handleCropComplete}
+                disabled={isUploading}
+              >
                 {isUploading ? "Uploading..." : "Apply Crop"}
               </MDButton>
             </MDBox>

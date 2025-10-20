@@ -1,194 +1,152 @@
 const colors = {
   background: {
-    default: "#f8f4e9ff", // Light beige
-    sidenav: "#f0f0f0ff",
-    card: "#f8f8f8ff"
+    default: "#F4F6F8", // neutral soft gray
+    sidenav: "#ECEFF1", // clearly distinct, still subtle
+    card: "#FFFFFF", // true white
   },
 
   text: {
-    main: "#000", // Almost black
-    focus: "#000000ff", // Dark gray
+    main: "#111111",
+    focus: "#000000",
   },
 
   transparent: {
-    main: "rgba(0, 0, 0, 0)", // Fully transparent
+    main: "rgba(0, 0, 0, 0)",
   },
 
   white: {
-    main: "#fffcf5", // Cream white
-    focus: "#f5f0e4", // Light beige
+    main: "#FFFFFF",
+    focus: "#F5F5F5",
   },
 
   black: {
-    light: "#0c0c0c", // Very dark gray (near black)
-    main: "#000000", // Pure black
-    focus: "#000000", // Pure black
+    light: "#333333",
+    main: "#000000",
+    focus: "#000000",
   },
 
   primary: {
-    main: "#333333", // Charcoal gray
-    focus: "#000", // Pure black
+    main: "#1E88E5", // Material blue tone
+    focus: "#1565C0", // Darker for hover/focus
   },
 
   secondary: {
-    main: "#a8b6a0", // Muted sage green
-    focus: "#95a38b", // Darker sage green
+    main: "#8E9A8E", // Neutral sage (still greenish but not dull)
+    focus: "#7B8C7A",
   },
 
   info: {
-    main: "#0288d1", // Bright blue
-    focus: "#0277bd", // Darker blue
+    main: "#0288D1",
+    focus: "#0277BD",
   },
 
   success: {
-    main: "#388e3c", // Forest green
-    focus: "#2e7d32", // Darker forest green
+    main: "#2E7D32",
+    focus: "#1B5E20",
   },
 
   warning: {
-    main: "#f57c00", // Bright orange
-    focus: "#ef6c00", // Darker orange
+    main: "#ED6C02",
+    focus: "#E65100",
   },
 
   error: {
-    main: "#d32f2f", // Red
-    focus: "#c62828", // Darker red
+    main: "#D32F2F",
+    focus: "#C62828",
   },
 
   light: {
-    main: "#f9f9f9", // Off-white
-    focus: "#f1f1f1", // Light gray
+    main: "#F9F9F9",
+    focus: "#F1F1F1",
   },
 
   dark: {
-    main: "#101010ff", // Charcoal gray
-    focus: "#000000ff", // Very dark gray
+    main: "#101010",
+    focus: "#000000",
   },
 
   grey: {
-    100: "#f5f5f5", // Very light gray
-    200: "#eeeeee", // Light gray
-    300: "#e0e0e0", // Medium light gray
-    400: "#bdbdbd", // Silver
-    500: "#9e9e9e", // Medium gray
-    600: "#757575", // Dark gray
-    700: "#616161", // Darker gray
-    800: "#424242", // Very dark gray
-    900: "#212121", // Almost black
+    100: "#FAFAFA",
+    200: "#F5F5F5",
+    300: "#EEEEEE",
+    400: "#E0E0E0",
+    500: "#BDBDBD",
+    600: "#9E9E9E",
+    700: "#616161",
+    800: "#424242",
+    900: "#212121",
   },
 
   gradients: {
     primary: {
-      main: "#42a5f5", // Light blue
-      state: "#1976d2", // Medium blue
+      main: "#64B5F6",
+      state: "#1976D2",
     },
     secondary: {
-      main: "#747b8a", // Grayish blue
-      state: "#495361", // Dark slate
+      main: "#A8B6A0",
+      state: "#7B8C7A",
     },
     info: {
-      main: "#4fc3f7", // Light sky blue
-      state: "#0288d1", // Bright blue
+      main: "#4FC3F7",
+      state: "#0288D1",
     },
     success: {
-      main: "#81c784", // Soft green
-      state: "#388e3c", // Forest green
+      main: "#81C784",
+      state: "#388E3C",
     },
     warning: {
-      main: "#ffb74d", // Light orange
-      state: "#f57c00", // Bright orange
+      main: "#FFB74D",
+      state: "#F57C00",
     },
     error: {
-      main: "#e57373", // Soft red
-      state: "#d32f2f", // Red
+      main: "#E57373",
+      state: "#D32F2F",
     },
     light: {
-      main: "#ffffff", // Pure white
-      state: "#f5f5f5", // Off-white
+      main: "#FFFFFF",
+      state: "#F5F5F5",
     },
     dark: {
-      main: "#4f4f4f", // Dark gray
-      state: "#212121", // Almost black
+      main: "#4F4F4F",
+      state: "#212121",
     },
   },
 
   socialMediaColors: {
-    facebook: {
-      main: "#3b5998", // Facebook blue
-      dark: "#2d4373", // Dark Facebook blue
-    },
-    twitter: {
-      main: "#55acee", // Twitter blue
-      dark: "#2795e9", // Dark Twitter blue
-    },
-    instagram: {
-      main: "#e1306c", // Instagram pink
-      dark: "#c72e5e", // Dark Instagram pink
-    },
-    linkedin: {
-      main: "#0077b5", // LinkedIn blue
-      dark: "#005983", // Dark LinkedIn blue
-    },
-    youtube: {
-      main: "#ff0000", // YouTube red
-      dark: "#cc0000", // Dark YouTube red
-    },
-    github: {
-      main: "#24292e", // GitHub dark gray
-      dark: "#171a1d", // Darker GitHub gray
-    },
+    facebook: { main: "#3B5998", dark: "#2D4373" },
+    twitter: { main: "#55ACEE", dark: "#2795E9" },
+    instagram: { main: "#E1306C", dark: "#C72E5E" },
+    linkedin: { main: "#0077B5", dark: "#005983" },
+    youtube: { main: "#FF0000", dark: "#CC0000" },
+    github: { main: "#24292E", dark: "#171A1D" },
   },
 
   badgeColors: {
-    primary: {
-      background: "#e3f2fd", // Very light blue
-      text: "#1565c0", // Dark blue
-    },
-    secondary: {
-      background: "#f3e5f5", // Very light purple
-      text: "#7b1fa2", // Dark purple
-    },
-    info: {
-      background: "#b3e5fc", // Light sky blue
-      text: "#0288d1", // Bright blue
-    },
-    success: {
-      background: "#c8e6c9", // Very light green
-      text: "#2e7d32", // Dark green
-    },
-    warning: {
-      background: "#ffe0b2", // Light orange
-      text: "#ef6c00", // Dark orange
-    },
-    error: {
-      background: "#ffcdd2", // Light pink
-      text: "#c62828", // Dark red
-    },
-    light: {
-      background: "#ffffff", // Pure white
-      text: "#9e9e9e", // Medium gray
-    },
-    dark: {
-      background: "#eeeeee", // Light gray
-      text: "#212121", // Almost black
-    },
+    primary: { background: "#E3F2FD", text: "#1565C0" },
+    secondary: { background: "#E8F0E8", text: "#5D6F5D" },
+    info: { background: "#B3E5FC", text: "#0288D1" },
+    success: { background: "#C8E6C9", text: "#2E7D32" },
+    warning: { background: "#FFE0B2", text: "#E65100" },
+    error: { background: "#FFCDD2", text: "#C62828" },
+    light: { background: "#FFFFFF", text: "#9E9E9E" },
+    dark: { background: "#EEEEEE", text: "#212121" },
   },
 
   coloredShadows: {
-    primary: "#42a5f5", // Light blue
-    secondary: "#ba68c8", // Soft purple
-    info: "#29b6f6", // Bright blue
-    success: "#66bb6a", // Medium green
-    warning: "#ffa726", // Light orange
-    error: "#ef5350", // Bright red
-    light: "#cfd8dc", // Light gray-blue
-    dark: "#607d8b", // Slate gray
+    primary: "#42A5F5",
+    secondary: "#A8B6A0",
+    info: "#29B6F6",
+    success: "#66BB6A",
+    warning: "#FFA726",
+    error: "#EF5350",
+    light: "#CFD8DC",
+    dark: "#607D8B",
   },
 
-  inputBorderColor: "#d0d7de", // Light gray-blue
+  inputBorderColor: "#D0D7DE",
 
   tabs: {
-    indicator: { boxShadow: "#ddd" }, // Light gray
+    indicator: { boxShadow: "#DDD" },
   },
 };
 

@@ -39,7 +39,7 @@ import {
   setDeveloperMode,
 } from "context";
 import { useAuth } from "context/AuthContext";
-
+import { border } from "@mui/system";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();

@@ -12,10 +12,10 @@ import {
   useMediaQuery,
   useTheme,
   Container,
-  Typography,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import {
   Verified,
@@ -25,6 +25,8 @@ import {
   Person,
   Link,
   EmojiEvents,
+  Security,
+  Refresh,
 } from "@mui/icons-material";
 import axios from "axios";
 
@@ -58,16 +60,59 @@ const CertificateVerification = () => {
     }
   };
 
-  // Info Item Component for consistent styling
-  const InfoItem = ({ label, value, icon, children }) => (
-    <MDBox display="flex" alignItems="flex-start" gap={1.5} py={1.5}>
-      {icon && <Box sx={{ color: sidenavColor, mt: 0.25, minWidth: 24 }}>{icon}</Box>}
+  // Enhanced Info Item Component with better MDTypography usage
+  const InfoItem = ({ label, value, icon, children, highlight = false }) => (
+    <MDBox
+      display="flex"
+      alignItems="flex-start"
+      gap={2}
+      py={1.5}
+      sx={{
+        borderRadius: 1,
+        px: 1,
+        backgroundColor: highlight
+          ? darkMode
+            ? "rgba(255, 255, 255, 0.03)"
+            : "rgba(0, 0, 0, 0.02)"
+          : "transparent",
+      }}
+    >
+      <Box
+        sx={{
+          color: "primary.main",
+          mt: 0.25,
+          minWidth: 24,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        {icon}
+      </Box>
       <Box flex={1}>
-        <MDTypography variant="caption" fontWeight="bold" color="text" display="block">
+        <MDTypography
+          variant="caption"
+          fontWeight="bold"
+          color={highlight ? sidenavColor : "text"}
+          display="block"
+          sx={{
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+            fontSize: "0.7rem",
+            mb: 0.5,
+          }}
+        >
           {label}
         </MDTypography>
         {children || (
-          <MDTypography variant="body2" color="text" sx={{ opacity: 0.8, lineHeight: 1.4 }}>
+          <MDTypography
+            variant="body2"
+            color="text"
+            sx={{
+              opacity: 0.9,
+              lineHeight: 1.4,
+              fontWeight: highlight ? 600 : 400,
+            }}
+          >
             {value || "Not specified"}
           </MDTypography>
         )}
@@ -101,12 +146,13 @@ const CertificateVerification = () => {
     }
   };
 
+  // Enhanced loading state with better MDTypography
   if (loading) {
     return (
       <Box
         sx={{
           minHeight: "100vh",
-          backgroundColor: darkMode ? "background.default" : "grey.100",
+          backgroundColor: "background.default",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -115,30 +161,38 @@ const CertificateVerification = () => {
       >
         <Card
           sx={{
-            maxWidth: 400,
+            maxWidth: 450,
             mx: "auto",
             textAlign: "center",
-            p: 4,
+            p: 5,
+            borderRadius: 3,
+            boxShadow: darkMode
+              ? "0 8px 32px rgba(0, 0, 0, 0.24)"
+              : "0 8px 32px rgba(0, 0, 0, 0.08)",
           }}
         >
-          <CircularProgress size={60} color={sidenavColor} sx={{ mb: 3 }} />
-          <MDTypography variant="h6" color="text" fontWeight="medium">
-            Verifying Certificate...
+          <CircularProgress size={70} color={sidenavColor} sx={{ mb: 3 }} />
+          <MDTypography variant="h5" fontWeight="bold" color="text" gutterBottom>
+            Verifying Certificate
           </MDTypography>
-          <MDTypography variant="body2" color="text" sx={{ opacity: 0.7, mt: 1 }}>
+          <MDTypography variant="body2" color="text" sx={{ opacity: 0.7, mb: 3 }}>
             Please wait while we verify the certificate authenticity
+          </MDTypography>
+          <MDTypography variant="caption" color="text" sx={{ opacity: 0.5 }}>
+            Certificate ID: {certificateId}
           </MDTypography>
         </Card>
       </Box>
     );
   }
 
+  // Enhanced error state with better MDTypography
   if (error) {
     return (
       <Box
         sx={{
           minHeight: "100vh",
-          backgroundColor: darkMode ? "background.default" : "grey.100",
+          backgroundColor: "background.default",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -150,29 +204,59 @@ const CertificateVerification = () => {
           <Card
             sx={{
               textAlign: "center",
-              p: 4,
+              p: 5,
+              borderRadius: 3,
               background: darkMode
                 ? "linear-gradient(135deg, rgba(211, 47, 47, 0.1) 0%, rgba(211, 47, 47, 0.05) 100%)"
                 : "linear-gradient(135deg, rgba(211, 47, 47, 0.05) 0%, rgba(211, 47, 47, 0.02) 100%)",
               border: `1px solid ${darkMode ? "rgba(211, 47, 47, 0.3)" : "rgba(211, 47, 47, 0.2)"}`,
+              boxShadow: darkMode
+                ? "0 8px 32px rgba(0, 0, 0, 0.24)"
+                : "0 8px 32px rgba(0, 0, 0, 0.08)",
             }}
           >
-            <ErrorIcon
-              sx={{
-                fontSize: 64,
-                color: "error.main",
-                mb: 3,
-              }}
-            />
-            <MDTypography variant="h4" fontWeight="bold" gutterBottom color="error">
-              Verification Failed
-            </MDTypography>
-            <MDTypography variant="body1" color="text" sx={{ opacity: 0.8, mb: 3 }}>
+            <MDBox
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              flexDirection="column"
+            >
+              <ErrorIcon
+                sx={{
+                  fontSize: 72,
+                  color: "error.main",
+                  mb: 3,
+                }}
+              />
+              <MDTypography variant="h3" fontWeight="bold" gutterBottom color="error">
+                Verification Failed
+              </MDTypography>
+            </MDBox>
+            <MDTypography variant="h6" color="text" sx={{ opacity: 0.8, mb: 3, lineHeight: 1.5 }}>
               {error}
             </MDTypography>
-            <MDTypography variant="body2" color="text" sx={{ opacity: 0.6 }}>
+            <MDTypography variant="body2" color="text" sx={{ opacity: 0.6, mb: 4 }}>
               The certificate could not be verified. Please check the certificate ID and try again.
             </MDTypography>
+            <MDBox display="flex" gap={2} justifyContent="center" flexWrap="wrap">
+              <MDButton
+                onClick={verifyCertificate}
+                variant="gradient"
+                color="error"
+                startIcon={<Refresh />}
+                sx={{ borderRadius: 2 }}
+              >
+                Try Again
+              </MDButton>
+              <MDButton
+                variant="outlined"
+                color="primary"
+                onClick={() => (window.location.href = "/")}
+                sx={{ borderRadius: 2 }}
+              >
+                Go Home
+              </MDButton>
+            </MDBox>
           </Card>
         </Container>
       </Box>
@@ -185,51 +269,46 @@ const CertificateVerification = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: isMobile ? 2 : 4,
       }}
     >
       <Container maxWidth="lg" sx={{ px: isMobile ? 1 : 2 }}>
         <Box sx={{ mb: isMobile ? 2 : 4 }}>
-          {/* Header */}
-          <MDBox textAlign="center" mb={isMobile ? 3 : 4}>
+          {/* Enhanced Header with better MDTypography */}
+          <MDBox textAlign="center" mb={isMobile ? 4 : 5}>
             <Verified
               sx={{
-                fontSize: 64,
+                fontSize: isMobile ? 56 : 72,
                 color: verification.isValid ? "success.main" : "error.main",
-                mb: 2,
+                mb: 3,
               }}
             />
-            <Typography
+            <MDTypography
               variant={isMobile ? "h3" : "h2"}
-              sx={{
-                fontWeight: 700,
-                color: verification.isValid
-                  ? darkMode
-                    ? "success.light"
-                    : "success.main"
-                  : darkMode
-                    ? "error.light"
-                    : "error.main",
-                mb: 1,
-              }}
+              fontWeight="bold"
+              gutterBottom
+              sx={{ lineHeight: 1.2, color: verification.isValid ? "success.main" : "error.main" }}
             >
               {verification.isValid ? "Certificate Verified" : "Certificate Invalid"}
-            </Typography>
+            </MDTypography>
             <Chip
-              label={verification.isValid ? "VALID" : "INVALID"}
+              icon={verification.isValid ? <Verified /> : <ErrorIcon />}
+              label={verification.isValid ? "VALID & SECURE" : "INVALID CERTIFICATE"}
               color={verification.isValid ? "success" : "error"}
               size="large"
               sx={{
-                fontSize: "1.1rem",
-                py: 1.5,
-                px: 3,
+                fontSize: isMobile ? "0.9rem" : "1.1rem",
+                py: isMobile ? 1 : 1.5,
+                px: isMobile ? 2 : 3,
                 fontWeight: "bold",
+                backgroundColor: verification.isValid ? "success.main" : "error.main",
+                color: "white",
               }}
             />
           </MDBox>
 
-          {/* Certificate Details Card */}
+          {/* Enhanced Certificate Details Card */}
           <Card
             sx={{
               borderRadius: isMobile ? 2 : 3,
@@ -237,10 +316,11 @@ const CertificateVerification = () => {
                 ? "0 8px 32px rgba(0, 0, 0, 0.24)"
                 : "0 8px 32px rgba(0, 0, 0, 0.08)",
               overflow: "hidden",
+              border: `1px solid ${darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`,
             }}
           >
-            <CardContent sx={{ p: isMobile ? 2 : 4 }}>
-              {/* Certificate Header */}
+            <CardContent sx={{ p: isMobile ? 3 : 4 }}>
+              {/* Enhanced Certificate Header */}
               <MDBox textAlign="center" mb={4}>
                 <Chip
                   label={certificate.positionLabel || getPositionLabel(certificate.winnerPosition)}
@@ -248,10 +328,13 @@ const CertificateVerification = () => {
                   size={isMobile ? "medium" : "large"}
                   sx={{
                     fontSize: isMobile ? "0.9rem" : "1.1rem",
-                    py: isMobile ? 0.75 : 1,
-                    px: isMobile ? 1 : 2,
+                    py: isMobile ? 1 : 1.5,
+                    px: isMobile ? 2 : 3,
                     fontWeight: "bold",
-                    mb: 2,
+                    mb: 3,
+                    backgroundColor:
+                      theme.palette[getPositionColor(certificate.winnerPosition)].main,
+                    color: "white",
                   }}
                 />
                 <MDTypography
@@ -259,36 +342,38 @@ const CertificateVerification = () => {
                   fontWeight="bold"
                   gutterBottom
                   color={sidenavColor}
-                  sx={{ lineHeight: 1.3 }}
+                  sx={{ lineHeight: 1.3, mb: 2 }}
                 >
                   {certificate.eventName}
                 </MDTypography>
-                <MDTypography variant="body1" color="text" sx={{ opacity: 0.8 }}>
-                  Awarded to {certificate.student?.name}
+                <MDTypography variant="h6" color="text" sx={{ opacity: 0.8, fontWeight: 500 }}>
+                  Awarded to <strong>{certificate.student?.name}</strong>
                 </MDTypography>
               </MDBox>
 
               <Divider sx={{ mb: 4 }} />
 
-              {/* Certificate Information */}
+              {/* Enhanced Certificate Information */}
               <Grid container spacing={isMobile ? 2 : 4}>
                 {/* Certificate Details */}
                 <Grid item xs={12} md={6}>
                   <MDTypography
-                    variant="h6"
-                    fontWeight="medium"
+                    variant="h5"
+                    fontWeight="bold"
                     gutterBottom
                     color="text"
-                    sx={{ fontSize: isMobile ? "1rem" : "1.125rem", mb: 3 }}
+                    sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
                   >
-                    📜 Certificate Information
+                    <Link color="primary" />
+                    Certificate Information
                   </MDTypography>
 
-                  <MDBox sx={{ pl: isMobile ? 0 : 1 }}>
+                  <MDBox>
                     <InfoItem
                       label="Certificate ID"
                       value={certificate.certificateId}
                       icon={<Link fontSize="small" />}
+                      highlight
                     />
 
                     <InfoItem
@@ -304,17 +389,7 @@ const CertificateVerification = () => {
                     <InfoItem
                       label="Status"
                       value={certificate.status}
-                      icon={
-                        <Box
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            bgcolor: certificate.status === "issued" ? "success.main" : "grey.500",
-                            mt: 0.5,
-                          }}
-                        />
-                      }
+                      icon={<Security fontSize="small" />}
                     />
 
                     {certificate.metaMaskAddress && (
@@ -334,16 +409,17 @@ const CertificateVerification = () => {
                 {/* Event Details */}
                 <Grid item xs={12} md={6}>
                   <MDTypography
-                    variant="h6"
-                    fontWeight="medium"
+                    variant="h5"
+                    fontWeight="bold"
                     gutterBottom
                     color="text"
-                    sx={{ fontSize: isMobile ? "1rem" : "1.125rem", mb: 3 }}
+                    sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
                   >
-                    🎯 Event Details
+                    <EmojiEvents color="primary" />
+                    Event Details
                   </MDTypography>
 
-                  <MDBox sx={{ pl: isMobile ? 0 : 1 }}>
+                  <MDBox>
                     <InfoItem
                       label="Category"
                       value={certificate.event?.category}
@@ -379,7 +455,7 @@ const CertificateVerification = () => {
                 </Grid>
               </Grid>
 
-              {/* Verification Status */}
+              {/* Enhanced Verification Status */}
               <Divider sx={{ my: 4 }} />
               <MDBox
                 sx={{
@@ -392,7 +468,7 @@ const CertificateVerification = () => {
                     : verification.isValid
                       ? "rgba(76, 175, 80, 0.05)"
                       : "rgba(244, 67, 54, 0.05)",
-                  border: `1px solid ${
+                  border: `2px solid ${
                     darkMode
                       ? verification.isValid
                         ? "rgba(76, 175, 80, 0.3)"
@@ -403,27 +479,33 @@ const CertificateVerification = () => {
                   }`,
                 }}
               >
-                <MDTypography variant="h6" fontWeight="medium" gutterBottom color="text">
-                  🔍 Verification Details
+                <MDTypography
+                  variant="h5"
+                  fontWeight="bold"
+                  gutterBottom
+                  color="text"
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}
+                >
+                  <Security color={verification.isValid ? "success" : "error"} />
+                  Verification Details
                 </MDTypography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <InfoItem
-                      label="Verification Status"
-                      value={verification.isValid ? "Valid" : "Invalid"}
-                      icon={
+                  {[
+                    {
+                      label: "Verification Status",
+                      value: verification.isValid ? "Valid" : "Invalid",
+                      icon: (
                         <Verified
                           fontSize="small"
                           color={verification.isValid ? "success" : "error"}
                         />
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InfoItem
-                      label="Blockchain Verified"
-                      value={verification.blockchainVerified ? "Yes" : "No"}
-                      icon={
+                      ),
+                      highlight: true,
+                    },
+                    {
+                      label: "Blockchain Verified",
+                      value: verification.blockchainVerified ? "Yes" : "No",
+                      icon: (
                         <Box
                           sx={{
                             width: 8,
@@ -433,14 +515,12 @@ const CertificateVerification = () => {
                             mt: 0.5,
                           }}
                         />
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InfoItem
-                      label="Certificate Status"
-                      value={certificate.status}
-                      icon={
+                      ),
+                    },
+                    {
+                      label: "Certificate Status",
+                      value: certificate.status,
+                      icon: (
                         <Box
                           sx={{
                             width: 8,
@@ -450,45 +530,54 @@ const CertificateVerification = () => {
                             mt: 0.5,
                           }}
                         />
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InfoItem
-                      label="Verification Date"
-                      value={new Date().toLocaleDateString("en-US", {
+                      ),
+                    },
+                    {
+                      label: "Verification Date",
+                      value: new Date().toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
-                      })}
-                      icon={<CalendarToday fontSize="small" />}
-                    />
-                  </Grid>
+                      }),
+                      icon: <CalendarToday fontSize="small" />,
+                    },
+                  ].map((item, index) => (
+                    <Grid item xs={12} sm={6} key={index}>
+                      <InfoItem
+                        label={item.label}
+                        value={item.value}
+                        icon={item.icon}
+                        highlight={item.highlight}
+                      />
+                    </Grid>
+                  ))}
                 </Grid>
               </MDBox>
 
-              {/* Additional Metadata */}
+              {/* Enhanced Additional Metadata */}
               {certificate.metadata && (
                 <>
                   <Divider sx={{ my: 4 }} />
                   <MDBox>
                     <MDTypography
-                      variant="h6"
-                      fontWeight="medium"
+                      variant="h5"
+                      fontWeight="bold"
                       gutterBottom
                       color="text"
-                      sx={{ fontSize: isMobile ? "1rem" : "1.125rem" }}
+                      sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
                     >
-                      📋 Additional Information
+                      <EmojiEvents color="primary" />
+                      Additional Information
                     </MDTypography>
-                    <MDBox sx={{ pl: isMobile ? 0 : 1 }}>
+                    <MDBox sx={{ pl: 1 }}>
                       <MDTypography
-                        variant="body2"
+                        variant="body1"
                         color="text"
                         sx={{
-                          opacity: 0.8,
-                          lineHeight: 1.6,
-                          mb: certificate.metadata.skills?.length ? 2 : 0,
+                          opacity: 0.9,
+                          lineHeight: 1.7,
+                          mb: certificate.metadata.skills?.length ? 3 : 0,
+                          fontStyle: "italic",
                         }}
                       >
                         {certificate.metadata.description ||
@@ -502,7 +591,8 @@ const CertificateVerification = () => {
                             fontWeight="bold"
                             color="text"
                             display="block"
-                            mb={1}
+                            mb={2}
+                            sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
                           >
                             Skills Recognized:
                           </MDTypography>
@@ -511,12 +601,12 @@ const CertificateVerification = () => {
                               <Chip
                                 key={index}
                                 label={skill}
-                                size="small"
+                                size="medium"
                                 variant="outlined"
                                 color="primary"
                                 sx={{
-                                  fontSize: "0.75rem",
-                                  height: 24,
+                                  fontSize: "0.8rem",
+                                  height: 32,
                                 }}
                               />
                             ))}
@@ -528,20 +618,36 @@ const CertificateVerification = () => {
                 </>
               )}
 
-              {/* Security Note */}
-              <MDBox textAlign="center" mt={4}>
+              {/* Enhanced Security Note */}
+              <MDBox
+                textAlign="center"
+                mt={4}
+                p={3}
+                sx={{
+                  borderRadius: 2,
+                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)",
+                  border: `1px solid ${darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"}`,
+                }}
+              >
+                <Security
+                  sx={{
+                    fontSize: 32,
+                    color: verification.isValid ? "success.main" : "error.main",
+                    mb: 2,
+                  }}
+                />
                 <MDTypography
-                  variant="caption"
+                  variant="body2"
                   color="text"
                   sx={{
-                    opacity: 0.7,
-                    fontSize: "0.75rem",
-                    lineHeight: 1.4,
+                    opacity: 0.8,
+                    lineHeight: 1.6,
+                    fontWeight: 500,
                   }}
                 >
                   🔒 This certificate has been verified through our secure system.
                   {verification.blockchainVerified &&
-                    " The certificate is also verified on the blockchain for enhanced security."}
+                    " The certificate is also verified on the blockchain for enhanced security and immutability."}
                 </MDTypography>
               </MDBox>
             </CardContent>

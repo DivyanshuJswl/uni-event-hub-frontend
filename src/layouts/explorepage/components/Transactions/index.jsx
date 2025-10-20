@@ -108,7 +108,7 @@ function BillingInformation() {
       sx={{
         mb: 2,
         boxShadow: 2,
-        backgroundColor: darkMode ? "background.default" : "background.paper",
+        backgroundColor: "background.default",
         p: 2,
       }}
     >
@@ -140,11 +140,11 @@ function BillingInformation() {
           borderBottom: darkMode
             ? "1px solid rgba(255, 255, 255, 0.12)"
             : "1px solid rgba(0, 0, 0, 0.08)",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: "background.default",
         }}
       >
         <MDBox display="flex" justifyContent="space-between" alignItems="center">
-          <MDTypography variant="h4" px="1rem" fontWeight="medium" color={darkMode ? "white" : "dark"}>
+          <MDTypography variant="h4" px="1rem" fontWeight="medium">
             Trending Skills
           </MDTypography>
           <MDTypography
@@ -170,7 +170,7 @@ function BillingInformation() {
         pt={1}
         px={2}
         sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: "background.default",
         }}
       >
         {loading ? (

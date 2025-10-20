@@ -139,8 +139,8 @@ const data = () => {
         align: "center",
       },
       { Header: "events won", accessor: "eventsWon", width: "15%", align: "center" },
-      { Header: "success rate", accessor: "successRate", width: "20%", align: "center" },
-      { Header: "achievement", accessor: "achievement", width: "15%", align: "center" },
+      { Header: "success rate", accessor: "successRate", width: "15%", align: "center" },
+      { Header: "achievement", accessor: "achievement", width: "10%", align: "center" },
     ],
 
     rows: [

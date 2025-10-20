@@ -4,14 +4,14 @@ import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 
-const modalStyle = (darkMode) => ({
+const modalStyle = () => ({
   position: "fixed",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   minWidth: 350,
   maxWidth: "90vw",
-  bgcolor: darkMode ? "background.default" : "background.paper",
+  bgcolor: "background.default",
   borderRadius: 3,
   boxShadow: 24,
   p: 0,
@@ -34,7 +34,7 @@ function PreviewDialog({ open, onClose, avatar }) {
       closeAfterTransition
     >
       <Fade in={open}>
-        <Box sx={modalStyle(darkMode)}>
+        <Box sx={modalStyle()}>
           {/* Header */}
           <MDBox
             display="flex"

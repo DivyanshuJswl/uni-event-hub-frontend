@@ -32,7 +32,7 @@ const modalStyle = (darkMode) => ({
   maxWidth: "95vw",
   maxHeight: "90vh",
   overflowY: "auto",
-  bgcolor: darkMode ? "background.default" : "background.paper",
+  bgcolor: "background.default",
   borderRadius: 3,
   boxShadow: 24,
   p: 0,
@@ -81,7 +81,7 @@ const formatUserData = (user) => {
 function ProfileInfoCard({ title, description, social, action, shadow, darkMode }) {
   const { socialMediaColors } = colors;
   const { size } = typography;
- 
+
   // Use API context for making API calls
   const { updateProfile, user } = useAuth();
 
@@ -259,6 +259,8 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
             <Chip
               label={`${value.substring(0, 4)}...${value.substring(value.length - 4)}`}
               size="small"
+              color="primary"
+              variant="outlined"
             />
           </Tooltip>
         ) : (
@@ -270,11 +272,17 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
             label={value}
             color={value === "admin" ? "error" : value === "organizer" ? "warning" : "success"}
             size="small"
+            variant="outlined"
           />
         );
       case "isVerified":
         return (
-          <Chip label={value} color={value === "Verified" ? "success" : "error"} size="small" />
+          <Chip
+            label={value}
+            color={value === "Verified" ? "success" : "error"}
+            size="small"
+            variant="outlined"
+          />
         );
       default:
         return value || "Not set";

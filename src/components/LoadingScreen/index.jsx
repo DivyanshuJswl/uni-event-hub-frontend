@@ -1,15 +1,15 @@
 import { Box, CircularProgress, Typography, keyframes } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
-// Animation keyframes
+// Animations
 const fadeIn = keyframes`
-  0% { opacity: 0; transform: scale(0.8); }
+  0% { opacity: 0; transform: scale(0.95); }
   100% { opacity: 1; transform: scale(1); }
 `;
 
 const pulse = keyframes`
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 0.8; }
   100% { transform: scale(1); opacity: 1; }
 `;
 
@@ -25,29 +25,18 @@ const LoadingScreen = () => {
     <Box
       sx={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
+        inset: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: theme.palette.background.default,
-        zIndex: 9999,
-        animation: `${fadeIn} 0.5s ease-out forwards`,
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          opacity: 0.1,
-        },
+        gap: 3,
+        backgroundColor: theme.palette.background.default || "#000000",
+        zIndex: 1300,
+        animation: `${fadeIn} 0.6s ease-out forwards`,
       }}
     >
+      {/* Spinner */}
       <Box
         sx={{
           position: "relative",
@@ -56,7 +45,7 @@ const LoadingScreen = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          animation: `${pulse} 2s infinite ease-in-out`,
+          animation: `${pulse} 1.2s infinite ease-in-out`,
         }}
       >
         <CircularProgress
@@ -79,18 +68,20 @@ const LoadingScreen = () => {
         />
         <Box
           component="img"
+          src="https://res.cloudinary.com/dh5cebjwj/image/upload/v1758826369/Untitled_design_prev_ui_zdpphg.svg"
+          alt="App Logo"
           sx={{
-            width: 40,
-            height: 40,
-            animation: `${pulse} 2s infinite ease-in-out`,
+            width: 42,
+            height: 42,
+            filter: "drop-shadow(0 0 4px rgba(255,255,255,0.1))",
           }}
         />
       </Box>
 
+      {/* Loading Text */}
       <Typography
         variant="h6"
         sx={{
-          mt: 4,
           color: theme.palette.primary,
           fontWeight: 500,
           letterSpacing: 1.2,
@@ -102,22 +93,23 @@ const LoadingScreen = () => {
             bottom: -8,
             left: "50%",
             transform: "translateX(-50%)",
-            width: 30,
+            width: 32,
             height: 2,
-            background: theme.palette.primary.main,
-            animation: `${pulse} 1.5s infinite ease-in-out`,
+            borderRadius: 1,
+            backgroundColor: theme.palette.primary.main,
           },
         }}
       >
         Loading Uni-Event HUB
       </Typography>
 
+      {/* Subtext */}
       <Typography
         variant="caption"
         sx={{
-          mt: 2,
-          color: theme.palette.text.secondary,
-          animation: `${fadeIn} 1s ease-out 0.6s both`,
+          color: theme.palette.text.main,
+          opacity: 0.7,
+          letterSpacing: 0.5,
         }}
       >
         Please wait while we prepare your dashboard

@@ -181,7 +181,7 @@ const CertificatePublisher = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "background.default" : "grey.100",
+        backgroundColor: "background.default",
         py: 2,
         px: 2,
       }}

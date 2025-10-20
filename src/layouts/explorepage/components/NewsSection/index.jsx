@@ -92,7 +92,6 @@ function NewsSection() {
   );
 
   return (
-    
     <Card
       sx={{
         borderRadius: 3,
@@ -112,10 +111,15 @@ function NewsSection() {
           borderBottom: darkMode
             ? "1px solid rgba(255, 255, 255, 0.12)"
             : "1px solid rgba(0, 0, 0, 0.08)",
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: "background.default",
         }}
       >
-        <MDTypography variant="h4" px="1rem" fontWeight="medium" color={darkMode ? "white" : "dark"}>
+        <MDTypography
+          variant="h4"
+          px="1rem"
+          fontWeight="medium"
+          color={darkMode ? "white" : "dark"}
+        >
           Top Tech Headlines
         </MDTypography>
         <MDBox display="flex" alignItems="center" gap={2}>
@@ -159,13 +163,7 @@ function NewsSection() {
         </MDBox>
       </MDBox>
 
-      <MDBox
-        pt={1}
-        px={2}
-        sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-        }}
-      >
+      <MDBox pt={1} px={2}>
         {loading ? (
           <MDBox display="flex" flexDirection="column" py={4} gap={2}>
             {Array.from({ length: articlesPerPage }).map((_, index) => (
@@ -224,15 +222,28 @@ function NewsSection() {
                   count={totalPages}
                   page={page}
                   onChange={handlePageChange}
-                  color="primary"
+                  variant="outlined"
                   shape="rounded"
                   sx={{
                     "& .MuiPaginationItem-root": {
-                      color: darkMode ? "white" : "text.primary",
+                      color: "text.main",
+                      borderColor: "primary.main",
+                      "&:hover": {
+                        backgroundColor: darkMode
+                          ? "rgba(255, 255, 255, 0.08)"
+                          : "rgba(0, 0, 0, 0.04)",
+                      },
                     },
-                    "& .MuiPaginationItem-root.Mui-selected": {
-                      backgroundColor: darkMode ? "primary.main" : "primary.main",
+                    "& .MuiPaginationItem-page.Mui-selected": {
+                      backgroundColor: "info.main",
                       color: "white",
+                      borderColor: "info.main",
+                      "&:hover": {
+                        backgroundColor: "info.dark",
+                      },
+                    },
+                    "& .MuiPaginationItem-ellipsis": {
+                      color: "text.main",
                     },
                   }}
                 />
