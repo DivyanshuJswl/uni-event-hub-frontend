@@ -169,14 +169,14 @@ const Explore = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Icon fontSize="small" color={darkMode ? "white" : "black"}>
+                    <Icon fontSize="small" sx={{ color: "text.main" }}>
                       search
                     </Icon>
                   </InputAdornment>
                 ),
                 sx: {
                   borderRadius: 2,
-                  backgroundColor: darkMode ? "" : "white",
+                  backgroundColor: "background.default",
                 },
               }}
             />
@@ -259,7 +259,7 @@ const Explore = () => {
             <Grid container spacing={4}>
               {currentEvents.length > 0 ? (
                 currentEvents.map((event, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={event._id || index}>
+                  <Grid item xs={12} sm={6} md={6} lg={4} key={event._id || index}>
                     <EventCard event={event} isEnrolled={isUserEnrolled(event._id)} />
                   </Grid>
                 ))

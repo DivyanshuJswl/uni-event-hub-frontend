@@ -96,7 +96,6 @@ function NewsSection() {
       sx={{
         borderRadius: 3,
         boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.24)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
-        overflow: "hidden",
       }}
     >
       <MDBox
@@ -131,7 +130,7 @@ function NewsSection() {
             inputProps={{ min: 1, max: 20 }}
             size="small"
             sx={{
-              width: 120,
+              width: 100,
               "& .MuiInputBase-input": {
                 color: darkMode ? "white" : "text.primary",
               },
@@ -143,10 +142,11 @@ function NewsSection() {
               borderRadius: "8px",
               fontWeight: 400,
               borderWidth: "1px",
-              color: darkMode ? "primary.main" : "primary.main",
-              borderColor: darkMode ? "primary.main" : "primary.main",
+              size: "small",
+              maxWidth: "110px",
+              color: "primary.main",
+              borderColor: "primary.main",
               "&:hover": {
-                borderColor: darkMode ? "primary.dark" : "primary.dark",
                 backgroundColor: darkMode ? "rgba(25, 118, 210, 0.08)" : "rgba(25, 118, 210, 0.04)",
               },
               "&.Mui-disabled": {

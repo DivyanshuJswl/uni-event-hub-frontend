@@ -856,20 +856,12 @@ function OrganizerEventCard({ event, onUpdated }) {
               height="12.5rem"
               sx={{
                 objectFit: "cover",
-                borderRadius: "lg",
+                borderRadius: "0.6rem",
                 boxShadow: darkMode ? 2 : 3,
-                borderTopLeftRadius: "0.6rem",
-                borderTopRightRadius: "0.6rem",
-                borderBottomLeftRadius: "0.6rem",
-                borderBottomRightRadius: "0.6rem",
                 mt: -5,
                 border: darkMode
                   ? "1px solid rgba(255, 255, 255, 0.1)"
                   : "1px solid rgba(0, 0, 0, 0.1)",
-                transition: "transform 0.3s ease",
-                "&:hover": {
-                  transform: "scale(1.02)",
-                },
               }}
             />
             <Chip
@@ -979,9 +971,10 @@ function OrganizerEventCard({ event, onUpdated }) {
             position: "absolute",
             top: 8,
             right: 8,
-            backgroundColor: darkMode ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.8)",
+            backgroundColor: "grey.400",
+            color: "white",
             "&:hover": {
-              backgroundColor: darkMode ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,1)",
+              backgroundColor: "grey.600",
             },
           }}
         >
@@ -1144,12 +1137,7 @@ function OrganizerEventCard({ event, onUpdated }) {
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <MDTypography
-                    variant="h3"
-                    textTransform="capitalize"
-                    color={darkMode ? "white" : "dark"}
-                    sx={{ mb: 1 }}
-                  >
+                  <MDTypography variant="h3" textTransform="capitalize" sx={{ mb: 1 }}>
                     {event.title}
                   </MDTypography>
 

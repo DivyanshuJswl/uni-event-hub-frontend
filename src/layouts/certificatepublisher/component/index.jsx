@@ -389,9 +389,11 @@ const CertificatePublisher = () => {
                                   }
                                   variant="outlined"
                                   required
-                                  placeholder="https://example.com/certificate.pdf"
+                                  placeholder="https://drive.com/certificate.pdf"
                                   InputProps={{
-                                    startAdornment: <CloudUpload sx={{ mr: 1, opacity: 0.5 }} />,
+                                    startAdornment: (
+                                      <CloudUpload sx={{ opacity: 0.8, color: "primary.main" }} />
+                                    ),
                                   }}
                                 />
                                 <MDTypography variant="caption" sx={{ mt: 0.5, opacity: 0.7 }}>
@@ -413,10 +415,8 @@ const CertificatePublisher = () => {
                         type="submit"
                         variant="gradient"
                         color={sidenavColor}
-                        size="medium"
                         disabled={isSubmitting || !selectedEvent}
                         sx={{
-                          minWidth: 250,
                           borderRadius: 2,
                           fontSize: "1.1rem",
                           py: 1.5,

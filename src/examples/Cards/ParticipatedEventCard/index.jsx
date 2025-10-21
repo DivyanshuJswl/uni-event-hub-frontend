@@ -14,10 +14,12 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
+import { useNavigate } from "react-router-dom";
 
 function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
+  const navigate = useNavigate();
 
   const status = useMemo(() => {
     const now = new Date();
@@ -52,6 +54,10 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const handleViewDetails = (eventId) => () => {
+    navigate(`/events/${eventId}`);
+  };
 
   const imageUrl =
     event.featuredImage?.url ||
@@ -179,7 +185,7 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
               color={sidenavColor}
               size="small"
               fullWidth
-              onClick={() => window.open(`/events/${event._id}`, "_self")}
+              onClick={handleViewDetails(event._id)}
             >
               View Details
             </MDButton>

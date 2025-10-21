@@ -36,7 +36,7 @@ function OrganizedEvents() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -184,8 +184,8 @@ function OrganizedEvents() {
           <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap" }}>
             {[
               { key: "all", label: `All ${eventCounts.total}`, color: "primary" },
-              { key: "upcoming", label: `Upcoming ${eventCounts.upcoming}`, color: "secondary" },
-              { key: "ongoing", label: `Ongoing ${eventCounts.ongoing}`, color: "success" },
+              { key: "upcoming", label: `Upcoming ${eventCounts.upcoming}`, color: "success" },
+              { key: "ongoing", label: `Ongoing ${eventCounts.ongoing}`, color: "warning" },
               { key: "completed", label: `Completed ${eventCounts.completed}`, color: "error" },
             ].map((s) => (
               <Chip
@@ -210,123 +210,124 @@ function OrganizedEvents() {
             ))}
           </Stack>
 
-          {/* Search and Controls - Fixed Layout */}
-          <Grid container spacing={2} alignItems="center" mb={4}>
-            {/* Search Field - Takes full width on small screens, half on medium+ */}
-            <Grid item xs={12} md={6}>
-              <Box
-                display="flex"
-                alignItems="center"
-                gap={2}
-                sx={{
-                  justifyContent: isSmall ? "center" : "flex-start",
-                  width: "100%",
+          {/* Search and Controls - Fixed Responsive Layout */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isSmall ? "column" : "row",
+              alignItems: isSmall ? "center" : "flex-end",
+              justifyContent: "space-between",
+              gap: 2,
+              mb: 4,
+              width: "100%",
+            }}
+          >
+            {/* Search Field - Left aligned on large screens, centered on small */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isSmall ? "center" : "flex-start",
+                width: isSmall ? "100%" : "auto",
+              }}
+            >
+              <TextField
+                size="small"
+                variant="outlined"
+                placeholder="Search your events..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(1);
                 }}
-              >
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  placeholder="Search your events..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setPage(1);
-                  }}
-                  fullWidth={isSmall}
-                  sx={{
-                    width: isSmall ? "15rem" : "400px",
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Icon fontSize="small" color={darkMode ? "white" : "black"}>
-                          search
-                        </Icon>
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      borderRadius: 2,
-                      backgroundColor: darkMode ? "" : "white",
-                      "& .MuiInputBase-input": {
-                        color: darkMode ? "white" : "text.primary",
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            </Grid>
-
-            {/* Controls - Takes full width on small screens, half on medium+ */}
-            <Grid item xs={12} md={6}>
-              <Box
-                display="flex"
-                alignItems="center"
-                gap={2}
                 sx={{
-                  justifyContent: isSmall ? "center" : "flex-end",
-                  flexWrap: isSmall ? "wrap" : "nowrap",
-                  width: "100%",
+                  width: isSmall ? "100%" : "350px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "background.default",
+                  },
                 }}
-              >
-                <TextField
-                  label="Items per page"
-                  type="number"
-                  value={inputValue}
-                  onChange={handleItemsPerPageChange}
-                  size="small"
-                  inputProps={{ min: 1, max: 12 }}
-                  sx={{
-                    width: isSmall ? "120px" : "140px",
-                    "& .MuiInputBase-input": {
-                      color: darkMode ? "white" : "text.primary",
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: darkMode ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
-                    },
-                  }}
-                />
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Icon fontSize="small" sx={{ color: "text.main" }}>
+                        search
+                      </Icon>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
 
-                <Button
-                  variant="outlined"
-                  sx={{
-                    borderRadius: "8px",
-                    fontWeight: 400,
-                    borderWidth: "1px",
-                    color: darkMode ? "primary.main" : "primary.main",
-                    borderColor: darkMode ? "primary.main" : "primary.main",
-                    minWidth: "auto",
-                    px: 2,
-                    "&:hover": {
-                      borderColor: darkMode ? "primary.dark" : "primary.dark",
-                      backgroundColor: darkMode
-                        ? "rgba(25, 118, 210, 0.08)"
-                        : "rgba(25, 118, 210, 0.04)",
-                    },
-                    "&.Mui-disabled": {
-                      borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
-                      color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
-                    },
-                  }}
-                  onClick={handleRefresh}
-                  disabled={loading || refreshing || !organizerId}
-                  startIcon={
-                    refreshing ? (
-                      <MUICircularProgress size={20} color="inherit" />
-                    ) : (
-                      <Icon>refresh</Icon>
-                    )
-                  }
-                >
-                  <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-                    {refreshing ? "Refreshing..." : "Refresh"}
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
-                    {refreshing ? "" : "Refresh"}
-                  </Box>
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
+            {/* Controls - Right aligned on large screens, centered on small */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: isSmall ? "center" : "flex-end",
+                width: isSmall ? "100%" : "auto",
+                gap: 2,
+                width: "auto",
+              }}
+            >
+              <TextField
+                label="Items per page"
+                type="number"
+                value={inputValue}
+                onChange={handleItemsPerPageChange}
+                size="small"
+                inputProps={{ min: 1, max: 12 }}
+                sx={{
+                  width: "140px",
+                  "& .MuiInputBase-input": {
+                    color: darkMode ? "white" : "text.primary",
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: darkMode ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
+                  },
+                }}
+              />
+
+              <Button
+                variant="outlined"
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 400,
+                  borderWidth: "1px",
+                  color: "primary.main",
+                  borderColor: "primary.main",
+                  minWidth: "auto",
+                  px: 2,
+                  width: "auto",
+                  "&:hover": {
+                    borderColor: "primary.dark",
+                    backgroundColor: darkMode
+                      ? "rgba(25, 118, 210, 0.08)"
+                      : "rgba(25, 118, 210, 0.04)",
+                  },
+                  "&.Mui-disabled": {
+                    borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                    color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                  },
+                }}
+                onClick={handleRefresh}
+                disabled={loading || refreshing || !organizerId}
+                startIcon={
+                  refreshing ? (
+                    <MUICircularProgress size={20} color="inherit" />
+                  ) : (
+                    <Icon>refresh</Icon>
+                  )
+                }
+              >
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                  {refreshing ? "Refreshing..." : "Refresh"}
+                </Box>
+                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                  {refreshing ? "" : "Refresh"}
+                </Box>
+              </Button>
+            </Box>
+          </Box>
 
           {/* Events Grid */}
           {loading ? (
@@ -353,7 +354,7 @@ function OrganizedEvents() {
               <Grid container spacing={4}>
                 {currentEvents.length > 0 ? (
                   currentEvents.map((event) => (
-                    <Grid item xs={12} sm={6} md={4} key={event._id}>
+                    <Grid item xs={12} sm={6} md={6} lg={4} key={event._id}>
                       <OrganizerEventCard event={event} onUpdated={handleRefresh} />
                     </Grid>
                   ))

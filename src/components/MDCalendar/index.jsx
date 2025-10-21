@@ -9,6 +9,9 @@ import {
   addMonths,
   subMonths,
   format,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
 } from "date-fns";
 import Tooltip from "@mui/material/Tooltip";
 import PropTypes from "prop-types";
@@ -20,9 +23,12 @@ const MDCalendar = ({ events = [], loading = false }) => {
   const { darkMode, transparentSidenav, sidenavColor, transparentNavbar } = controller;
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const start = startOfMonth(currentMonth);
-  const end = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start, end });
+  // Get the complete calendar grid including previous/next month days
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }); // Start from Sunday of the week containing 1st
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 }); // End on Saturday of the week containing last day
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
 
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -53,50 +59,53 @@ const MDCalendar = ({ events = [], loading = false }) => {
     return eventsByDate[dateKey] || [];
   };
 
+  // Check if day belongs to current month
+  const isCurrentMonth = (day) => {
+    return isSameMonth(day, currentMonth);
+  };
+
   // Get styles based on theme context
   const getStyles = () => {
     const isTransparent = transparentNavbar || transparentSidenav;
 
     return {
       calendar: {
-        backgroundColor: "background.card", // Rich dark background
-        color: darkMode ? "white.main" : "grey.900", // Softer text colors
+        backgroundColor: "background.card",
+        color: darkMode ? "white.main" : "grey.900",
         boxShadow: darkMode ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
       },
       header: {
-        color: darkMode
-          ? "#4fc3f7" // Bright cyan for dark mode
-          : sidenavColor || "#1976d2", // Primary blue or custom color
+        color: darkMode ? "#4fc3f7" : sidenavColor || "#1976d2",
       },
       day: {
         today: {
-          backgroundColor: darkMode ? "#4fc2f732" : "#bbdefbb0", // Blue tones
-          color: darkMode ? "#ffffff" : "#0d47a1", // Contrast text
+          backgroundColor: darkMode ? "#4fc2f732" : "#bbdefbb0",
+          color: darkMode ? "#ffffff" : "#0d47a1",
           fontWeight: "bold",
         },
         event: {
           backgroundColor: darkMode
-            ? "linear-gradient(135deg, #6dfc71ff, #388e3c)" // Green gradient for dark
-            : "linear-gradient(135deg, #c8e6c9, #a5d6a7)", // Subtle green gradient for light
-          color: darkMode ? "#ebebebff" : "#1b5e20", // Light green text
+            ? "linear-gradient(135deg, #6dfc71ff, #388e3c)"
+            : "linear-gradient(135deg, #c8e6c9, #a5d6a7)",
+          color: darkMode ? "#ebebebff" : "#1b5e20",
           boxShadow: darkMode ? "0 2px 4px rgba(76, 175, 80, 0.3)" : "0 2px 4px rgba(0, 0, 0, 0.1)",
         },
+        otherMonth: {
+          backgroundColor: "transparent",
+          color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.3)",
+        },
         hover: {
-          backgroundColor: darkMode
-            ? "rgba(66, 66, 66, 0.8)" // Dark gray with transparency
-            : "rgba(236, 239, 241, 0.7)", // Light blue-gray
+          backgroundColor: darkMode ? "rgba(66, 66, 66, 0.8)" : "rgba(236, 239, 241, 0.7)",
           transform: "scale(1.05)",
           transition: "all 0.2s ease",
         },
         selected: {
-          backgroundColor: darkMode ? "#7b1fa2" : "#e1bee7", // Purple tones
+          backgroundColor: darkMode ? "#7b1fa2" : "#e1bee7",
           color: darkMode ? "#ffffff" : "#4a148c",
         },
       },
       button: {
-        color: darkMode
-          ? "#4dd0e1" // Teal for dark mode
-          : "#2196f3", // Blue or custom color
+        color: darkMode ? "#4dd0e1" : "#2196f3",
         hover: {
           backgroundColor: darkMode ? "rgba(77, 208, 225, 0.1)" : "rgba(33, 150, 243, 0.04)",
         },
@@ -189,18 +198,23 @@ const MDCalendar = ({ events = [], loading = false }) => {
 
         {/* Calendar Days Skeleton */}
         <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1}>
-          {Array.from({ length: 30 }).map((_, index) => (
-            <Skeleton
-              key={index}
-              variant="rounded"
-              width="100%"
-              height={35}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)",
-                borderRadius: 2,
-              }}
-            />
-          ))}
+          {Array.from({ length: 42 }).map(
+            (
+              _,
+              index // 6 weeks × 7 days = 42
+            ) => (
+              <Skeleton
+                key={index}
+                variant="rounded"
+                width="100%"
+                height={35}
+                sx={{
+                  bgcolor: darkMode ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)",
+                  borderRadius: 2,
+                }}
+              />
+            )
+          )}
         </Box>
 
         {/* Legend Skeleton */}
@@ -244,7 +258,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
         backdropFilter: transparentNavbar || transparentSidenav ? "blur(12px)" : "none",
       }}
     >
-      {/* Header Section with enhanced styling */}
+      {/* Header Section */}
       <Box
         display="flex"
         justifyContent="space-between"
@@ -309,7 +323,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
         </Box>
       </Box>
 
-      {/* Weekday Headers with enhanced styling */}
+      {/* Weekday Headers */}
       <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" mb={1} gap={1}>
         {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
           <Typography
@@ -328,15 +342,16 @@ const MDCalendar = ({ events = [], loading = false }) => {
         ))}
       </Box>
 
-      {/* Calendar Days with enhanced styling */}
+      {/* Calendar Days Grid */}
       <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1}>
-        {days.map((day) => {
+        {calendarDays.map((day) => {
           const isEventDay = hasEvent(day);
           const eventNames = getEventNames(day);
+          const belongsToCurrentMonth = isCurrentMonth(day);
 
           return (
             <Tooltip
-              key={day}
+              key={day.toString()}
               title={
                 isEventDay ? (
                   <Box>
@@ -379,23 +394,29 @@ const MDCalendar = ({ events = [], loading = false }) => {
                   borderRadius: "8px",
                   cursor: "pointer",
                   position: "relative",
-                  background: isToday(day)
-                    ? styles.day.today.backgroundColor
-                    : isEventDay
-                      ? styles.day.event.backgroundColor
-                      : "transparent",
-                  color: isToday(day)
-                    ? styles.day.today.color
-                    : isEventDay
-                      ? styles.day.event.color
-                      : styles.calendar.color,
-                  fontWeight: isEventDay || isToday(day) ? "600" : "normal",
-                  "&:hover": styles.day.hover,
+                  background: !belongsToCurrentMonth
+                    ? "transparent"
+                    : isToday(day)
+                      ? styles.day.today.backgroundColor
+                      : isEventDay
+                        ? styles.day.event.backgroundColor
+                        : "transparent",
+                  color: !belongsToCurrentMonth
+                    ? styles.day.otherMonth.color
+                    : isToday(day)
+                      ? styles.day.today.color
+                      : isEventDay
+                        ? styles.day.event.color
+                        : styles.calendar.color,
+                  fontWeight:
+                    (isEventDay || isToday(day)) && belongsToCurrentMonth ? "600" : "normal",
+                  opacity: belongsToCurrentMonth ? 1 : 0.5,
+                  "&:hover": belongsToCurrentMonth ? styles.day.hover : {},
                   transition: "all 0.2s ease-in-out",
                 }}
               >
                 {format(day, "d")}
-                {isEventDay && (
+                {isEventDay && belongsToCurrentMonth && (
                   <Box
                     sx={{
                       position: "absolute",
@@ -414,7 +435,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
         })}
       </Box>
 
-      {/* Event Legend with enhanced styling */}
+      {/* Event Legend */}
       {events.length > 0 && (
         <Box mt={1.5} pt={1.5} sx={{ borderTop: `1px solid ${styles.border.color}` }}>
           <Box display="flex" alignItems="center" justifyContent="center">
@@ -423,7 +444,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
                 width: "1rem",
                 height: "1rem",
                 borderRadius: "4px",
-                background: styles.day.event.background,
+                background: styles.day.event.backgroundColor,
                 mr: 1,
               }}
             />

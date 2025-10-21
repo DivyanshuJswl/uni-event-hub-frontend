@@ -246,7 +246,7 @@ function EventDetails() {
   return (
     <Container maxWidth="xl">
       <MDBox display="flex" alignItems="center" mb={3}>
-        <IconButton onClick={() => navigate(-1)} sx={{ mr: 2 }} component={Link} to={-1}>
+        <IconButton sx={{ mr: 2 }} component={Link} to={-1}>
           <ArrowBackIcon color={sidenavColor} />
         </IconButton>
         <MDTypography variant="h4" fontWeight="bold" color={darkMode ? "white" : "dark"}>

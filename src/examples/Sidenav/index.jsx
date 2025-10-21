@@ -24,11 +24,10 @@ import { useAuth } from "context/AuthContext";
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
-  const { developerMode } = controller; // Added developerMode from context
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
   const navigate = useNavigate();
-  const { token, user, role, logout, showToast } = useAuth();
+  const { token, role, logout, showToast } = useAuth();
 
   const handleLogout = async () => {
     const result = await logout();
@@ -71,14 +70,14 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   }, [dispatch, location]);
 
   const filteredRoutes = routes.filter((route) => {
-    // 1. Developer mode routes - show all devOnly routes when developerMode is true
-    if (developerMode && route.devOnly) {
-      return true;
-    }
-
     // Check if route has custom show function (highest priority)
     if (route.show) {
       return route.show(userRole ? { role: userRole } : null);
+    }
+
+    if(userRole === "admin") {
+      // Admin can see all routes
+      return true;
     }
 
     // 2. Handle Sign In/Sign Up routes specifically

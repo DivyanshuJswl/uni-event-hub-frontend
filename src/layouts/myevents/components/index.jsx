@@ -11,7 +11,10 @@ import {
   Stack,
   TextField,
   Typography,
+  CircularProgress as MUICircularProgress,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 
 import MDBox from "components/MDBox";
@@ -28,13 +31,18 @@ function MyParticipatedEvents() {
   const { darkMode } = controller;
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(9);
+  const [inputValue, setInputValue] = useState("9");
+  const [itemsPerPage, setItemsPerPage] = useState(9);
   const [unenrollLoading, setUnenrollLoading] = useState(null);
 
   const fetchParticipatedEvents = async () => {
@@ -45,7 +53,7 @@ function MyParticipatedEvents() {
     }
 
     try {
-      setLoading(true);
+      if (!refreshing) setLoading(true);
       setError(null);
 
       const res = await axios.get(`${BASE_URL}/api/events/students/${user.id}`, {
@@ -59,12 +67,19 @@ function MyParticipatedEvents() {
       setEvents([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchParticipatedEvents();
   }, [user?.id, BASE_URL, token]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchParticipatedEvents();
+    setPage(1);
+  };
 
   const handleUnenroll = async (eventId) => {
     if (!user?.id) return;
@@ -87,6 +102,17 @@ function MyParticipatedEvents() {
       setError("Failed to unenroll from event");
     } finally {
       setUnenrollLoading(null);
+    }
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    if (/^\d+$/.test(value) && parseInt(value) > 0) {
+      const next = Math.min(parseInt(value), 12);
+      setInputValue(String(next));
+      setItemsPerPage(next);
+      setPage(1);
     }
   };
 
@@ -193,10 +219,11 @@ function MyParticipatedEvents() {
         {/* Statistics Chips */}
         <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap" }}>
           {[
-            { key: "all", label: `All: ${stats.total}`, color: "primary" },
-            { key: "upcoming", label: `Upcoming: ${stats.upcoming}`, color: "secondary" },
-            { key: "ongoing", label: `Ongoing: ${stats.ongoing}`, color: "warning" },
-            { key: "completed", label: `Completed: ${stats.completed}`, color: "success" },
+            { key: "all", label: `All ${stats.total}`, color: "primary" },
+            { key: "upcoming", label: `Upcoming ${stats.upcoming}`, color: "success" },
+            { key: "ongoing", label: `Ongoing ${stats.ongoing}`, color: "warning" },
+            { key: "completed", label: `Completed ${stats.completed}`, color: "secondary" },
+            { key: "cancelled", label: `Cancelled ${stats.cancelled}`, color: "error" },
           ].map((s) => (
             <Chip
               key={s.key}
@@ -220,32 +247,124 @@ function MyParticipatedEvents() {
           ))}
         </Stack>
 
-        {/* Search Bar */}
-        <Box sx={{ mb: 4 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search your events..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPage(1);
+        {/* Search and Controls - Responsive Layout */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: isSmall ? "column" : "row",
+            alignItems: isSmall ? "center" : "flex-end",
+            justifyContent: "space-between",
+            gap: 2,
+            mb: 4,
+            width: "100%",
+          }}
+        >
+          {/* Search Field - Left aligned on large screens, centered on small */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: isSmall ? "center" : "flex-start",
+              width: isSmall ? "100%" : "auto",
             }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Icon fontSize="small" color={darkMode ? "white" : "black"}>
-                    search
-                  </Icon>
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: 2,
-                backgroundColor: darkMode ? "" : "white",
-                maxWidth: "400px",
-              },
+          >
+            <TextField
+              fullWidth={isSmall}
+              size="small"
+              variant="outlined"
+              placeholder="Search your events..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              sx={{
+                width: isSmall ? "100%" : "350px",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  backgroundColor: "background.default",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Icon fontSize="small" sx={{ color: "text.main" }}>
+                      search
+                    </Icon>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+
+          {/* Controls - Right aligned on large screens, centered on small */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isSmall ? "column" : "row",
+              alignItems: "center",
+              justifyContent: isSmall ? "center" : "flex-end",
+              gap: 2,
+              width: isSmall ? "100%" : "auto",
             }}
-          />
+          >
+            <TextField
+              label="Items per page"
+              type="number"
+              value={inputValue}
+              onChange={handleItemsPerPageChange}
+              size="small"
+              inputProps={{ min: 1, max: 12 }}
+              sx={{
+                width: isSmall ? "100%" : "140px",
+                "& .MuiInputBase-input": {
+                  color: darkMode ? "white" : "text.primary",
+                },
+                "& .MuiInputLabel-root": {
+                  color: darkMode ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
+                },
+              }}
+            />
+
+            <Button
+              variant="outlined"
+              sx={{
+                borderRadius: "8px",
+                fontWeight: 400,
+                borderWidth: "1px",
+                color: darkMode ? "primary.main" : "primary.main",
+                borderColor: darkMode ? "primary.main" : "primary.main",
+                minWidth: "auto",
+                px: 2,
+                width: isSmall ? "100%" : "auto",
+                "&:hover": {
+                  borderColor: darkMode ? "primary.dark" : "primary.dark",
+                  backgroundColor: darkMode
+                    ? "rgba(25, 118, 210, 0.08)"
+                    : "rgba(25, 118, 210, 0.04)",
+                },
+                "&.Mui-disabled": {
+                  borderColor: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                  color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.26)",
+                },
+              }}
+              onClick={handleRefresh}
+              disabled={loading || refreshing || !user?.id}
+              startIcon={
+                refreshing ? (
+                  <MUICircularProgress size={20} color="inherit" />
+                ) : (
+                  <Icon>refresh</Icon>
+                )
+              }
+            >
+              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </Box>
+              <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                {refreshing ? "" : "Refresh"}
+              </Box>
+            </Button>
+          </Box>
         </Box>
 
         {/* Events Grid */}
@@ -261,7 +380,7 @@ function MyParticipatedEvents() {
             <Button
               variant="contained"
               color="primary"
-              onClick={fetchParticipatedEvents}
+              onClick={handleRefresh}
               startIcon={<Icon>refresh</Icon>}
               sx={{ borderRadius: 2 }}
             >
@@ -273,7 +392,7 @@ function MyParticipatedEvents() {
             <Grid container spacing={4}>
               {currentEvents.length > 0 ? (
                 currentEvents.map((event) => (
-                  <Grid item xs={12} sm={6} md={4} key={event._id}>
+                  <Grid item xs={12} sm={6} md={6} lg={4} key={event._id}>
                     <ParticipatedEventCard
                       event={event}
                       onUnenroll={handleUnenroll}

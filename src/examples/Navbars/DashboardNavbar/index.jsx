@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
 import MenuItem from "@mui/material/MenuItem";
-import { Avatar } from "@mui/material";
+import { Avatar, InputAdornment } from "@mui/material";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
