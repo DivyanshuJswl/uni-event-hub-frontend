@@ -47,7 +47,7 @@ function Basic() {
   const [captchaError, setCaptchaError] = useState("");
   const [resetCaptcha, setResetCaptcha] = useState(false);
   const { login, googleLogin, showToast } = useAuth();
-  const production = import.meta.env.VITE_NODE_ENV === "development";
+  const production = import.meta.env.VITE_NODE_ENV === "production";
 
   // Load saved credentials if rememberMe was checked
   useState(() => {

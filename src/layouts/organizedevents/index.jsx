@@ -266,6 +266,7 @@ function OrganizedEvents() {
                 justifyContent: isSmall ? "center" : "flex-end",
                 width: isSmall ? "100%" : "auto",
                 gap: 2,
+                width: "100%",
               }}
             >
               <TextField
