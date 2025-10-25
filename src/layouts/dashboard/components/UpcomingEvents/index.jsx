@@ -114,7 +114,6 @@ const EventCard = ({ date, title, time, sidenavColor, loading = false }) => {
         >
           <MDTypography
             variant="h6"
-            color={darkMode ? "white" : "black.main"}
             sx={{
               fontWeight: 600,
               lineHeight: 1.3,
@@ -212,10 +211,9 @@ const UpcomingEvents = ({ events = [], loading = false }) => {
         boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.12)" : "0 8px 32px rgba(0, 0, 0, 0.05)",
       }}
     >
-      <Typography
+      <MDTypography
         variant="h5"
         gutterBottom
-        color={darkMode ? "white" : "black.main"}
         sx={{
           fontWeight: 700,
           mb: 3,
@@ -226,7 +224,7 @@ const UpcomingEvents = ({ events = [], loading = false }) => {
         }}
       >
         Upcoming Events
-      </Typography>
+      </MDTypography>
 
       {events.length > 0 ? (
         events

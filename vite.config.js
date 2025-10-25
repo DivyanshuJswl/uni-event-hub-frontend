@@ -1,33 +1,35 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import viteTsconfigPaths from 'vite-tsconfig-paths'
-import path from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import viteTsconfigPaths from "vite-tsconfig-paths";
+import path from "path";
 
 export default defineConfig({
-  plugins: [react({
-      // This tells Vite to process .js files with JSX too
-      include: ['**/*.jsx', '**/*.js', '**/*.tsx', '**/*.ts'],
-    }), viteTsconfigPaths()],
+  plugins: [react(), viteTsconfigPaths()],
   server: {
     port: 3000,
-    open: true
+    open: true,
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       'components': path.resolve(__dirname, './src/components'),
-      'context': path.resolve(__dirname, './src/context'),
-      'examples': path.resolve(__dirname, './src/examples'),
-      'layouts': path.resolve(__dirname, './src/layouts'),
-      'assets': path.resolve(__dirname, './src/assets'),
-      'routes': path.resolve(__dirname, './src/routes.jsx'),
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
+    target: "es2020",
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          axios: ["axios"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
   define: {
     global: 'globalThis', // Add global definition
   }
-})
+});

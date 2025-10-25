@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import axios from "axios";
-import { motion } from "framer-motion";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -19,9 +18,6 @@ import LeaderboardTable from "layouts/dashboard/components/Leaderboard";
 import EventSkeleton from "components/EventSkeleton";
 
 function DashboardOrg() {
-  const hack1 =
-    "https://res.cloudinary.com/dh5cebjwj/image/upload/v1750793776/samples/balloons.jpg";
-
   const [recommendedEvents, setRecommendedEvents] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);

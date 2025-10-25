@@ -3,7 +3,6 @@ import { Grid } from "@mui/material";
 import React, { useState, useEffect } from "react";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-import { motion } from "framer-motion";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";

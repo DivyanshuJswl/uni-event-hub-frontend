@@ -218,7 +218,14 @@ function DataTable({
   const data = useMemo(() => table.rows, [table.rows]);
 
   const tableInstance = useTable(
-    { columns, data, initialState: { pageIndex: 0 } },
+    {
+      columns,
+      data,
+      initialState: {
+        pageIndex: 0,
+        pageSize: defaultValue,
+      },
+    },
     useGlobalFilter,
     useSortBy,
     usePagination
@@ -248,12 +255,6 @@ function DataTable({
     },
     [setPageSize]
   );
-
-  useEffect(() => {
-    if (pageSize !== (defaultValue || 5)) {
-      setPageSize(defaultValue || 5);
-    }
-  }, [defaultValue, pageSize, setPageSize]);
 
   const renderPagination = pageOptions.map((option) => (
     <MDPagination

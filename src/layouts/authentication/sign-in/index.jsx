@@ -303,7 +303,7 @@ function Basic() {
                 <div>{captchaError}</div>
               </MDTypography>
             )}
-            <MDBox mt={2} mb={1} fullWidth>
+            <MDBox mt={2} mb={1}>
               <MDButton
                 type="submit"
                 variant="gradient"
@@ -322,7 +322,6 @@ function Basic() {
               justifyContent="center"
               alignItems="center"
               textAlign="center"
-              fullWidth
             >
               <GoogleLogin
                 theme={darkMode ? "filled_blue" : "filled_blue"}
