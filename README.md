@@ -1,52 +1,60 @@
-# University Event Management Platform
-
-A modern, full-featured university event management dashboard built with React and Material UI, based on Material Dashboard 2 React.
-
-Light Mode
-![Dashboard Screenshot](./src/assets/images/homepage/sshome.png)
-Dark Mode
-![Dashboard Screenshot](./src/assets/images/homepage/sshomeblack.png)
 
 ---
 
-## Features
+# 🎓 Uni-Event Hub
+
+A modern, full-featured **University Event Management Dashboard** built with **React** and **Material UI**, based on the Material Dashboard 2 React template.
+
+| Light Mode | Dark Mode |
+| :---: | :---: |
+| ![light](./src/assets/images/homepage/light.png) | ![dark](./src/assets/images/homepage/dark.png) |
+---
+
+## ✨ Features
+
+The platform offers a comprehensive set of features tailored for university event management:
 
 - **Role-based Dashboards**
-  - **Participants:** Browse/register for events, track certificates, view leaderboards.
-  - **Organizers:** Create/manage events, view participants, issue digital certificates.
+  - **Participants:** Browse and register for events, track issued **certificates**, and view **leaderboards**.
+  - **Organizers:** Create and manage events, view participant lists, and issue digital **certificates**.
 
 - **Event Management**
   - Explore upcoming, ongoing, and past events.
-  - Register/unregister for events.
-  - View event details in modals/cards.
+  - Simple registration/unregistration flows.
+  - View detailed event information via modals and cards.
 
-- **Certificate Issuance**
-  - Organizers can mint digital certificates (stored on IPFS, verifiable on-chain).
-  - Participants can view and verify certificates.
+- **Digital Certificate Issuance**
+  - Organizers can **mint digital certificates** (stored on **IPFS** and verifiable on-chain).
+  - Participants can easily view and verify their certificates.
 
-- **Leaderboard & Points**
-  - Track top participants and organizers.
-  - Visual leaderboards and stats.
+- **Leaderboard & Points System**
+  - Track and display top participants and organizers.
+  - Visual leaderboards and performance statistics.
 
 - **Profile & Settings**
-  - User profile with MetaMask integration.
+  - User profile management with **MetaMask** wallet integration.
   - Platform settings for notifications and preferences.
 
 - **Modern UI/UX**
-  - Responsive Material UI design.
-  - Theming (light/dark modes).
-  - Animated transitions and charts.
+  - Fully **Responsive** design leveraging **Material UI**.
+  - Seamless **Theming** with **Light/Dark modes**.
+  - Engaging animated transitions and data visualization with charts.
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
+
+Follow these steps to set up and run the project.
+
+## 📍 Running Locally
 
 ### Prerequisites
 
-- [Node.js (LTS)](https://nodejs.org/en/download/)
-- npm or yarn
+You must have **Node.js (LTS)** and either **npm** or **yarn** installed on your system.
 
 ### Installation
+
+Clone the repository and install the dependencies:
 
 ```sh
 npm install
@@ -56,91 +64,114 @@ yarn install
 
 ### Running the App
 
+Start the development server:
+
 ```sh
-npm start
+npm run dev
 # or
-yarn start
+yarn run dev
 ```
 
-The app will be available at `https://uni-event-hub-frontend.vercel.app/` or for localhost at Port `http://localhost:3000/`.
+The application will be available at the production URL `https://www.uni-event.shop/` or on your local machine, typically at `http://localhost:3000/`.
 
 ---
 
-## Project Structure
+## 🐳 Running via Docker
+
+For containerized deployment, you can use Docker.
+
+### Prerequisites (Docker)
+
+Ensure you have **Docker** installed on your system.
+
+### Configuration
+
+1.  **Create the `.env` file:** Add all necessary environment variables to a `.env` file in the project root.
+
+2.  **Nginx Configuration:** Ensure the Nginx configuration is set up correctly in `nginx/default.conf` to handle single-page application routing:
+
+    ```nginx
+    server {
+      listen 80;
+      root /usr/share/nginx/html;
+      index index.html;
+
+      # Crucial for SPA routing
+      location / {
+        try_files $uri $uri/ /index.html;
+      }
+    }
+    ```
+
+3.  **Shell Script:** A shell script (`env.sh`) is used to inject environment variables at container startup. Make sure this script is in your project root.
+
+### Build and Run
+
+Replace `<image-name>` and `<container-name>` with your desired names.
+
+```sh
+# Build the Docker image
+docker build -t <image-name> .
+
+# Run the container
+docker run -d -p 8080:80 --env-file .env --name <container-name> <image-name>
+```
+
+---
+
+## 📂 Project Structure
+
+The codebase follows a standard React/Material Dashboard structure for clarity and maintainability.
 
 ```
-public/
-  ├── index.html
-  └── ...
+index.html
 src/
-  ├── App.js
-  ├── index.js
-  ├── routes.js
+  ├── App.jsx             # Main entry point, routing, theming, layout.
+  ├── index.jsx           # DOM calling, <App/>
+  ├── routes.jsx          # Route definitions, role-based access control.
   ├── assets/
   │   ├── images/
   │   └── theme/
-  ├── components/
-  ├── context/
-  ├── examples/
-  ├── layouts/
+  ├── components/        # Custom Material UI components (MDBox, MDButton, etc.).
+  ├── context/           # State management context.
+  ├── examples/          # Example cards, charts, configurator, sidenav, etc.
+  ├── layouts/           # Main application layouts (Dashboard, Authentication, etc.).
   └── utils/
 ```
 
-- **App.js**: Main entry point, routing, theming, layout.
-- **routes.js**: Route definitions, role-based access.
-- **layouts/**: Dashboard, authentication, profile, event management, etc.
-- **components/**: Custom Material UI components (MDBox, MDButton, etc.).
-- **examples/**: Example cards, charts, configurator, sidenav, etc.
-- **assets/theme/**: Theme configuration (light/dark, RTL support).
+---
+
+## 🛠 Technologies Used
+
+| Category               | Technology                                               | Description                                                           |
+| :--------------------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| **Frontend Core**      | [React](https://reactjs.org/)                            | JavaScript library for building user interfaces.                      |
+| **UI Framework**       | [Material UI](https://mui.com/)                          | Comprehensive React UI library implementing Google's Material Design. |
+| **Routing**            | [React Router](https://reactrouter.com/)                 | Declarative routing for React.                                        |
+| **Styling/Theming**    | Emotion                                                  | Library for writing CSS styles with JavaScript.                       |
+| **Animation**          | [Framer Motion](https://www.framer.com/motion/)          | Production-ready motion library for React.                            |
+| **Data Fetching**      | [Axios](https://axios-http.com/)                         | Promise-based HTTP client.                                            |
+| **Forms**              | React Hook Form                                          | High-performance, flexible forms with easy validation.                |
+| **Data Viz**           | [Chart.js](https://www.chartjs.org/) & `react-chartjs-2` | Simple, yet flexible JavaScript charting for designers & developers.  |
+| **Web3/Blockchain**    | IPFS & Blockchain                                        | For decentralized certificate storage and on-chain verification.      |
+| **Wallet Integration** | [MetaMask](https://metamask.io/)                         | For user wallet connection and interaction.                           |
+| **Auth**               | `@react-oauth/google`                                    | For Google OAuth integration.                                         |
 
 ---
 
-## Technologies Used
+## 📚 Documentation & Acknowledgements
 
-- [React](https://reactjs.org/)
-- [Material UI](https://mui.com/)
-- [React Router](https://reactrouter.com/)
-- [Axios](https://axios-http.com/)
-- [Framer Motion](https://www.framer.com/motion/) (animations)
-- [Chart.js](https://www.chartjs.org/) (charts)
-- [IPFS](https://ipfs.tech/) & Blockchain (certificate storage/verification)
-- [MetaMask](https://metamask.io/) (wallet integration)
+This project is built upon the foundation of the following resources:
+
+- **Template Documentation:** [Material Dashboard 2 React Documentation](https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/)
+- **MUI:** [The official Material UI library](https://mui.com/)
+- **React ChartJS 2:** [React components for Chart.js](http://reactchartjs.github.io/react-chartjs-2/#/)
+- **ChromaJS:** [A tiny library for all kinds of color conversions and color scales](https://gka.github.io/chroma.js/)
 
 ---
 
-## Documentation
+## 📞 Contact
 
-- [Material Dashboard 2 React Documentation](https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/)
-
----
-
-## Dependencies
-
-- React (react, react-dom)
-- Material UI (@mui/material, @mui/icons-material, @mui/x-date-pickers)
-- React Router (react-router-dom)
-- Axios (for API requests)
-- Framer Motion (for animations)
-- React Hook Form (for forms)
-- Chart.js and react-chartjs-2 (for charts)
-- Emotion (@emotion/react, @emotion/styled)
-- react-toastify (for notifications)
-- @react-oauth/google (for Google OAuth)
-- stylis-plugin-rtl (for RTL support)
-- dotenv (for environment variables)
-
-## npm install
-## npm run dev
----
-
-## Acknowledgements
-
-- [MUI](https://mui.com/)
-- [React ChartJS 2](http://reactchartjs.github.io/react-chartjs-2/#/)
-- [ChromaJS](https://gka.github.io/chroma.js/)
+For support, questions, or contributions, please feel free to open an issue in the repository or contact the project maintainer.
 
 ---
-
-## Contact
-
-For support or questions, please open an issue or contact the maintainer.
