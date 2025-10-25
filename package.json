@@ -14,7 +14,7 @@
     "@mui/x-date-pickers": "^6.20.2",
     "@react-oauth/google": "^0.12.2",
     "@vercel/analytics": "^1.5.0",
-    "axios": "^1.7.7",
+    "axios": "1.7.7",
     "chroma-js": "^2.4.2",
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.18",

@@ -11,8 +11,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      'components': path.resolve(__dirname, './src/components'),
+      "@": path.resolve(__dirname, "./src"),
+      components: path.resolve(__dirname, "./src/components"),
+      assets: path.resolve(__dirname, "./src/assets"),
+      layouts: path.resolve(__dirname, "./src/layouts"),
+      context: path.resolve(__dirname, "./src/context"),
+      examples: path.resolve(__dirname, "./src/examples"),
     },
   },
   build: {
@@ -30,6 +34,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   define: {
-    global: 'globalThis', // Add global definition
-  }
+    global: "globalThis", // Add global definition
+  },
 });

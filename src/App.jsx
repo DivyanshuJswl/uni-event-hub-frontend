@@ -18,7 +18,7 @@ import themeDarkRTL from "assets/theme-dark/theme-rtl";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
-import routes from "routes";
+import routes from "./routes";
 import { useAuth } from "context/AuthContext";
 import ResetPasswordPage from "layouts/authentication/resetPassword";
 import { ChatProvider } from "context/ChatContext";
