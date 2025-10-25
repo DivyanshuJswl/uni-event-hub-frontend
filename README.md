@@ -1,7 +1,7 @@
 
 ---
 
-# 🎓 Uni-Event Hub
+# 🎓 Uni Event Hub Dashboard
 
 A modern, full-featured **University Event Management Dashboard** built with **React** and **Material UI**, based on the Material Dashboard 2 React template.
 
@@ -51,6 +51,13 @@ Follow these steps to set up and run the project.
 ### Prerequisites
 
 You must have **Node.js (LTS)** and either **npm** or **yarn** installed on your system.
+
+## Clone the repository:
+
+```sh
+git clone https://github.com/DivyanshuJswl/uni-event-hub-frontend.git
+cd uni-event-hub-frontend
+```
 
 ### Installation
 
