@@ -181,7 +181,7 @@ function OrganizedEvents() {
           </Box>
 
           {/* Status Filter */}
-          <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap" }}>
+          <Stack direction="row" sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
             {[
               { key: "all", label: `All ${eventCounts.total}`, color: "primary" },
               { key: "upcoming", label: `Upcoming ${eventCounts.upcoming}`, color: "success" },

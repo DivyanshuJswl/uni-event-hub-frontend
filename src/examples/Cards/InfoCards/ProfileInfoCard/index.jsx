@@ -41,7 +41,7 @@ const modalStyle = (darkMode) => ({
 });
 
 // Constants for validation
-const ALLOWED_BRANCHES = ["CSE", "ECE", "EEE", "ME", "CE", "IT"];
+const ALLOWED_BRANCHES = ["CSE", "ECE", "EEE", "ME", "CE", "IT", "OTHERS"];
 const MIN_YEAR = 1;
 const MAX_YEAR = 5;
 

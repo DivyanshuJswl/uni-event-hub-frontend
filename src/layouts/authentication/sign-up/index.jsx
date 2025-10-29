@@ -1,6 +1,6 @@
 // react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { styled } from "@mui/material/styles";
@@ -23,7 +23,9 @@ import zxcvbn from "zxcvbn";
 import { Box } from "@mui/system";
 import { useAuth } from "context/AuthContext";
 
-const bgImage = "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758117993/bg-sign-up-cover_on4sqw.jpg";
+const bgImage =
+  "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758117993/bg-sign-up-cover_on4sqw.jpg";
+
 // Add this styled component above your Cover function
 const BackgroundWrapper = styled("div")({
   position: "absolute",
@@ -57,27 +59,56 @@ const BackgroundWrapper = styled("div")({
 function Cover() {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [year, setYear] = useState("");
-  const [branch, setBranch] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(
-    sessionStorage.getItem("rememberMe") === "true" || false
-  );
-  const [branchError, setBranchError] = useState("");
-  const [passwordStrength, setPasswordStrength] = useState(null);
-  const [generatorOpen, setGeneratorOpen] = useState(false);
   const { signup, showToast } = useAuth();
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-  const toggleGenerator = () => setGeneratorOpen(!generatorOpen);
+  // Consolidated form data state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    year: "",
+    branch: "",
+  });
+
+  // Consolidated UI state
+  const [uiState, setUiState] = useState({
+    isLoading: false,
+    showPassword: false,
+    generatorOpen: false,
+    agreedToTerms: false,
+    rememberMe: sessionStorage.getItem("rememberMe") === "true" || false,
+  });
+
+  // Branch validation state
+  const [branchError, setBranchError] = useState("");
+
+  // Password strength state
+  const [passwordStrength, setPasswordStrength] = useState(null);
+
+  // Memoized handlers for form data updates
+  const updateFormField = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const togglePasswordVisibility = useCallback(() => {
+    setUiState((prev) => ({ ...prev, showPassword: !prev.showPassword }));
+  }, []);
+
+  const toggleGenerator = useCallback(() => {
+    setUiState((prev) => ({ ...prev, generatorOpen: !prev.generatorOpen }));
+  }, []);
+
+  const handleSetRememberMe = useCallback(() => {
+    setUiState((prev) => {
+      const newRememberMe = !prev.rememberMe;
+      if (!newRememberMe) {
+        sessionStorage.removeItem("savedEmail");
+        sessionStorage.removeItem("savedPassword");
+      }
+      return { ...prev, rememberMe: newRememberMe };
+    });
+  }, []);
 
   const handleSubmit = async (e) => {
     // Prevent default form submission behavior
@@ -86,79 +117,86 @@ function Cover() {
     }
 
     // Validate required fields
-    if (!name || !email || !password || !year || !branch) {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.password ||
+      !formData.year ||
+      !formData.branch
+    ) {
       showToast("Please fill in all required fields", "warning");
       return;
     }
 
-    if (!agreedToTerms) {
+    if (!uiState.agreedToTerms) {
       showToast("Please agree to the Terms and Conditions", "warning");
       return;
     }
 
-    setIsLoading(true);
+    setUiState((prev) => ({ ...prev, isLoading: true }));
+
     try {
       const result = await signup({
-        name,
-        email,
-        password,
-        year,
-        branch,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        year: formData.year,
+        branch: formData.branch,
       });
 
       if (result.success) {
         showToast("Registration successful! Redirecting to login...", "success");
 
-        // Redirect after 3 seconds
+        // Redirect after 1.5 seconds
         setTimeout(() => {
           navigate("/authentication/sign-in");
         }, 1500);
       } else {
         showToast(result.message, "error");
         // Reset form fields on error
-        setName("");
-        setEmail("");
-        setPassword("");
-        setYear("");
-        setBranch("");
-        setAgreedToTerms(false);
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          year: "",
+          branch: "",
+        });
+        setUiState((prev) => ({ ...prev, agreedToTerms: false }));
       }
     } catch (err) {
       showToast("An unexpected error occurred", "error");
       // Reset form fields on error
-      setName("");
-      setEmail("");
-      setPassword("");
-      setYear("");
-      setBranch("");
-      setAgreedToTerms(false);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        year: "",
+        branch: "",
+      });
+      setUiState((prev) => ({ ...prev, agreedToTerms: false }));
     } finally {
-      setIsLoading(false);
+      setUiState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
-  // Save credentials if rememberMe is checked
-  if (rememberMe) {
-    sessionStorage.setItem("savedEmail", email);
-    sessionStorage.setItem("savedPassword", password);
-    sessionStorage.setItem("rememberMe", "true");
-  } else {
-    sessionStorage.removeItem("savedEmail");
-    sessionStorage.removeItem("savedPassword");
-    sessionStorage.removeItem("rememberMe");
-  }
-  const handleSetRememberMe = () => {
-    const newRememberMe = !rememberMe;
-    setRememberMe(newRememberMe);
-    if (!newRememberMe) {
+  // Save/remove credentials based on rememberMe
+  useEffect(() => {
+    if (uiState.rememberMe) {
+      sessionStorage.setItem("savedEmail", formData.email);
+      sessionStorage.setItem("savedPassword", formData.password);
+      sessionStorage.setItem("rememberMe", "true");
+    } else {
       sessionStorage.removeItem("savedEmail");
       sessionStorage.removeItem("savedPassword");
+      sessionStorage.removeItem("rememberMe");
     }
-  };
+  }, [uiState.rememberMe, formData.email, formData.password]);
+
+  // Calculate password strength
   useEffect(() => {
-    if (password) {
+    if (formData.password) {
       try {
-        const result = zxcvbn(password);
+        const result = zxcvbn(formData.password);
         setPasswordStrength(result);
       } catch (error) {
         console.error("Error calculating password strength:", error);
@@ -167,7 +205,7 @@ function Cover() {
     } else {
       setPasswordStrength(null);
     }
-  }, [password]);
+  }, [formData.password]);
 
   const getStrengthColor = (score) => {
     switch (score) {
@@ -185,6 +223,7 @@ function Cover() {
         return "#cccccc"; // Gray as fallback
     }
   };
+
   const getStrengthText = (score) => {
     switch (score) {
       case 0:
@@ -241,11 +280,12 @@ function Cover() {
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => updateFormField("name", e.target.value)}
                 type="text"
                 label="Name"
                 variant="standard"
                 fullWidth
+                value={formData.name}
               />
             </MDBox>
             <MDBox display="flex" gap={2} mb={2} alignItems="flex-end">
@@ -273,14 +313,16 @@ function Cover() {
                     fullWidth
                     onChange={(e) => {
                       const inputValue = e.target.value.toUpperCase();
-                      setBranch(inputValue);
-                      if (!["CSE", "ECE", "EEE", "ME", "CE", "IT"].includes(inputValue)) {
-                        setBranchError("Invalid branch. Valid options: CSE, ECE, EEE, ME, CE, IT");
+                      updateFormField("branch", inputValue);
+                      if (!["CSE", "ECE", "EEE", "ME", "CE", "IT", "OTHERS"].includes(inputValue)) {
+                        setBranchError(
+                          "Invalid branch. Valid options: CSE, ECE, EEE, ME, CE, IT, Others"
+                        );
                       } else {
                         setBranchError("");
                       }
                     }}
-                    value={branch}
+                    value={formData.branch}
                     sx={{
                       "& .MuiInput-input": {
                         paddingBottom: "6px",
@@ -293,7 +335,7 @@ function Cover() {
               <MDInput
                 onChange={(e) => {
                   const value = Math.min(Math.max(null, e.target.value), 5);
-                  setYear(value);
+                  updateFormField("year", value);
                 }}
                 type="number"
                 label="Year"
@@ -303,26 +345,27 @@ function Cover() {
                   min: 1,
                   max: 5,
                 }}
-                value={year} // Make sure to define year in your state
+                value={formData.year}
               />
             </MDBox>
             <MDBox mb={2}>
               <MDInput
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => updateFormField("email", e.target.value)}
                 type="email"
                 label="Email"
                 variant="standard"
                 fullWidth
+                value={formData.email}
               />
             </MDBox>
             <MDBox mb={2}>
               <MDInput
-                onChange={(e) => setPassword(e.target.value)}
-                type={showPassword ? "text" : "password"}
+                onChange={(e) => updateFormField("password", e.target.value)}
+                type={uiState.showPassword ? "text" : "password"}
                 label="Password"
                 variant="standard"
                 fullWidth
-                value={password}
+                value={formData.password}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -337,13 +380,13 @@ function Cover() {
                         sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}
                         onClick={togglePasswordVisibility}
                       >
-                        {showPassword ? "visibility_off" : "visibility"}
+                        {uiState.showPassword ? "visibility_off" : "visibility"}
                       </Icon>
                     </InputAdornment>
                   ),
                 }}
               />
-              {password && (
+              {formData.password && (
                 <MDBox mt={1} mb={2}>
                   <Box
                     sx={{
@@ -380,16 +423,16 @@ function Cover() {
               )}
             </MDBox>
             <PasswordGeneratorModal
-              open={generatorOpen}
-              onClose={() => setGeneratorOpen(false)}
+              open={uiState.generatorOpen}
+              onClose={() => setUiState((prev) => ({ ...prev, generatorOpen: false }))}
               onPasswordGenerated={(password) => {
-                setPassword(password);
-                setGeneratorOpen(false);
+                updateFormField("password", password);
+                setUiState((prev) => ({ ...prev, generatorOpen: false }));
               }}
             />
             {/* remember me ?  */}
             <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} color="info" />
+              <Switch checked={uiState.rememberMe} onChange={handleSetRememberMe} color="info" />
               <MDTypography
                 variant="button"
                 fontWeight="regular"
@@ -402,8 +445,10 @@ function Cover() {
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Checkbox
-                checked={agreedToTerms}
-                onChange={() => setAgreedToTerms(!agreedToTerms)}
+                checked={uiState.agreedToTerms}
+                onChange={() =>
+                  setUiState((prev) => ({ ...prev, agreedToTerms: !prev.agreedToTerms }))
+                }
                 sx={{
                   "&.Mui-checked": {
                     color: "info.main",
@@ -447,12 +492,12 @@ function Cover() {
                 variant="gradient"
                 color="info"
                 fullWidth
-                disabled={isLoading}
+                disabled={uiState.isLoading}
                 sx={{
                   zIndex: 100,
                 }}
               >
-                {isLoading ? "Registering..." : "Sign Up"}
+                {uiState.isLoading ? "Registering..." : "Sign Up"}
               </MDButton>
             </MDBox>
             <MDBox mt={3} mb={1} textAlign="center">

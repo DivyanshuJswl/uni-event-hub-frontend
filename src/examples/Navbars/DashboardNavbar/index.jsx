@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Fuse from "fuse.js";
 
@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
 import MenuItem from "@mui/material/MenuItem";
-import { Avatar, InputAdornment } from "@mui/material";
+import { Avatar } from "@mui/material";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -36,10 +36,10 @@ import {
   setMiniSidenav,
   setOpenConfigurator,
   setDarkMode,
-  setDeveloperMode,
 } from "context";
 import { useAuth } from "context/AuthContext";
-import { border } from "@mui/system";
+import { useNotifications } from "context/NotifiContext";
+import Badge from "@mui/material/Badge";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
@@ -113,13 +113,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
     const results = fuse.search(searchQuery);
     setSearchResults(results.map((result) => result.item));
   }, [searchQuery, fuse]);
-
-  // Handle developer mode logging
-  useEffect(() => {
-    if (developerMode) {
-      console.log("%cDeveloper Mode Enabled", "color: #FFA500; font-size: 16px; font-weight: bold");
-    }
-  }, [developerMode]);
 
   // Navbar type and transparency setup
   useEffect(() => {
@@ -203,6 +196,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   // User data
   const avatarUrl = user?.avatar || null;
   const isAuthenticated = !!token;
+  const { unreadCount } = useNotifications();
 
   return (
     <AppBar
@@ -404,18 +398,22 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 <Icon sx={iconsStyle}>settings</Icon>
               </IconButton>
 
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon sx={iconsStyle}>notifications</Icon>
-              </IconButton>
+              {isAuthenticated && (
+                <IconButton
+                  size="small"
+                  disableRipple
+                  color="inherit"
+                  sx={navbarIconButton}
+                  aria-controls="notification-menu"
+                  aria-haspopup="true"
+                  variant="contained"
+                  onClick={navigate.bind(null, "/notifications")}
+                >
+                  <Badge badgeContent={unreadCount} color="error" overlap="circular">
+                    <Icon sx={iconsStyle}>notifications</Icon>
+                  </Badge>
+                </IconButton>
+              )}
             </MDBox>
           </MDBox>
         )}

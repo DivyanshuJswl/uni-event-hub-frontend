@@ -69,7 +69,7 @@ const modalStyle = (darkMode) => ({
 });
 
 // Constants for validation
-const ALLOWED_CATEGORIES = ["workshop", "seminar", "social", "hackathon", "technology", "cultural"];
+const ALLOWED_CATEGORIES = ["workshop", "seminar", "social", "hackathon", "technology", "cultural", "others"];
 const MIN_PARTICIPANTS = 1;
 const MAX_PARTICIPANTS = 1000;
 
@@ -533,7 +533,7 @@ function OrganizerEventCard({ event, onUpdated }) {
                       displayEmpty
                       sx={{ height: "2.75rem" }}
                     >
-                      <MenuItem value="" disabaled>
+                      <MenuItem value="" disabled>
                         Select category
                       </MenuItem>
                       {ALLOWED_CATEGORIES.map((cat) => (

@@ -517,6 +517,7 @@ const CreateEvent = () => {
                               <MenuItem value="hackathon">Hackathon</MenuItem>
                               <MenuItem value="cultural">Cultural</MenuItem>
                               <MenuItem value="technology">Technology</MenuItem>
+                              <MenuItem value="others">Others</MenuItem>
                             </Select>
                           )}
                         />

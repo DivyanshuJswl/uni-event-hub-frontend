@@ -217,7 +217,7 @@ function MyParticipatedEvents() {
         </Box>
 
         {/* Statistics Chips */}
-        <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap" }}>
+        <Stack direction="row" sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
           {[
             { key: "all", label: `All ${stats.total}`, color: "primary" },
             { key: "upcoming", label: `Upcoming ${stats.upcoming}`, color: "success" },

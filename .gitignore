@@ -3,6 +3,7 @@ node_modules/
 build/
 dist/
 nginx/
+test/
 
 # Ignore log files
 *.log

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { ToastContainer } from "react-toastify";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -34,57 +34,78 @@ function Basic() {
     "https://res.cloudinary.com/dh5cebjwj/image/upload/v1758078677/bg-sign-in-basic_yj4cue.jpg";
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
-  const [resetOpen, setResetOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(
-    sessionStorage.getItem("rememberMe") === "true" || false
-  );
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const [captchaError, setCaptchaError] = useState("");
-  const [resetCaptcha, setResetCaptcha] = useState(false);
   const { login, googleLogin, showToast } = useAuth();
   const production = import.meta.env.VITE_NODE_ENV === "production";
+  const googleButtonRef = useRef(null);
+
+  // Consolidated form data state
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  // Consolidated UI state
+  const [uiState, setUiState] = useState({
+    isLoading: false,
+    showPassword: false,
+    resetOpen: false,
+    rememberMe: sessionStorage.getItem("rememberMe") === "true" || false,
+  });
+
+  // Captcha state
+  const [captchaState, setCaptchaState] = useState({
+    token: null,
+    error: "",
+    reset: false,
+  });
 
   // Load saved credentials if rememberMe was checked
-  useState(() => {
-    if (rememberMe) {
+  useEffect(() => {
+    if (uiState.rememberMe) {
       const savedEmail = sessionStorage.getItem("savedEmail");
       const savedPassword = sessionStorage.getItem("savedPassword");
-      if (savedEmail) setEmail(savedEmail);
-      if (savedPassword) setPassword(savedPassword);
+      if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
+      if (savedPassword) setFormData((prev) => ({ ...prev, password: savedPassword }));
     }
   }, []);
 
-  const handleResetSubmit = (email) => {
-    console.log("Reset password for:", email);
-    showToast("Reset password link sent to " + email, "success");
-    setResetOpen(false);
-  };
+  // Memoized handlers for form data updates
+  const updateFormField = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleResetSubmit = useCallback(
+    (email) => {
+      console.log("Reset password for:", email);
+      showToast("Reset password link sent to " + email, "success");
+      setUiState((prev) => ({ ...prev, resetOpen: false }));
+    },
+    [showToast]
+  );
 
   const handleSubmit = async (e) => {
     if (e) {
       e.preventDefault();
     }
 
-    setCaptchaError("");
-    if (!email || !password) {
+    setCaptchaState((prev) => ({ ...prev, error: "" }));
+
+    if (!formData.email || !formData.password) {
       showToast("Please fill in all fields", "warning");
       return;
     }
-    if (production && !captchaToken) {
-      setCaptchaError("Please complete the captcha verification");
+
+    if (production && !captchaState.token) {
+      setCaptchaState((prev) => ({ ...prev, error: "Please complete the captcha verification" }));
       showToast("Please complete the captcha verification", "warning");
       return;
     }
 
     // Save credentials if rememberMe is checked
-    if (rememberMe) {
-      sessionStorage.setItem("savedEmail", email);
-      sessionStorage.setItem("savedPassword", password);
+    if (uiState.rememberMe) {
+      sessionStorage.setItem("savedEmail", formData.email);
+      sessionStorage.setItem("savedPassword", formData.password);
       sessionStorage.setItem("rememberMe", "true");
     } else {
       sessionStorage.removeItem("savedEmail");
@@ -93,12 +114,13 @@ function Basic() {
     }
 
     try {
-      setIsLoading(true);
+      setUiState((prev) => ({ ...prev, isLoading: true }));
       const result = await login({
-        email,
-        password,
-        captchaToken,
+        email: formData.email,
+        password: formData.password,
+        captchaToken: captchaState.token,
       });
+
       if (result.success) {
         showToast("Login successful! Redirecting...", "success");
         const role = result.data?.role;
@@ -106,17 +128,15 @@ function Basic() {
           navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
         }, 1500);
       } else {
-        setResetCaptcha((prev) => !prev); // Trigger captcha reset
-        setCaptchaToken(null);
+        setCaptchaState((prev) => ({ ...prev, reset: !prev.reset, token: null }));
         showToast(result.message);
       }
     } catch (err) {
-      setResetCaptcha((prev) => !prev); // Trigger captcha reset
-      setCaptchaToken(null);
+      setCaptchaState((prev) => ({ ...prev, reset: !prev.reset, token: null }));
       console.log(err);
       showToast("An unexpected error occurred");
     } finally {
-      setIsLoading(false);
+      setUiState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -149,18 +169,36 @@ function Basic() {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = useCallback(() => {
+    setUiState((prev) => ({ ...prev, showPassword: !prev.showPassword }));
+  }, []);
 
-  const handleSetRememberMe = () => {
-    const newRememberMe = !rememberMe;
-    setRememberMe(newRememberMe);
-    if (!newRememberMe) {
-      sessionStorage.removeItem("savedEmail");
-      sessionStorage.removeItem("savedPassword");
-    }
-  };
+  const handleSetRememberMe = useCallback(() => {
+    setUiState((prev) => {
+      const newRememberMe = !prev.rememberMe;
+      if (!newRememberMe) {
+        sessionStorage.removeItem("savedEmail");
+        sessionStorage.removeItem("savedPassword");
+      }
+      return { ...prev, rememberMe: newRememberMe };
+    });
+  }, []);
+
+  const handleCaptchaVerify = useCallback((token) => {
+    setCaptchaState((prev) => ({ ...prev, token, error: "" }));
+  }, []);
+
+  const handleCaptchaError = useCallback(() => {
+    setCaptchaState((prev) => ({ ...prev, token: null, error: "Captcha verification failed" }));
+  }, []);
+
+  const handleCaptchaExpire = useCallback(() => {
+    setCaptchaState((prev) => ({
+      ...prev,
+      token: null,
+      error: "Captcha expired - please verify again",
+    }));
+  }, []);
 
   return (
     <BasicLayout image={bgImage}>
@@ -192,7 +230,15 @@ function Basic() {
               </MDTypography>
             </Grid>
             <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
+              <MDTypography
+                component={MuiLink}
+                onClick={() => {
+                  const googleBtn = document.querySelector('[aria-labelledby*="button-label"]');
+                  if (googleBtn) googleBtn.click();
+                }}
+                variant="body1"
+                color="white"
+              >
                 <GoogleIcon color="inherit" />
               </MDTypography>
             </Grid>
@@ -202,20 +248,20 @@ function Basic() {
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => updateFormField("email", e.target.value)}
                 type="email"
                 label="Email"
                 fullWidth
-                value={email}
+                value={formData.email}
               />
             </MDBox>
             <MDBox mb={2}>
               <MDInput
-                onChange={(e) => setPassword(e.target.value)}
-                type={showPassword ? "text" : "password"}
+                onChange={(e) => updateFormField("password", e.target.value)}
+                type={uiState.showPassword ? "text" : "password"}
                 label="Password"
                 fullWidth
-                value={password}
+                value={formData.password}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -223,7 +269,7 @@ function Basic() {
                         sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}
                         onClick={togglePasswordVisibility}
                       >
-                        {showPassword ? "visibility_off" : "visibility"}
+                        {uiState.showPassword ? "visibility_off" : "visibility"}
                       </Icon>
                     </InputAdornment>
                   ),
@@ -240,7 +286,7 @@ function Basic() {
               <MDBox display="flex" alignItems="center">
                 <Switch
                   name="rememberme"
-                  checked={rememberMe}
+                  checked={uiState.rememberMe}
                   onChange={handleSetRememberMe}
                   color="info"
                 />
@@ -258,34 +304,25 @@ function Basic() {
                 variant="button"
                 color="info"
                 sx={{ cursor: "pointer", textAlign: "right" }}
-                onClick={() => setResetOpen(true)}
+                onClick={() => setUiState((prev) => ({ ...prev, resetOpen: true }))}
               >
                 Forgot password?
               </MDTypography>
               <ResetPasswordModal
-                open={resetOpen}
-                onClose={() => setResetOpen(false)}
+                open={uiState.resetOpen}
+                onClose={() => setUiState((prev) => ({ ...prev, resetOpen: false }))}
                 onSubmit={handleResetSubmit}
               />
             </MDBox>
             {production && (
               <HCaptchaComponent
-                onVerify={(token) => {
-                  setCaptchaToken(token);
-                  setCaptchaError("");
-                }}
-                onError={() => {
-                  setCaptchaToken(null);
-                  setCaptchaError("Captcha verification failed");
-                }}
-                onExpire={() => {
-                  setCaptchaToken(null);
-                  setCaptchaError("Captcha expired - please verify again");
-                }}
-                reset={resetCaptcha}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+                onExpire={handleCaptchaExpire}
+                reset={captchaState.reset}
               />
             )}
-            {captchaError && (
+            {captchaState.error && (
               <MDTypography
                 variant="caption"
                 color="error"
@@ -300,7 +337,7 @@ function Basic() {
                 <Icon sx={{ mr: 0.8, color: "error.main" }} fontSize="small">
                   error
                 </Icon>
-                <div>{captchaError}</div>
+                <div>{captchaState.error}</div>
               </MDTypography>
             )}
             <MDBox mt={2} mb={1}>
@@ -309,9 +346,9 @@ function Basic() {
                 variant="gradient"
                 color="info"
                 fullWidth
-                disabled={isLoading}
+                disabled={uiState.isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {uiState.isLoading ? "Signing in..." : "Sign in"}
               </MDButton>
             </MDBox>
             <Divider />
@@ -323,17 +360,35 @@ function Basic() {
               alignItems="center"
               textAlign="center"
             >
-              <GoogleLogin
-                theme={darkMode ? "filled_blue" : "filled_blue"}
-                size="large"
-                shape="pill"
-                type="standard"
-                logo_alignment="center"
-                onSuccess={handleGoogleLogin}
-                onError={() => {
-                  showToast("Google login failed. Please try again.");
-                }}
-              />
+              <>
+                <div style={{ display: "none" }}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleLogin}
+                    onError={() => {
+                      showToast("Google login failed. Please try again.");
+                    }}
+                    ref={googleButtonRef}
+                  />
+                </div>
+                <MDButton
+                  variant="outlined"
+                  color="info"
+                  fullWidth
+                  startIcon={<GoogleIcon />}
+                  onClick={() => {
+                    // Trigger the hidden Google button
+                    const googleBtn = document.querySelector('[aria-labelledby*="button-label"]');
+                    if (googleBtn) googleBtn.click();
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.95rem",
+                    padding: "10px 24px",
+                  }}
+                >
+                  Sign in with Google
+                </MDButton>
+              </>
             </MDBox>
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">

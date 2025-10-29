@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef, useCallback } from "react";
+import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import { useTable, usePagination, useGlobalFilter, useAsyncDebounce, useSortBy } from "react-table";
 import Table from "@mui/material/Table";
@@ -141,6 +141,7 @@ function DataTableBodyCell({ noBorder, align, children, darkMode }) {
 
   const cellContent = (
     <MDTypography
+      component="div"
       ref={textRef}
       variant="body2"
       sx={{
