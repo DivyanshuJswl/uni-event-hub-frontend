@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
-// @mui material components
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import Divider from "@mui/material/Divider";
 import Switch from "@mui/material/Switch";
 import IconButton from "@mui/material/IconButton";
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
+import Link from "@mui/material/Link";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
-
-// Custom styles for the Configurator
 import ConfiguratorRoot from "examples/Configurator/ConfiguratorRoot";
-
-// Material Dashboard 2 React context
 import {
   useMaterialUIController,
   setOpenConfigurator,
@@ -23,7 +17,6 @@ import {
   setSidenavColor,
   setDarkMode,
 } from "context";
-import Link from "@mui/material/Link";
 
 function Configurator() {
   const [controller, dispatch] = useMaterialUIController();
@@ -35,74 +28,141 @@ function Configurator() {
     whiteSidenav,
     darkMode,
   } = controller;
+
   const [disabled, setDisabled] = useState(false);
-  const sidenavColors = ["primary", "dark", "info", "success", "warning", "error"];
 
-  // Use the useEffect hook to change the button state for the sidenav type based on window size.
+  // Memoized sidenav colors
+  const sidenavColors = useMemo(
+    () => ["primary", "dark", "info", "success", "warning", "error"],
+    []
+  );
+
+  // Handle window resize for button disabled state
   useEffect(() => {
-    // A function that sets the disabled state of the buttons for the sidenav type.
-    function handleDisabled() {
-      return window.innerWidth > 1200 ? setDisabled(false) : setDisabled(true);
-    }
+    const handleDisabled = () => {
+      setDisabled(window.innerWidth <= 1200);
+    };
 
-    // The event listener that's calling the handleDisabled function when resizing the window.
     window.addEventListener("resize", handleDisabled);
-
-    // Call the handleDisabled function to set the state with the initial value.
     handleDisabled();
 
-    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleDisabled);
   }, []);
 
-  const handleCloseConfigurator = () => setOpenConfigurator(dispatch, false);
-  const handleTransparentSidenav = () => {
+  // Memoized handlers
+  const handleCloseConfigurator = useCallback(() => {
+    setOpenConfigurator(dispatch, false);
+  }, [dispatch]);
+
+  const handleTransparentSidenav = useCallback(() => {
     setTransparentSidenav(dispatch, true);
     setWhiteSidenav(dispatch, false);
-  };
-  const handleWhiteSidenav = () => {
+  }, [dispatch]);
+
+  const handleWhiteSidenav = useCallback(() => {
     setWhiteSidenav(dispatch, true);
     setTransparentSidenav(dispatch, false);
-  };
-  const handleDarkSidenav = () => {
+  }, [dispatch]);
+
+  const handleDarkSidenav = useCallback(() => {
     setWhiteSidenav(dispatch, false);
     setTransparentSidenav(dispatch, false);
-  };
-  const handleFixedNavbar = () => setFixedNavbar(dispatch, !fixedNavbar);
-  const handleDarkMode = () => setDarkMode(dispatch, !darkMode);
+  }, [dispatch]);
 
-  // sidenav type buttons styles
-  const sidenavTypeButtonsStyles = ({
-    functions: { pxToRem },
-    palette: { white, dark, background },
-    borders: { borderWidth },
-  }) => ({
-    height: pxToRem(39),
-    background: darkMode ? background.sidenav : white.main,
-    color: darkMode ? white.main : dark.main,
-    border: `${borderWidth[1]} solid ${darkMode ? white.main : dark.main}`,
+  const handleFixedNavbar = useCallback(() => {
+    setFixedNavbar(dispatch, !fixedNavbar);
+  }, [dispatch, fixedNavbar]);
 
-    "&:hover, &:focus, &:focus:not(:hover)": {
-      background: darkMode ? background.sidenav : white.main,
-      color: darkMode ? white.main : dark.main,
-      border: `${borderWidth[1]} solid ${darkMode ? white.main : dark.main}`,
+  const handleDarkMode = useCallback(() => {
+    setDarkMode(dispatch, !darkMode);
+  }, [dispatch, darkMode]);
+
+  const handleColorChange = useCallback(
+    (color) => {
+      setSidenavColor(dispatch, color);
     },
-  });
+    [dispatch]
+  );
 
-  // sidenav type active button styles
-  const sidenavTypeActiveButtonStyles = ({
-    functions: { pxToRem, linearGradient },
-    palette: { white, gradients, background },
-  }) => ({
-    height: pxToRem(39),
-    background: darkMode ? white.main : linearGradient(gradients.dark.main, gradients.dark.state),
-    color: darkMode ? background.sidenav : white.main,
+  const handleShare = useCallback(() => {
+    const shareData = {
+      title: "Uni Event-Hub App",
+      text: "Check out the awesome Uni Event-Hub. Your go-to platform for university events, activities, and community engagement.",
+      url: window.location.origin,
+    };
 
-    "&:hover, &:focus, &:focus:not(:hover)": {
-      background: darkMode ? white.main : linearGradient(gradients.dark.main, gradients.dark.state),
-      color: darkMode ? background.sidenav : white.main,
-    },
-  });
+    if (navigator.share) {
+      navigator
+        .share(shareData)
+        .then(() => console.log("Successfully shared"))
+        .catch((err) => console.error("Error sharing:", err));
+    } else {
+      navigator.clipboard.writeText(shareData.url);
+      alert("Link copied to clipboard!");
+    }
+  }, []);
+
+  // Memoized button styles
+  const sidenavTypeButtonsStyles = useMemo(
+    () =>
+      ({
+        functions: { pxToRem },
+        palette: { white, dark, background },
+        borders: { borderWidth },
+      }) => ({
+        height: pxToRem(39),
+        background: darkMode ? background.sidenav : white.main,
+        color: darkMode ? white.main : dark.main,
+        border: `${borderWidth[1]} solid ${darkMode ? white.main : dark.main}`,
+        "&:hover, &:focus, &:focus:not(:hover)": {
+          background: darkMode ? background.sidenav : white.main,
+          color: darkMode ? white.main : dark.main,
+          border: `${borderWidth[1]} solid ${darkMode ? white.main : dark.main}`,
+        },
+      }),
+    [darkMode]
+  );
+
+  const sidenavTypeActiveButtonStyles = useMemo(
+    () =>
+      ({ functions: { pxToRem, linearGradient }, palette: { white, gradients, background } }) => ({
+        height: pxToRem(39),
+        background: darkMode
+          ? white.main
+          : linearGradient(gradients.dark.main, gradients.dark.state),
+        color: darkMode ? background.sidenav : white.main,
+        "&:hover, &:focus, &:focus:not(:hover)": {
+          background: darkMode
+            ? white.main
+            : linearGradient(gradients.dark.main, gradients.dark.state),
+          color: darkMode ? background.sidenav : white.main,
+        },
+      }),
+    [darkMode]
+  );
+
+  // Memoized color button styles
+  const getColorButtonStyles = useCallback(
+    (color) =>
+      ({ borders: { borderWidth }, palette: { white, dark, background }, transitions }) => ({
+        width: "24px",
+        height: "24px",
+        padding: 0,
+        border: `${borderWidth[1]} solid ${darkMode ? background.sidenav : white.main}`,
+        borderColor: sidenavColor === color ? (darkMode ? white.main : dark.main) : "transparent",
+        transition: transitions.create("border-color", {
+          easing: transitions.easing.sharp,
+          duration: transitions.duration.shorter,
+        }),
+        backgroundImage: ({ functions: { linearGradient }, palette: { gradients } }) =>
+          linearGradient(gradients[color].main, gradients[color].state),
+        "&:not(:last-child)": { mr: 1 },
+        "&:hover, &:focus, &:active": {
+          borderColor: darkMode ? white.main : dark.main,
+        },
+      }),
+    [darkMode, sidenavColor]
+  );
 
   return (
     <ConfiguratorRoot variant="permanent" ownerState={{ openConfigurator }}>
@@ -141,45 +201,12 @@ function Configurator() {
       <MDBox pt={0.5} pb={3} px={3}>
         <MDBox>
           <MDTypography variant="h6">Sidenav Colors</MDTypography>
-
           <MDBox mb={0.5}>
             {sidenavColors.map((color) => (
               <IconButton
                 key={color}
-                sx={({
-                  borders: { borderWidth },
-                  palette: { white, dark, background },
-                  transitions,
-                }) => ({
-                  width: "24px",
-                  height: "24px",
-                  padding: 0,
-                  border: `${borderWidth[1]} solid ${darkMode ? background.sidenav : white.main}`,
-                  borderColor: () => {
-                    let borderColorValue = sidenavColor === color && dark.main;
-
-                    if (darkMode && sidenavColor === color) {
-                      borderColorValue = white.main;
-                    }
-
-                    return borderColorValue;
-                  },
-                  transition: transitions.create("border-color", {
-                    easing: transitions.easing.sharp,
-                    duration: transitions.duration.shorter,
-                  }),
-                  backgroundImage: ({ functions: { linearGradient }, palette: { gradients } }) =>
-                    linearGradient(gradients[color].main, gradients[color].state),
-
-                  "&:not(:last-child)": {
-                    mr: 1,
-                  },
-
-                  "&:hover, &:focus, &:active": {
-                    borderColor: darkMode ? white.main : dark.main,
-                  },
-                })}
-                onClick={() => setSidenavColor(dispatch, color)}
+                sx={getColorButtonStyles(color)}
+                onClick={() => handleColorChange(color)}
               />
             ))}
           </MDBox>
@@ -191,13 +218,7 @@ function Configurator() {
             Choose between different sidenav types.
           </MDTypography>
 
-          <MDBox
-            sx={{
-              display: "flex",
-              mt: 2,
-              mr: 1,
-            }}
-          >
+          <MDBox sx={{ display: "flex", mt: 2, mr: 1 }}>
             <MDButton
               color="dark"
               variant="gradient"
@@ -244,6 +265,7 @@ function Configurator() {
             </MDButton>
           </MDBox>
         </MDBox>
+
         <MDBox
           display="flex"
           justifyContent="space-between"
@@ -252,16 +274,18 @@ function Configurator() {
           lineHeight={1}
         >
           <MDTypography variant="h6">Navbar Fixed</MDTypography>
-
           <Switch checked={fixedNavbar} onChange={handleFixedNavbar} />
         </MDBox>
+
         <Divider />
+
         <MDBox display="flex" justifyContent="space-between" alignItems="center" lineHeight={1}>
           <MDTypography variant="h6">Light / Dark</MDTypography>
-
           <Switch checked={darkMode} onChange={handleDarkMode} />
         </MDBox>
+
         <Divider />
+
         <MDBox mt={2} mb={2}>
           <MDButton
             component={Link}
@@ -269,40 +293,19 @@ function Configurator() {
             target="_blank"
             rel="noreferrer"
             variant="outlined"
+            color="secondary"
             fullWidth
           >
             view documentation for MUI
           </MDButton>
         </MDBox>
-        <MDBox mt={2} mb={2} textAlign="center">
-          <MDBox mt={2} mb={2} textAlign="center">
-            <MDButton
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                const shareData = {
-                  title: "Uni Event-Hub App",
-                  text: "Check out the awesome Uni Event-Hub. Your go-to platform for university events, activities, and community engagement.",
-                  url: window.location.origin,
-                };
 
-                if (navigator.share) {
-                  navigator
-                    .share(shareData)
-                    .then(() => console.log("Successfully shared"))
-                    .catch((err) => console.error("Error sharing:", err));
-                } else {
-                  // Fallback: copy link to clipboard
-                  navigator.clipboard.writeText(shareData.url);
-                  alert("Link copied to clipboard!");
-                }
-              }}
-              fullWidth
-            >
-              Share the awesome Event-Hub UI!
-            </MDButton>
-          </MDBox>
+        <MDBox mt={2} mb={2} textAlign="center">
+          <MDButton variant="outlined" color="primary" onClick={handleShare} fullWidth>
+            Share the awesome Event-Hub UI!
+          </MDButton>
         </MDBox>
+
         <MDBox mt={2} textAlign="center">
           <MDBox mb={0.5}>
             <MDTypography variant="h6">Thank you for sharing!</MDTypography>
@@ -313,4 +316,6 @@ function Configurator() {
   );
 }
 
-export default Configurator;
+Configurator.displayName = "Configurator";
+
+export default memo(Configurator);

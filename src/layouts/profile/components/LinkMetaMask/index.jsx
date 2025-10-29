@@ -1,17 +1,48 @@
-import React, { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 
-const MetaMaskIntegration = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [localError, setLocalError] = useState(null);
-  const [localSuccess, setLocalSuccess] = useState(false);
-  const [metaMaskAddress, setMetaMaskAddress] = useState("");
-
+const MetaMaskIntegration = memo(() => {
   const { user, token, updateWallet } = useAuth();
+  const { showToast } = useNotifications();
+
+  // Consolidated state
+  const [walletState, setWalletState] = useState({
+    isLoading: false,
+    metaMaskAddress: "",
+  });
+
+  // Memoized input handler
+  const handleInputChange = useCallback((e) => {
+    setWalletState((prev) => ({ ...prev, metaMaskAddress: e.target.value }));
+  }, []);
+
+  // Memoized submit handler
+  const handleSubmit = useCallback(async () => {
+    setWalletState((prev) => ({ ...prev, isLoading: true }));
+
+    try {
+      const result = await updateWallet(walletState.metaMaskAddress);
+
+      if (result.success) {
+        setWalletState({
+          isLoading: false,
+          metaMaskAddress: result.metaMaskAddress || walletState.metaMaskAddress,
+        });
+        showToast("Wallet linked successfully!", "success", "MetaMask Connected");
+      } else {
+        setWalletState((prev) => ({ ...prev, isLoading: false }));
+        showToast(result.message || "Failed to link wallet", "error", "Connection Failed");
+      }
+    } catch (error) {
+      setWalletState((prev) => ({ ...prev, isLoading: false }));
+      showToast("An error occurred while linking wallet", "error", "Connection Failed");
+    }
+  }, [walletState.metaMaskAddress, updateWallet, showToast]);
 
   // Show message if user is not authenticated
   if (!user || !token) {
@@ -23,30 +54,6 @@ const MetaMaskIntegration = () => {
       </MDBox>
     );
   }
-
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    setLocalError(null);
-    setLocalSuccess(false);
-
-    const result = await updateWallet(metaMaskAddress);
-
-    if (result.success) {
-      setLocalSuccess(true);
-      setMetaMaskAddress(result.metaMaskAddress || metaMaskAddress);
-      setTimeout(() => setLocalSuccess(false), 2500);
-    } else {
-      setLocalError(result.message);
-    }
-
-    setIsLoading(false);
-  };
-
-  const handleInputChange = (e) => {
-    if (localSuccess) setLocalSuccess(false);
-    setLocalError(null);
-    setMetaMaskAddress(e.target.value);
-  };
 
   return (
     <MDBox p={3} borderRadius="lg" shadow="lg">
@@ -64,38 +71,24 @@ const MetaMaskIntegration = () => {
           type="text"
           label="Your MetaMask ID"
           fullWidth
-          value={metaMaskAddress}
+          value={walletState.metaMaskAddress}
           onChange={handleInputChange}
           placeholder="Enter your MetaMask account ID (0x...)"
         />
       </MDBox>
-
-      {/* Success Message */}
-      {localSuccess && (
-        <MDBox mb={2} textAlign="center">
-          <MDTypography variant="button" color="success" fontWeight="medium">
-            ✓ Wallet linked successfully!
-          </MDTypography>
-        </MDBox>
-      )}
-
-      {/* Error Message */}
-      {localError && (
-        <MDBox mb={2} textAlign="center">
-          <MDTypography variant="button" color="error" fontWeight="medium">
-            ⚠️ Error: {localError}
-          </MDTypography>
-        </MDBox>
-      )}
 
       <MDBox display="flex" justifyContent="center" mb={4}>
         <MDButton
           variant="gradient"
           color="info"
           onClick={handleSubmit}
-          disabled={isLoading || !metaMaskAddress.trim()}
+          disabled={walletState.isLoading || !walletState.metaMaskAddress.trim()}
         >
-          {isLoading ? "Processing..." : user.metaMaskAddress ? "Update Wallet" : "Link Wallet"}
+          {walletState.isLoading
+            ? "Processing..."
+            : user.metaMaskAddress
+              ? "Update Wallet"
+              : "Link Wallet"}
         </MDButton>
       </MDBox>
 
@@ -122,6 +115,8 @@ const MetaMaskIntegration = () => {
       </MDBox>
     </MDBox>
   );
-};
+});
+
+MetaMaskIntegration.displayName = "MetaMaskIntegration";
 
 export default MetaMaskIntegration;

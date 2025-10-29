@@ -1,22 +1,28 @@
-// prop-types is a library for typechecking of props.
+import { useMemo, memo } from "react";
 import PropTypes from "prop-types";
-
-// @mui material components
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
 import MDTypography from "components/MDTypography";
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-
-// Material Dashboard 2 React example components
 import DefaultNavbarLink from "examples/Navbars/DefaultNavbar/DefaultNavbarLink";
 
 function DefaultNavbarMobile({ open, close }) {
-  const { width } = open && open.getBoundingClientRect();
+  // Memoized width calculation
+  const menuWidth = useMemo(() => {
+    if (open && open.getBoundingClientRect) {
+      const { width } = open.getBoundingClientRect();
+      return `calc(${width}px - 4rem)`;
+    }
+    return "auto";
+  }, [open]);
+
+  // Memoized text color
+  const textColor = useMemo(() => {
+    return open && open.light ? "white" : "dark";
+  }, [open]);
 
   return (
     <Menu
-      getContentAnchorEl={null}
       anchorOrigin={{
         vertical: "bottom",
         horizontal: "center",
@@ -28,11 +34,9 @@ function DefaultNavbarMobile({ open, close }) {
       anchorEl={open}
       open={Boolean(open)}
       onClose={close}
-      MenuListProps={{ style: { width: `calc(${width}px - 4rem)` } }}
+      MenuListProps={{ style: { width: menuWidth } }}
     >
       <MDBox px={0.5}>
-        {/* <DefaultNavbarLink icon="donut_large" name="dashboard" route="/dashboard" />
-        <DefaultNavbarLink icon="person" name="profile" route="/profile" /> */}
         <DefaultNavbarLink icon="account_circle" name="sign up" route="/authentication/sign-up" />
         <DefaultNavbarLink icon="key" name="sign in" route="/authentication/sign-in" />
         <MDBox
@@ -44,14 +48,10 @@ function DefaultNavbarMobile({ open, close }) {
           p={1}
           display="flex"
           alignItems="center"
-          color={open && open.light ? "white" : "dark"}
+          color={textColor}
         >
           <Icon sx={{ mr: 1 }}>volunteer_activism</Icon>
-          <MDTypography
-            variant="button"
-            fontWeight="regular"
-            color={open && open.light ? "white" : "dark"}
-          >
+          <MDTypography variant="button" fontWeight="regular" color={textColor}>
             Sponsor Us
           </MDTypography>
         </MDBox>
@@ -60,10 +60,11 @@ function DefaultNavbarMobile({ open, close }) {
   );
 }
 
-// Typechecking props for the DefaultNavbarMenu
 DefaultNavbarMobile.propTypes = {
   open: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]).isRequired,
   close: PropTypes.oneOfType([PropTypes.func, PropTypes.bool, PropTypes.object]).isRequired,
 };
 
-export default DefaultNavbarMobile;
+DefaultNavbarMobile.displayName = "DefaultNavbarMobile";
+
+export default memo(DefaultNavbarMobile);

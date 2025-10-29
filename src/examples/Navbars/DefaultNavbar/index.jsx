@@ -1,63 +1,64 @@
-import { useState, useEffect } from "react";
-
-// react-router components
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Link } from "react-router-dom";
-
-// prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
-
-// @mui material components
 import Container from "@mui/material/Container";
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-// Material Dashboard 2 React example components
 import DefaultNavbarLink from "examples/Navbars/DefaultNavbar/DefaultNavbarLink";
 import DefaultNavbarMobile from "examples/Navbars/DefaultNavbar/DefaultNavbarMobile";
-
-// Material Dashboard 2 React base styles
 import breakpoints from "assets/theme/base/breakpoints";
-
-// Material Dashboard 2 React context
 import { useMaterialUIController } from "context";
 
 function DefaultNavbar({ transparent, light }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
-  const [mobileNavbar, setMobileNavbar] = useState(false);
-  const [mobileView, setMobileView] = useState(false);
+  // Consolidated state
+  const [navbarState, setNavbarState] = useState({
+    mobileNavbar: false,
+    mobileView: false,
+  });
 
-  const openMobileNavbar = ({ currentTarget }) => setMobileNavbar(currentTarget.parentNode);
-  const closeMobileNavbar = () => setMobileNavbar(false);
+  // Memoized handlers
+  const openMobileNavbar = useCallback(({ currentTarget }) => {
+    setNavbarState((prev) => ({
+      ...prev,
+      mobileNavbar: currentTarget.parentNode,
+    }));
+  }, []);
 
+  const closeMobileNavbar = useCallback(() => {
+    setNavbarState((prev) => ({ ...prev, mobileNavbar: false }));
+  }, []);
+
+  // Handle responsive navbar
   useEffect(() => {
-    // A function that sets the display state for the DefaultNavbarMobile.
-    function displayMobileNavbar() {
-      if (window.innerWidth < breakpoints.values.lg) {
-        setMobileView(true);
-        setMobileNavbar(false);
-      } else {
-        setMobileView(false);
-        setMobileNavbar(false);
-      }
-    }
+    const displayMobileNavbar = () => {
+      const isMobile = window.innerWidth < breakpoints.values.lg;
+      setNavbarState({
+        mobileView: isMobile,
+        mobileNavbar: false,
+      });
+    };
 
-    /** 
-     The event listener that's calling the displayMobileNavbar function when 
-     resizing the window.
-    */
     window.addEventListener("resize", displayMobileNavbar);
-
-    // Call the displayMobileNavbar function to set the state with the initial value.
     displayMobileNavbar();
 
-    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", displayMobileNavbar);
   }, []);
+
+  // Memoized navbar background style
+  const navbarBackground = useMemo(
+    () =>
+      ({ palette: { transparent: transparentColor, white, background }, functions: { rgba } }) => ({
+        backgroundColor: transparent
+          ? transparentColor.main
+          : rgba(darkMode ? background.sidenav : white.main, 0.8),
+        backdropFilter: transparent ? "none" : "saturate(200%) blur(30px)",
+      }),
+    [transparent, darkMode]
+  );
 
   return (
     <Container>
@@ -76,15 +77,7 @@ function DefaultNavbar({ transparent, light }) {
         position="absolute"
         left={0}
         zIndex={3}
-        sx={({
-          palette: { transparent: transparentColor, white, background },
-          functions: { rgba },
-        }) => ({
-          backgroundColor: transparent
-            ? transparentColor.main
-            : rgba(darkMode ? background.sidenav : white.main, 0.8),
-          backdropFilter: transparent ? "none" : `saturate(200%) blur(30px)`,
-        })}
+        sx={navbarBackground}
       >
         <MDBox
           component={Link}
@@ -97,8 +90,9 @@ function DefaultNavbar({ transparent, light }) {
             Uni-Event Home
           </MDTypography>
         </MDBox>
+
+        {/* Desktop Navigation */}
         <MDBox color="inherit" display={{ xs: "none", lg: "flex" }} m={0} p={0}>
-          {/* <DefaultNavbarLink icon="donut_large" name="dashboard" route="/dashboard" light={light} /> */}
           <DefaultNavbarLink
             icon="account_circle"
             name="sign up"
@@ -112,8 +106,9 @@ function DefaultNavbar({ transparent, light }) {
             light={light}
           />
         </MDBox>
+
+        {/* Sponsor Us Link */}
         <MDBox color="inherit" display={{ xs: "none", lg: "flex" }} m={0} p={0}>
-          {/* <DefaultNavbarLink icon="donut_large" name="dashboard" route="/dashboard" light={light} /> */}
           <MDBox
             component="a"
             href="https://sponsors-gilt.vercel.app/"
@@ -131,6 +126,8 @@ function DefaultNavbar({ transparent, light }) {
             </MDTypography>
           </MDBox>
         </MDBox>
+
+        {/* Mobile Menu Toggle */}
         <MDBox
           display={{ xs: "inline-block", lg: "none" }}
           lineHeight={0}
@@ -140,43 +137,28 @@ function DefaultNavbar({ transparent, light }) {
           sx={{ cursor: "pointer" }}
           onClick={openMobileNavbar}
         >
-          <Icon fontSize="default">{mobileNavbar ? "close" : "menu"}</Icon>
+          <Icon fontSize="default">{navbarState.mobileNavbar ? "close" : "menu"}</Icon>
         </MDBox>
       </MDBox>
-      {mobileView && <DefaultNavbarMobile open={mobileNavbar} close={closeMobileNavbar} />}
+
+      {/* Mobile Navigation */}
+      {navbarState.mobileView && (
+        <DefaultNavbarMobile open={navbarState.mobileNavbar} close={closeMobileNavbar} />
+      )}
     </Container>
   );
 }
 
-// Setting default values for the props of DefaultNavbar
 DefaultNavbar.defaultProps = {
   transparent: false,
   light: false,
-  action: false,
 };
 
-// Typechecking props for the DefaultNavbar
 DefaultNavbar.propTypes = {
   transparent: PropTypes.bool,
   light: PropTypes.bool,
-  action: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.shape({
-      type: PropTypes.oneOf(["external", "internal"]).isRequired,
-      route: PropTypes.string.isRequired,
-      color: PropTypes.oneOf([
-        "primary",
-        "secondary",
-        "info",
-        "success",
-        "warning",
-        "error",
-        "dark",
-        "light",
-      ]),
-      label: PropTypes.string.isRequired,
-    }),
-  ]),
 };
 
-export default DefaultNavbar;
+DefaultNavbar.displayName = "DefaultNavbar";
+
+export default memo(DefaultNavbar);

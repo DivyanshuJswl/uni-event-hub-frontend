@@ -1,8 +1,7 @@
-// @mui material components
 import Drawer from "@mui/material/Drawer";
 import { styled } from "@mui/material/styles";
 
-export default styled(Drawer)(({ theme, ownerState }) => {
+const ConfiguratorRoot = styled(Drawer)(({ theme, ownerState }) => {
   const { boxShadows, functions, transitions } = theme;
   const { openConfigurator } = ownerState;
 
@@ -10,7 +9,6 @@ export default styled(Drawer)(({ theme, ownerState }) => {
   const { lg } = boxShadows;
   const { pxToRem } = functions;
 
-  // drawer styles when openConfigurator={true}
   const drawerOpenStyles = () => ({
     width: configuratorWidth,
     left: "initial",
@@ -21,7 +19,6 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     }),
   });
 
-  // drawer styles when openConfigurator={false}
   const drawerCloseStyles = () => ({
     left: "initial",
     right: pxToRem(-350),
@@ -43,3 +40,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     },
   };
 });
+
+ConfiguratorRoot.displayName = "ConfiguratorRoot";
+
+export default ConfiguratorRoot;

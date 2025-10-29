@@ -211,9 +211,13 @@ function DataTable({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const defaultValue = entriesPerPage.defaultValue ? entriesPerPage.defaultValue : 5;
-  const entries = entriesPerPage.entries
-    ? entriesPerPage.entries.map((el) => el.toString())
-    : ["5", "10", "15", "20", "25"];
+  const entries = useMemo(
+    () =>
+      entriesPerPage.entries
+        ? entriesPerPage.entries.map((el) => el.toString())
+        : ["5", "10", "15", "20", "25"],
+    [entriesPerPage.entries]
+  );
 
   const columns = useMemo(() => table.columns, [table.columns]);
   const data = useMemo(() => table.rows, [table.rows]);
@@ -553,6 +557,11 @@ function DataTable({
     </TableContainer>
   );
 }
+
+// Add displayName for better debugging
+DataTable.displayName = "DataTable";
+DataTableHeadCell.displayName = "DataTableHeadCell";
+DataTableBodyCell.displayName = "DataTableBodyCell";
 
 DataTable.defaultProps = {
   entriesPerPage: { defaultValue: 10, entries: [5, 10, 15, 20, 25] },

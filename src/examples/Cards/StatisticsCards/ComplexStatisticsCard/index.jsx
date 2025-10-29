@@ -1,32 +1,44 @@
-// prop-types is a library for typechecking of props
+import { useMemo, memo } from "react";
 import PropTypes from "prop-types";
-
-// @mui material components
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
+  // Memoized icon box styles
+  const iconBoxStyles = useMemo(
+    () => ({
+      variant: "gradient",
+      bgColor: color,
+      color: color === "light" ? "dark" : "white",
+      coloredShadow: color,
+      borderRadius: "xl",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "4rem",
+      height: "4rem",
+      mt: -3,
+    }),
+    [color]
+  );
+
+  // Memoized percentage display
+  const percentageDisplay = useMemo(
+    () => ({
+      color: percentage.color || "success",
+      amount: percentage.amount || "",
+      label: percentage.label || "",
+    }),
+    [percentage]
+  );
+
   return (
     <Card>
       <MDBox display="flex" justifyContent="space-between" pt={1} px={2}>
-        <MDBox
-          variant="gradient"
-          bgColor={color}
-          color={color === "light" ? "dark" : "white"}
-          coloredShadow={color}
-          borderRadius="xl"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          width="4rem"
-          height="4rem"
-          mt={-3}
-        >
+        <MDBox {...iconBoxStyles}>
           <Icon fontSize="medium" color="inherit">
             {icon}
           </Icon>
@@ -45,28 +57,26 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
             component="span"
             variant="button"
             fontWeight="bold"
-            color={percentage.color}
+            color={percentageDisplay.color}
           >
-            {percentage.amount}
+            {percentageDisplay.amount}
           </MDTypography>
-          &nbsp;{percentage.label}
+          &nbsp;{percentageDisplay.label}
         </MDTypography>
       </MDBox>
     </Card>
   );
 }
 
-// Setting default values for the props of ComplexStatisticsCard
 ComplexStatisticsCard.defaultProps = {
   color: "info",
   percentage: {
     color: "success",
-    text: "",
+    amount: "",
     label: "",
   },
 };
 
-// Typechecking props for the ComplexStatisticsCard
 ComplexStatisticsCard.propTypes = {
   color: PropTypes.oneOf([
     "primary",
@@ -97,4 +107,6 @@ ComplexStatisticsCard.propTypes = {
   icon: PropTypes.node.isRequired,
 };
 
-export default ComplexStatisticsCard;
+ComplexStatisticsCard.displayName = "ComplexStatisticsCard";
+
+export default memo(ComplexStatisticsCard);

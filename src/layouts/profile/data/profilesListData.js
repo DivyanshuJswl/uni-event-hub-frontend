@@ -1,13 +1,8 @@
-// Images
-import kal from "assets/images/kal-visuals-square.jpg";
-import marie from "assets/images/marie.jpg";
-import ivana from "assets/images/ivana-square.jpg";
-import team3 from "assets/images/team-3.jpg";
-import team4 from "assets/images/team-4.jpg";
-
-export default [
+// Memoized conversation data to prevent recreation
+const conversationsData = [
   {
-    image: kal,
+    id: 1,
+    image: "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-1_a7rqfy.jpg",
     name: "Sophie B.",
     description: "Hi! I need more information..",
     action: {
@@ -18,7 +13,8 @@ export default [
     },
   },
   {
-    image: marie,
+    id: 2,
+    image: "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-2_aq8yoc.jpg",
     name: "Anne Marie",
     description: "Awesome work, can you..",
     action: {
@@ -29,7 +25,8 @@ export default [
     },
   },
   {
-    image: ivana,
+    id: 3,
+    image: "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg",
     name: "Ivanna",
     description: "About files I can..",
     action: {
@@ -40,7 +37,8 @@ export default [
     },
   },
   {
-    image: team4,
+    id: 4,
+    image: "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375373/team-4_efvdcl.jpg",
     name: "Peterson",
     description: "Have a great afternoon..",
     action: {
@@ -51,7 +49,8 @@ export default [
     },
   },
   {
-    image: team3,
+    id: 5,
+    image: "https://res.cloudinary.com/dh5cebjwj/image/upload/v1757375375/team-3_njhtzr.jpg",
     name: "Nick Daniel",
     description: "Hi! I need more information..",
     action: {
@@ -62,3 +61,5 @@ export default [
     },
   },
 ];
+
+export default conversationsData;

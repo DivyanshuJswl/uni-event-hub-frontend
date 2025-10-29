@@ -1,31 +1,70 @@
-import React from "react";
-import { Grid, IconButton, Box } from "@mui/material";
+import { useMemo, memo } from "react";
+import { Grid, IconButton, Box, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { Link } from "@mui/material";
 import { useMaterialUIController } from "context";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { Facebook, Twitter, Instagram, LinkedIn, Email, LocationOn } from "@mui/icons-material";
 
-const Footer = () => {
+function Footer() {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
-  const socialLinks = [
-    { icon: <Facebook />, url: "https://facebook.com", label: "Facebook" },
-    { icon: <Twitter />, url: "https://twitter.com", label: "Twitter" },
-    { icon: <Instagram />, url: "https://instagram.com", label: "Instagram" },
-    { icon: <LinkedIn />, url: "https://linkedin.com", label: "LinkedIn" },
-  ];
+  // Memoized social links
+  const socialLinks = useMemo(
+    () => [
+      { icon: <Facebook />, url: "https://facebook.com", label: "Facebook" },
+      { icon: <Twitter />, url: "https://twitter.com", label: "Twitter" },
+      { icon: <Instagram />, url: "https://instagram.com", label: "Instagram" },
+      { icon: <LinkedIn />, url: "https://linkedin.com", label: "LinkedIn" },
+    ],
+    []
+  );
 
-  const quickLinks = [
-    { label: "Browse Events", url: "/explore" },
-    { label: "Create Event", url: "/create-event" },
-    { label: "My Certificates", url: "/my-certificate" },
-    { label: "Leaderboard", url: "/leaderboard" },
-    { label: "About Us", url: "/about" },
-    { label: "Contact Support", url: "/support" },
-  ];
+  // Memoized quick links
+  const quickLinks = useMemo(
+    () => [
+      { label: "Browse Events", url: "/explore" },
+      { label: "Create Event", url: "/create-event" },
+      { label: "My Certificates", url: "/my-certificate" },
+      { label: "Leaderboard", url: "/leaderboard" },
+      { label: "About Us", url: "/about" },
+      { label: "Contact Support", url: "/support" },
+    ],
+    []
+  );
+
+  // Memoized styles
+  const borderTopStyle = useMemo(
+    () => `1px solid ${darkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"}`,
+    [darkMode]
+  );
+
+  const socialButtonStyles = useMemo(
+    () => ({
+      color: darkMode ? "#fff" : "primary.main",
+      backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "rgba(25, 118, 210, 0.1)",
+      "&:hover": {
+        transform: "translateY(-3px)",
+        boxShadow: darkMode
+          ? "0 4px 12px rgba(79, 172, 254, 0.3)"
+          : "0 4px 12px rgba(25, 118, 210, 0.2)",
+      },
+      transition: "all 0.3s ease",
+    }),
+    [darkMode]
+  );
+
+  const testimonialBoxStyles = useMemo(
+    () => ({
+      p: 1.5,
+      borderRadius: 2,
+      backgroundColor: darkMode ? "rgba(79, 172, 254, 0.1)" : "rgba(25, 118, 210, 0.1)",
+      borderLeft: "3px solid",
+      borderColor: "primary.main",
+    }),
+    [darkMode]
+  );
 
   return (
     <MDBox
@@ -34,21 +73,13 @@ const Footer = () => {
         width: "100%",
         py: 3,
         px: { xs: 2, sm: 3, md: 4 },
-        borderTop: `1px solid ${darkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"}`,
+        borderTop: borderTopStyle,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      <Grid
-        container
-        spacing={3}
-        maxWidth="xl"
-        sx={{
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
+      <Grid container spacing={3} maxWidth="xl" sx={{ margin: "0 auto", width: "100%" }}>
         {/* Brand Section */}
         <Grid item xs={12} md={4}>
           <MDBox
@@ -99,19 +130,7 @@ const Footer = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    sx={{
-                      color: darkMode ? "#fff" : "primary.main",
-                      backgroundColor: darkMode
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(25, 118, 210, 0.1)",
-                      "&:hover": {
-                        transform: "translateY(-3px)",
-                        boxShadow: darkMode
-                          ? "0 4px 12px rgba(79, 172, 254, 0.3)"
-                          : "0 4px 12px rgba(25, 118, 210, 0.2)",
-                      },
-                      transition: "all 0.3s ease",
-                    }}
+                    sx={socialButtonStyles}
                   >
                     {social.icon}
                   </IconButton>
@@ -183,12 +202,7 @@ const Footer = () => {
           <MDBox sx={{ mb: 3 }}>
             <MDBox display="flex" alignItems="flex-start" gap={1} mb={2}>
               <LocationOn
-                sx={{
-                  color: "primary.main",
-                  fontSize: "1.1rem",
-                  mt: 0.1,
-                  flexShrink: 0,
-                }}
+                sx={{ color: "primary.main", fontSize: "1.1rem", mt: 0.1, flexShrink: 0 }}
               />
               <MDTypography
                 variant="body2"
@@ -200,13 +214,7 @@ const Footer = () => {
             </MDBox>
 
             <MDBox display="flex" alignItems="center" gap={1} mb={3}>
-              <Email
-                sx={{
-                  color: "primary.main",
-                  fontSize: "1.1rem",
-                  flexShrink: 0,
-                }}
-              />
+              <Email sx={{ color: "primary.main", fontSize: "1.1rem", flexShrink: 0 }} />
               <MDTypography variant="body2" color="text" sx={{ fontSize: "0.9rem" }}>
                 ansh12jais@gmail.com
               </MDTypography>
@@ -214,23 +222,11 @@ const Footer = () => {
           </MDBox>
 
           {/* Testimonial */}
-          <MDBox
-            sx={{
-              p: 1.5,
-              borderRadius: 2,
-              backgroundColor: darkMode ? "rgba(79, 172, 254, 0.1)" : "rgba(25, 118, 210, 0.1)",
-              borderLeft: `3px solid`,
-              borderColor: "primary.main",
-            }}
-          >
+          <MDBox sx={testimonialBoxStyles}>
             <MDTypography
               variant="body2"
               color="text"
-              sx={{
-                fontStyle: "italic",
-                lineHeight: 1.5,
-                fontSize: "0.9rem",
-              }}
+              sx={{ fontStyle: "italic", lineHeight: 1.5, fontSize: "0.9rem" }}
             >
               "The best event management platform we've used. Highly recommended for university
               students and organizers!"
@@ -247,6 +243,8 @@ const Footer = () => {
       </Grid>
     </MDBox>
   );
-};
+}
 
-export default Footer;
+Footer.displayName = "Footer";
+
+export default memo(Footer);

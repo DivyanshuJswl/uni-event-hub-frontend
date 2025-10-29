@@ -1,27 +1,46 @@
+import { memo, useMemo } from "react";
 import { Modal, Fade, Box, IconButton, Icon } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
+import PropTypes from "prop-types";
 
-const modalStyle = () => ({
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  minWidth: 350,
-  maxWidth: "90vw",
-  bgcolor: "background.default",
-  borderRadius: 3,
-  boxShadow: 24,
-  p: 0,
-  zIndex: 1301,
-  outline: "none",
-});
-
-function PreviewDialog({ open, onClose, avatar }) {
+const PreviewDialog = memo(({ open, onClose, avatar }) => {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+
+  // Memoized modal style
+  const modalStyle = useMemo(
+    () => ({
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      minWidth: 350,
+      maxWidth: "90vw",
+      bgcolor: "background.default",
+      borderRadius: 3,
+      boxShadow: 24,
+      p: 0,
+      zIndex: 1301,
+      outline: "none",
+    }),
+    []
+  );
+
+  // Memoized image style
+  const imageStyle = useMemo(
+    () => ({
+      width: "280px",
+      height: "280px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      border: `4px solid ${darkMode ? "#222" : "#fff"}`,
+      boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+    }),
+    [darkMode]
+  );
 
   return (
     <Modal
@@ -34,8 +53,7 @@ function PreviewDialog({ open, onClose, avatar }) {
       closeAfterTransition
     >
       <Fade in={open}>
-        <Box sx={modalStyle()}>
-          {/* Header */}
+        <Box sx={modalStyle}>
           <MDBox
             display="flex"
             alignItems="center"
@@ -59,20 +77,8 @@ function PreviewDialog({ open, onClose, avatar }) {
             </IconButton>
           </MDBox>
 
-          {/* Content */}
           <MDBox px={4} py={3} textAlign="center">
-            <img
-              src={avatar}
-              alt="Profile Preview"
-              style={{
-                width: "280px",
-                height: "280px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: `4px solid ${darkMode ? "#222" : "#fff"}`,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-              }}
-            />
+            <img src={avatar} alt="Profile Preview" style={imageStyle} />
             <MDBox mt={3}>
               <MDButton variant="gradient" color="info" onClick={onClose}>
                 Close Preview
@@ -83,6 +89,14 @@ function PreviewDialog({ open, onClose, avatar }) {
       </Fade>
     </Modal>
   );
-}
+});
+
+PreviewDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  avatar: PropTypes.string,
+};
+
+PreviewDialog.displayName = "PreviewDialog";
 
 export default PreviewDialog;

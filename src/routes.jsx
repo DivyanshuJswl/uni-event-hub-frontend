@@ -135,7 +135,6 @@ const routes = [
     component: <OrganizedEvents />,
     roles: ["organizer"],
   },
-
   // Common authenticated routes (visible to all logged-in users)
   {
     type: "collapse",
@@ -172,7 +171,7 @@ const routes = [
     route: "/authentication/sign-in",
     component: <SignIn />,
     public: true,
-    hideWhenAuthenticated: true, // Hide when user is authenticated
+    hideWhenAuthenticated: true,
   },
   {
     type: "collapse",
@@ -182,7 +181,7 @@ const routes = [
     route: "/authentication/sign-up",
     component: <SignUp />,
     public: true,
-    hideWhenAuthenticated: true, // Hide when user is authenticated
+    hideWhenAuthenticated: true,
   },
 ];
 

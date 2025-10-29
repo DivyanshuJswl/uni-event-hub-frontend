@@ -1,35 +1,45 @@
-// react-router-dom components
+import { useMemo, memo } from "react";
 import { Link } from "react-router-dom";
-
-// prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
-
-// @mui material components
 import { Breadcrumbs as MuiBreadcrumbs } from "@mui/material";
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 function Breadcrumbs({ icon, title, route, light }) {
-  const routes = route.slice(0, -1);
+  // Memoized routes calculation
+  const routes = useMemo(() => {
+    return Array.isArray(route) ? route.slice(0, -1) : [];
+  }, [route]);
+
+  // Memoized processed title
+  const processedTitle = useMemo(() => {
+    return title.replace(/-/g, " ");
+  }, [title]);
+
+  // Memoized breadcrumb styles
+  const breadcrumbStyles = useMemo(
+    () => ({
+      "& .MuiBreadcrumbs-separator": {
+        color: ({ palette: { white, grey } }) => (light ? white.main : grey[600]),
+      },
+    }),
+    [light]
+  );
+
+  // Memoized text colors
+  const textColor = useMemo(() => (light ? "white" : "dark"), [light]);
+  const textOpacity = useMemo(() => (light ? 0.8 : 0.5), [light]);
 
   return (
     <MDBox mr={{ xs: 0, xl: 8 }}>
-      <MuiBreadcrumbs
-        sx={{
-          "& .MuiBreadcrumbs-separator": {
-            color: ({ palette: { white, grey } }) => (light ? white.main : grey[600]),
-          },
-        }}
-      >
+      <MuiBreadcrumbs sx={breadcrumbStyles}>
         <Link to="/">
           <MDTypography
             component="span"
             variant="body2"
-            color={light ? "white" : "dark"}
-            opacity={light ? 0.8 : 0.5}
+            color={textColor}
+            opacity={textOpacity}
             sx={{ lineHeight: 0 }}
           >
             <Icon>{icon}</Icon>
@@ -42,8 +52,8 @@ function Breadcrumbs({ icon, title, route, light }) {
               variant="button"
               fontWeight="regular"
               textTransform="capitalize"
-              color={light ? "white" : "dark"}
-              opacity={light ? 0.8 : 0.5}
+              color={textColor}
+              opacity={textOpacity}
               sx={{ lineHeight: 0 }}
             >
               {el}
@@ -54,31 +64,20 @@ function Breadcrumbs({ icon, title, route, light }) {
           variant="h6"
           fontWeight="bold"
           textTransform="capitalize"
-          color={light ? "white" : "dark"}
+          color={textColor}
           sx={{ lineHeight: 0 }}
         >
-          {title.replace("-", " ")}
+          {processedTitle}
         </MDTypography>
       </MuiBreadcrumbs>
-      {/* <MDTypography
-        fontWeight="bold"
-        textTransform="capitalize"
-        variant="h6"
-        color={light ? "white" : "dark"}
-        noWrap
-      >
-        {title.replace("-", " ")}
-      </MDTypography> */}
     </MDBox>
   );
 }
 
-// Setting default values for the props of Breadcrumbs
 Breadcrumbs.defaultProps = {
   light: false,
 };
 
-// Typechecking props for the Breadcrumbs
 Breadcrumbs.propTypes = {
   icon: PropTypes.node.isRequired,
   title: PropTypes.string.isRequired,
@@ -86,4 +85,6 @@ Breadcrumbs.propTypes = {
   light: PropTypes.bool,
 };
 
-export default Breadcrumbs;
+Breadcrumbs.displayName = "Breadcrumbs";
+
+export default memo(Breadcrumbs);

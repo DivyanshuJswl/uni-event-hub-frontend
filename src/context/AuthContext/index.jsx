@@ -1,12 +1,12 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, CircularProgress, Typography, Button, Container, Paper, Alert } from "@mui/material";
-import axios from "axios";
-import { toast } from "react-toastify";
 import { Warning, Lock, Security } from "@mui/icons-material";
+import axios from "axios";
+
 const AuthContext = createContext();
 
-// Styled Loading Component - overlay to avoid layout collision with sidenav
+// Styled Loading Component
 const LoadingScreen = () => (
   <Box
     sx={{
@@ -27,7 +27,7 @@ const LoadingScreen = () => (
   </Box>
 );
 
-// Styled Access Denied Component - overlay
+// Styled Access Denied Component
 const AccessDeniedScreen = ({ message, onRedirect }) => (
   <Box
     sx={{
@@ -76,7 +76,7 @@ const AccessDeniedScreen = ({ message, onRedirect }) => (
   </Box>
 );
 
-// Styled Authentication Required Component - overlay
+// Styled Authentication Required Component
 const LoginRequiredScreen = ({ onRedirect }) => (
   <Box
     sx={{
@@ -127,503 +127,438 @@ const LoginRequiredScreen = ({ onRedirect }) => (
 
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
 
-  // Check if we have a valid token on app load
+  // Consolidated auth state
+  const [authState, setAuthState] = useState({
+    token: null,
+    user: null,
+    role: null,
+    isLoading: true,
+  });
+
+  // Initialize authentication on mount
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check if we have a token in memory (from previous session)
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
-          // Verify the token is still valid with the backend
-          const response = await axios.get(BASE_URL + "/api/auth/me", {
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
+          const response = await axios.get(`${BASE_URL}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${storedToken}` },
+            timeout: 10000,
           });
 
           if (response.data.status) {
-            const userData = response.data;
-            setToken(userData.token || storedToken); // Use storedToken if userData.token is undefined
-            setUser(userData.student);
-            setRole(userData.role);
+            setAuthState({
+              token: response.data.token || storedToken,
+              user: response.data.student,
+              role: response.data.role,
+              isLoading: false,
+            });
           } else {
-            // Token is invalid, clear it
             localStorage.removeItem("token");
+            setAuthState((prev) => ({ ...prev, isLoading: false }));
           }
+        } else {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         localStorage.removeItem("token");
-      } finally {
-        setIsLoading(false);
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     };
 
     initAuth();
-  }, []);
+  }, [BASE_URL]);
 
-  // Add useEffect to log state changes
-  useEffect(() => {
-    console.log("Auth state updated:", { token, user, role, isLoading });
-  }, [token, user, role, isLoading]);
+  // Memoized navigation with delay
+  const navigateWithDelay = useCallback(
+    (path, delay = 8000) => {
+      setTimeout(() => navigate(path), delay);
+    },
+    [navigate]
+  );
 
-  // Navigation function with delay
-  const navigateWithDelay = (path, delay = 8000) => {
-    setTimeout(() => {
-      navigate(path);
-    }, delay);
-  };
+  // Memoized login function
+  const login = useCallback(
+    async (credentials) => {
+      try {
+        const response = await axios.post(`${BASE_URL}/api/auth/login`, credentials, {
+          withCredentials: true,
+          timeout: 10000,
+        });
 
-  const showToast = (message, type = "error", theme = "dark") => {
-    const toastConfig = {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: theme,
-    };
+        if (response.data) {
+          const { token, student, role } = response.data;
+          localStorage.setItem("token", token);
 
-    // Dismiss any existing toasts before showing new one
-    toast.dismiss();
+          setAuthState({
+            token,
+            user: student,
+            role,
+            isLoading: false,
+          });
 
-    if (type === "success") {
-      toast.success(message, toastConfig);
-    } else if (type === "warning") {
-      toast.warning(message, toastConfig);
-    } else {
-      toast.error(message, toastConfig);
-    }
-  };
-
-  // login function
-  const login = async (credentials) => {
-    try {
-      const response = await axios.post(BASE_URL + "/api/auth/login", credentials, {
-        withCredentials: true,
-      });
-
-      if (response.data) {
-        const data = response.data;
-        const token = data.token;
-        const student = data.student;
-        const role = data.role;
-
-        // Store token in localStorage
-        localStorage.setItem("token", token);
-
-        // Set state values
-        setToken(token);
-        setUser(student);
-        setRole(role);
-
-        return { success: true, data };
-      } else {
+          return { success: true, data: response.data };
+        }
         return { success: false, message: "Login failed" };
-      }
-    } catch (error) {
-      console.error("Login error:", error);
+      } catch (error) {
+        console.error("Login error:", error);
 
-      let message = "Network error. Please check your connection.";
-      if (error.response) {
-        if (error.response.status === 401) {
-          message = "Invalid email or password";
-        } else if (error.response.status === 500) {
-          message = "Server error. Please try again later.";
-        } else {
-          message = error.response.data.message || "Login failed";
+        let message = "Network error. Please check your connection.";
+        if (error.response) {
+          if (error.response.status === 401) message = "Invalid email or password";
+          else if (error.response.status === 500) message = "Server error. Please try again later.";
+          else message = error.response.data.message || "Login failed";
         }
+
+        return { success: false, message };
       }
+    },
+    [BASE_URL]
+  );
 
-      return { success: false, message };
-    }
-  };
-
-  // Google login function
-  const googleLogin = async (credentialResponse) => {
-    try {
-      if (!credentialResponse || !credentialResponse.credential) {
-        return {
-          success: false,
-          message: "No credential received from Google",
-        };
-      }
-
-      const idToken = credentialResponse.credential;
-      const response = await axios.post(`${BASE_URL}/api/auth/google`, {
-        credential: idToken,
-      });
-
-      if (!response?.data || !response.data.token) {
-        return {
-          success: false,
-          message: "Invalid response from server",
-        };
-      }
-
-      const { token: authToken, data, isNewUser } = response.data;
-      const { student } = data;
-      const userRole = student?.role;
-
-      // Update state
-      setToken(authToken);
-      setUser(student);
-      setRole(userRole);
-
-      // Store in localStorage
-      localStorage.setItem("token", authToken);
-
-      return {
-        success: true,
-        data: response.data,
-        isNewUser,
-        role: userRole,
-      };
-    } catch (error) {
-      console.error("Google login error:", error);
-
-      let message = "Google login failed";
-      if (error.response) {
-        if (error.response.status === 401) {
-          message = "Google authentication failed";
-        } else if (error.response.status === 500) {
-          message = "Server error. Please try again later.";
-        } else {
-          message = error.response.data.message || "Google login failed";
+  // Memoized Google login
+  const googleLogin = useCallback(
+    async (credentialResponse) => {
+      try {
+        if (!credentialResponse?.credential) {
+          return { success: false, message: "No credential received from Google" };
         }
+
+        const response = await axios.post(
+          `${BASE_URL}/api/auth/google`,
+          {
+            credential: credentialResponse.credential,
+          },
+          { timeout: 10000 }
+        );
+
+        if (!response?.data?.token) {
+          return { success: false, message: "Invalid response from server" };
+        }
+
+        const { token: authToken, data, isNewUser } = response.data;
+        const { student } = data;
+        const userRole = student?.role;
+
+        localStorage.setItem("token", authToken);
+
+        setAuthState({
+          token: authToken,
+          user: student,
+          role: userRole,
+          isLoading: false,
+        });
+
+        return { success: true, data: response.data, isNewUser, role: userRole };
+      } catch (error) {
+        console.error("Google login error:", error);
+
+        let message = "Google login failed";
+        if (error.response) {
+          if (error.response.status === 401) message = "Google authentication failed";
+          else if (error.response.status === 500) message = "Server error. Please try again later.";
+          else message = error.response.data.message || "Google login failed";
+        }
+
+        return { success: false, message };
       }
+    },
+    [BASE_URL]
+  );
 
-      return { success: false, message };
-    }
-  };
-
-  // Logout function
-  const logout = async () => {
+  // Memoized logout
+  const logout = useCallback(async () => {
     try {
-      if (token) {
+      if (authState.token) {
         await axios.post(
           `${BASE_URL}/api/auth/logout`,
           {},
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${authState.token}` },
             withCredentials: true,
+            timeout: 10000,
           }
         );
       }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Clear state regardless of API call result
-      setToken(null);
-      setUser(null);
-      setRole(null);
+      setAuthState({ token: null, user: null, role: null, isLoading: false });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("role");
       localStorage.removeItem("savedEmail");
       localStorage.removeItem("savedPassword");
       localStorage.removeItem("rememberMe");
-
-      // Return success even if API call failed
       return { success: true };
     }
-  };
-  // In your AuthContext
-  const signup = async (userData) => {
-    try {
-      const response = await axios.post(`${BASE_URL}/api/auth/signup`, userData, {
-        withCredentials: true,
-      });
+  }, [BASE_URL, authState.token]);
 
-      if (response.status === 201) {
-        return {
-          success: true,
-          data: response.data,
-          message: "Registration successful!",
-        };
-      } else {
-        return {
-          success: false,
-          message: "Registration failed",
-        };
-      }
-    } catch (error) {
-      console.error("Register error:", error);
+  // Memoized signup
+  const signup = useCallback(
+    async (userData) => {
+      try {
+        const response = await axios.post(`${BASE_URL}/api/auth/signup`, userData, {
+          withCredentials: true,
+          timeout: 10000,
+        });
 
-      let message = "Network error";
-      if (error.response) {
-        if (error.response.status === 400) {
-          message = error.response.data.message || "Validation error";
-        } else if (error.response.status === 409) {
-          message = "Email already exists";
-        } else if (error.response.status === 500) {
-          message = "Server error. Please try again later";
-        } else {
-          message = error.response.data.message || "Registration failed";
+        if (response.status === 201) {
+          return { success: true, data: response.data, message: "Registration successful!" };
         }
+        return { success: false, message: "Registration failed" };
+      } catch (error) {
+        console.error("Register error:", error);
+
+        let message = "Network error";
+        if (error.response) {
+          if (error.response.status === 400)
+            message = error.response.data.message || "Validation error";
+          else if (error.response.status === 409) message = "Email already exists";
+          else if (error.response.status === 500) message = "Server error. Please try again later";
+          else message = error.response.data.message || "Registration failed";
+        }
+
+        return { success: false, message };
       }
+    },
+    [BASE_URL]
+  );
 
-      return { success: false, message };
-    }
-  };
-
-  const becomeOrganizer = async () => {
+  // Memoized become organizer
+  const becomeOrganizer = useCallback(async () => {
     try {
       const response = await axios.patch(
         `${BASE_URL}/api/auth/upgrade-to-organizer`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${authState.token}` },
           withCredentials: true,
+          timeout: 10000,
         }
       );
 
       if (response.data?.status === "success") {
         const { student } = response.data.data;
-        const userRole = student?.role;
-
-        // Update state
-        setUser(student);
-        setRole(userRole);
-
-        showToast("Successfully upgraded to organizer!", "success");
+        setAuthState((prev) => ({ ...prev, user: student, role: student?.role }));
         return { success: true, data: response.data };
-      } else {
-        throw new Error(response.data?.message || "Failed to upgrade to organizer");
       }
+      throw new Error(response.data?.message || "Failed to upgrade to organizer");
     } catch (error) {
       console.error("Become organizer error:", error);
 
-      // Handle unauthorized error
       if (error.response?.status === 401) {
-        // Clear auth state
-        setToken(null);
-        setUser(null);
-        setRole(null);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        localStorage.removeItem("role");
-
-        showToast("Session expired. Please log in again.", "error");
+        setAuthState({ token: null, user: null, role: null, isLoading: false });
+        localStorage.clear();
         return { success: false, requiresLogin: true };
       }
 
       const message = error.response?.data?.message || "Failed to upgrade to organizer";
-      showToast(message, "error");
       return { success: false, message };
     }
-  };
+  }, [BASE_URL, authState.token]);
 
-  const updateWallet = async (metaMaskAddress) => {
-    try {
-      if (!token) {
-        throw new Error("Please log in to update your wallet");
-      }
+  // Memoized update wallet
+  const updateWallet = useCallback(
+    async (metaMaskAddress) => {
+      try {
+        if (!authState.token) throw new Error("Please log in to update your wallet");
+        if (!metaMaskAddress) throw new Error("MetaMask address is required");
 
-      if (!metaMaskAddress) {
-        throw new Error("MetaMask address is required");
-      }
+        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+        if (!ethAddressRegex.test(metaMaskAddress)) {
+          throw new Error(
+            "Invalid MetaMask address format. Should be 0x followed by 40 hex characters."
+          );
+        }
 
-      // Basic validation for Ethereum address format
-      const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-      if (!ethAddressRegex.test(metaMaskAddress)) {
-        throw new Error(
-          "Invalid MetaMask address format. Should be 0x followed by 40 hex characters."
+        const response = await axios.patch(
+          `${BASE_URL}/api/wallet`,
+          { metaMaskAddress },
+          {
+            headers: { Authorization: `Bearer ${authState.token}` },
+            withCredentials: true,
+            timeout: 10000,
+          }
         );
-      }
 
-      const response = await axios.patch(
-        `${BASE_URL}/api/wallet`,
-        { metaMaskAddress },
-        {
+        if (response.data?.status === "success") {
+          const updatedStudent = response.data.data.student;
+          setAuthState((prev) => ({ ...prev, user: updatedStudent }));
+          return {
+            success: true,
+            data: response.data,
+            metaMaskAddress: updatedStudent.metaMaskAddress,
+          };
+        }
+
+        throw new Error(response.data?.message || "Failed to link wallet");
+      } catch (error) {
+        console.error("Wallet update error:", error);
+
+        let errorMessage = "Failed to update wallet";
+        if (error.response) {
+          if (error.response.status === 400)
+            errorMessage = error.response.data.message || "Invalid request";
+          else if (error.response.status === 401) {
+            setAuthState({ token: null, user: null, role: null, isLoading: false });
+            localStorage.clear();
+            errorMessage = "Session expired. Please log in again.";
+          } else if (error.response.status === 409)
+            errorMessage = "This wallet is already linked to another account";
+          else errorMessage = error.response.data.message || "Server error";
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        return { success: false, message: errorMessage };
+      }
+    },
+    [BASE_URL, authState.token]
+  );
+
+  // Memoized update profile picture
+  const updateProfilePicture = useCallback(
+    async (file) => {
+      try {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        const response = await axios.patch(`${BASE_URL}/api/auth/avatar`, formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${authState.token}`,
+            "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
+          timeout: 10000,
+        });
+
+        if (response.status === 200) {
+          setAuthState((prev) => ({
+            ...prev,
+            user: { ...prev.user, avatar: response.data.avatarUrl },
+          }));
+          return { success: true, avatarUrl: response.data.avatarUrl };
         }
-      );
-
-      console.log("Wallet update response:", response.data, response.status);
-
-      if (response.data?.status === "success") {
-        const updatedStudent = response.data.data.student;
-
-        // Update state
-        setUser(updatedStudent);
-        showToast("Wallet linked successfully!", "success");
-        return {
-          success: true,
-          data: response.data,
-          metaMaskAddress: updatedStudent.metaMaskAddress,
-        };
-      }
-
-      throw new Error(response.data?.message || "Failed to link wallet");
-    } catch (error) {
-      console.error("Wallet update error:", error);
-
-      let errorMessage = "Failed to update wallet";
-      if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage = error.response.data.message || "Invalid request";
-        } else if (error.response.status === 401) {
-          // Clear auth state on unauthorized
-          setToken(null);
-          setUser(null);
-          setRole(null);
-          localStorage.clear();
-          errorMessage = "Session expired. Please log in again.";
-        } else if (error.response.status === 409) {
-          errorMessage = "This wallet is already linked to another account";
-        } else {
-          errorMessage = error.response.data.message || "Server error";
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      showToast(errorMessage, "error");
-      return { success: false, message: errorMessage };
-    }
-  };
-
-  const updateProfilePicture = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("avatar", file);
-
-      const response = await axios.patch(`${BASE_URL}/api/auth/avatar`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-      });
-
-      // Check response status correctly
-      if (response.status === 200) {
-        // Update user context with new avatar
-        updateUser({ avatar: response.data.avatarUrl });
-        return { success: true, avatarUrl: response.data.avatarUrl };
-      } else {
         return { success: false, message: "Upload failed" };
+      } catch (error) {
+        return { success: false, message: error.response?.data?.message || error.message };
       }
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || error.message };
-    }
-  };
+    },
+    [BASE_URL, authState.token]
+  );
 
-  const deleteProfilePicture = async () => {
+  // Memoized delete profile picture
+  const deleteProfilePicture = useCallback(async () => {
     try {
       const response = await axios.delete(`${BASE_URL}/api/auth/avatar`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${authState.token}` },
         withCredentials: true,
+        timeout: 10000,
       });
 
       if (response.status === 200) {
-        // Update user context
-        updateUser({ avatar: null });
+        setAuthState((prev) => ({ ...prev, user: { ...prev.user, avatar: null } }));
         return { success: true };
-      } else {
-        return { success: false, message: "Failed to delete profile picture" };
       }
+      return { success: false, message: "Failed to delete profile picture" };
     } catch (error) {
       return {
         success: false,
         message: error.response?.data?.message || "Error deleting profile picture",
       };
     }
-  };
+  }, [BASE_URL, authState.token]);
 
-  const updateProfile = async (profileData) => {
-    try {
-      const response = await axios.patch(`${BASE_URL}/api/auth/update-me`, profileData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
-      updateUser(response.data.student);
-      return { success: true, data: response.data };
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Update failed";
-      return { success: false, message: errorMessage };
-    }
-  };
+  // Memoized update profile
+  const updateProfile = useCallback(
+    async (profileData) => {
+      try {
+        const response = await axios.patch(`${BASE_URL}/api/auth/update-me`, profileData, {
+          headers: { Authorization: `Bearer ${authState.token}` },
+          withCredentials: true,
+          timeout: 10000,
+        });
 
-  // Update user data
-  const updateUser = (updatedData) => {
-    const updatedUser = { ...user, ...updatedData };
-    setUser(updatedUser);
-  };
+        setAuthState((prev) => ({ ...prev, user: response.data.student }));
+        return { success: true, data: response.data };
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message || "Update failed";
+        return { success: false, message: errorMessage };
+      }
+    },
+    [BASE_URL, authState.token]
+  );
 
-  // Get auth header for API requests
-  const getAuthHeader = () => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Memoized update user
+  const updateUser = useCallback((updatedData) => {
+    setAuthState((prev) => ({ ...prev, user: { ...prev.user, ...updatedData } }));
+  }, []);
 
-  // Context value
-  const value = {
-    // State
-    token,
-    user,
-    role,
-    isLoading,
+  // Memoized get auth header
+  const getAuthHeader = useCallback(() => {
+    return authState.token ? { Authorization: `Bearer ${authState.token}` } : {};
+  }, [authState.token]);
 
-    // Actions
-    login,
-    googleLogin,
-    logout,
-    signup,
-    updateUser,
-    getAuthHeader,
-    showToast,
-    becomeOrganizer,
-    updateWallet,
-    updateProfile,
-    navigateWithDelay,
-    updateProfilePicture,
-    deleteProfilePicture,
-  };
+  // Memoized context value
+  const value = useMemo(
+    () => ({
+      token: authState.token,
+      user: authState.user,
+      role: authState.role,
+      isLoading: authState.isLoading,
+      login,
+      googleLogin,
+      logout,
+      signup,
+      updateUser,
+      getAuthHeader,
+      becomeOrganizer,
+      updateWallet,
+      updateProfile,
+      navigateWithDelay,
+      updateProfilePicture,
+      deleteProfilePicture,
+    }),
+    [
+      authState,
+      login,
+      googleLogin,
+      logout,
+      signup,
+      updateUser,
+      getAuthHeader,
+      becomeOrganizer,
+      updateWallet,
+      updateProfile,
+      navigateWithDelay,
+      updateProfilePicture,
+      deleteProfilePicture,
+    ]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use the auth context
+// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-
   return context;
 };
 
-// Higher-order component for protecting routes
+// HOC for protecting routes
 export const withAuth = (Component) => {
   return function WithAuthComponent(props) {
     const { token, isLoading, navigateWithDelay } = useAuth();
 
-    if (isLoading) {
-      return <LoadingScreen />;
-    }
-
+    if (isLoading) return <LoadingScreen />;
     if (!token) {
       navigateWithDelay("/authentication/sign-in");
       return (
@@ -635,22 +570,18 @@ export const withAuth = (Component) => {
   };
 };
 
-// Higher-order component for role-based access
+// HOC for role-based access
 export const withRole = (Component, requiredRole) => {
   return function WithRoleComponent(props) {
     const { token, role, isLoading, navigateWithDelay } = useAuth();
 
-    if (isLoading) {
-      return <LoadingScreen />;
-    }
-
+    if (isLoading) return <LoadingScreen />;
     if (!token) {
       navigateWithDelay("/authentication/sign-in");
       return (
         <LoginRequiredScreen onRedirect={() => navigateWithDelay("/authentication/sign-in", 0)} />
       );
     }
-
     if (role !== requiredRole) {
       navigateWithDelay("/authentication/sign-in");
       return (
@@ -665,7 +596,7 @@ export const withRole = (Component, requiredRole) => {
   };
 };
 
-// Hook for protecting routes in functional components
+// Hook for route guards
 export const useRouteGuard = (requiredRole = null) => {
   const { token, role, isLoading, navigateWithDelay } = useAuth();
 
@@ -675,15 +606,37 @@ export const useRouteGuard = (requiredRole = null) => {
         navigateWithDelay("/authentication/sign-in");
         return;
       }
-
       if (requiredRole && role !== requiredRole) {
         navigateWithDelay("/authentication/sign-in");
-        return;
       }
     }
   }, [token, role, isLoading, requiredRole, navigateWithDelay]);
 
   return { hasAccess: !!token && (!requiredRole || role === requiredRole), isLoading };
+};
+
+// Protected route component
+export const ProtectedRoute = ({ children, requiredRole = null }) => {
+  const { hasAccess, isLoading } = useRouteGuard(requiredRole);
+
+  if (isLoading) return <LoadingScreen />;
+  if (!hasAccess) {
+    if (!requiredRole) {
+      return (
+        <LoginRequiredScreen
+          onRedirect={() => (window.location.href = "/authentication/sign-in")}
+        />
+      );
+    }
+    return (
+      <AccessDeniedScreen
+        message={`Access denied. Required role: ${requiredRole}`}
+        onRedirect={() => (window.location.href = "/authentication/sign-in")}
+      />
+    );
+  }
+
+  return children;
 };
 
 // USAGE EXAMPLE:
@@ -706,33 +659,6 @@ export const useRouteGuard = (requiredRole = null) => {
 
 // export default EventManager;
 
-// Component wrapper for route protection
-export const ProtectedRoute = ({ children, requiredRole = null }) => {
-  const { hasAccess, isLoading } = useRouteGuard(requiredRole);
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
-  if (!hasAccess) {
-    if (!requiredRole) {
-      return (
-        <LoginRequiredScreen
-          onRedirect={() => (window.location.href = "/authentication/sign-in")}
-        />
-      );
-    } else {
-      return (
-        <AccessDeniedScreen
-          message={`Access denied. Required role: ${requiredRole}`}
-          onRedirect={() => (window.location.href = "/authentication/sign-in")}
-        />
-      );
-    }
-  }
-
-  return children;
-};
 // USAGE EXAMPLE:
 // import { ProtectedRoute } from './contexts/AuthContext';
 

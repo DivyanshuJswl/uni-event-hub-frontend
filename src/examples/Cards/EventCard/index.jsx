@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import {
   Card,
@@ -18,6 +18,8 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
+import { useNotifications } from "context/NotifiContext";
+import { useAuth } from "context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
@@ -31,23 +33,32 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import CertificateIcon from "@mui/icons-material/CardMembership";
 import axios from "axios";
-import { useAuth } from "context/AuthContext";
 import dayjs from "dayjs";
 
 function EventCard({ event, isEnrolled = false }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
-  const [open, setOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width:600px)");
-  const [isCurrentlyEnrolled, setIsCurrentlyEnrolled] = useState(isEnrolled);
-  const [err, setError] = useState();
+  const { showToast } = useNotifications();
   const { token } = useAuth();
+  const isMobile = useMediaQuery("(max-width:600px)");
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  // Consolidated state
+  const [cardState, setCardState] = useState({
+    open: false,
+    isCurrentlyEnrolled: isEnrolled,
+  });
 
-  // Extract data from event object
+  // Memoized handlers
+  const handleOpen = useCallback(() => {
+    setCardState((prev) => ({ ...prev, open: true }));
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setCardState((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  // Memoized event data
   const {
     _id,
     title,
@@ -69,73 +80,97 @@ function EventCard({ event, isEnrolled = false }) {
     daysUntil,
   } = event;
 
-  // Calculate derived values
-  const currentParticipants = participants.length;
-  const isFull = currentParticipants >= maxParticipants;
-  const participationPercentage = Math.round(
-    (currentParticipants / Math.max(maxParticipants, 1)) * 100
-  );
+  // Memoized derived values
+  const eventMetrics = useMemo(() => {
+    const currentParticipants = participants.length;
+    const isFull = currentParticipants >= maxParticipants;
+    const participationPercentage = Math.round(
+      (currentParticipants / Math.max(maxParticipants, 1)) * 100
+    );
 
-  const displayImage = featuredImage?.url || images[0]?.url;
-  const formattedDate = dayjs(date).format("MMMM D, YYYY h:mm A");
-  const daysUntilText =
-    daysUntil !== undefined && daysUntil > 0 ? `${daysUntil} days until event` : null;
-  const organizerName = organizer?.name || "Unknown Organizer";
-  const organizerEmail = organizer?.email || "";
-
-  // Calculate status if not provided
-  const calculatedStatus = (() => {
     const now = new Date();
     const eventDate = new Date(date);
     const eventEnd = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000);
 
-    if (now < eventDate) return "upcoming";
-    if (now >= eventDate && now <= eventEnd) return "ongoing";
-    return "completed";
-  })();
+    let calculatedStatus = "completed";
+    if (now < eventDate) calculatedStatus = "upcoming";
+    else if (now >= eventDate && now <= eventEnd) calculatedStatus = "ongoing";
 
-  const getStatusColor = () => {
-    switch (calculatedStatus) {
-      case "upcoming":
-        return "primary";
-      case "ongoing":
-        return "secondary";
-      case "completed":
-        return "error";
-      default:
-        return "default";
-    }
-  };
+    return {
+      currentParticipants,
+      isFull,
+      participationPercentage,
+      calculatedStatus,
+    };
+  }, [participants.length, maxParticipants, date]);
 
-  const statusColor = getStatusColor();
+  const displayData = useMemo(
+    () => ({
+      image: featuredImage?.url || images[0]?.url,
+      formattedDate: dayjs(date).format("MMMM D, YYYY h:mm A"),
+      daysUntilText: daysUntil > 0 ? `${daysUntil} days until event` : null,
+      organizerName: organizer?.name || "Unknown Organizer",
+      organizerEmail: organizer?.email || "",
+    }),
+    [featuredImage, images, date, daysUntil, organizer]
+  );
 
-  const handleRegister = async () => {
-    if (isFull || calculatedStatus === "completed") return;
+  const statusColor = useMemo(() => {
+    const colors = {
+      upcoming: "primary",
+      ongoing: "secondary",
+      completed: "error",
+    };
+    return colors[eventMetrics.calculatedStatus] || "default";
+  }, [eventMetrics.calculatedStatus]);
+
+  // Memoized registration handler
+  const handleRegister = useCallback(async () => {
+    if (eventMetrics.isFull || eventMetrics.calculatedStatus === "completed") return;
 
     try {
-      if (isCurrentlyEnrolled) {
-        const res = await axios.post(
-          `${BASE_URL}/api/events/unenroll/${_id}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-        );
-        setIsCurrentlyEnrolled(false);
-      } else {
-        const res = await axios.post(
-          `${BASE_URL}/api/events/enroll/${_id}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-        );
-        setIsCurrentlyEnrolled(true);
-      }
+      const endpoint = cardState.isCurrentlyEnrolled ? "unenroll" : "enroll";
+      await axios.post(
+        `${BASE_URL}/api/events/${endpoint}/${_id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          timeout: 10000,
+        }
+      );
+
+      setCardState((prev) => ({
+        ...prev,
+        isCurrentlyEnrolled: !prev.isCurrentlyEnrolled,
+      }));
+
+      showToast(
+        `Successfully ${cardState.isCurrentlyEnrolled ? "unenrolled from" : "enrolled in"} ${title}`,
+        "success",
+        cardState.isCurrentlyEnrolled ? "Unenrolled" : "Enrolled"
+      );
     } catch (err) {
-      setError(err);
       console.error("Registration error:", err);
+      showToast(
+        err.response?.data?.message || "Registration failed. Please try again.",
+        "error",
+        "Registration Error"
+      );
     }
-  };
+  }, [
+    eventMetrics.isFull,
+    eventMetrics.calculatedStatus,
+    cardState.isCurrentlyEnrolled,
+    BASE_URL,
+    _id,
+    token,
+    title,
+    showToast,
+  ]);
 
   return (
-    <div>
+    <>
       <Card
         onClick={handleOpen}
         sx={{
@@ -149,50 +184,17 @@ function EventCard({ event, isEnrolled = false }) {
           },
         }}
       >
-        {isCurrentlyEnrolled && (
+        {cardState.isCurrentlyEnrolled && (
           <Box sx={{ position: "absolute", top: 8, left: 8, zIndex: 10 }}>
-            <Chip
-              icon={<CheckCircleIcon />}
-              label="Enrolled"
-              color="success"
-              size="small"
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: darkMode ? "rgba(76, 175, 80, 0.9)" : "rgba(76, 175, 80, 0.9)",
-                color: "white",
-                backdropFilter: "blur(10px)",
-              }}
-            />
+            <Chip icon={<CheckCircleIcon />} label="Enrolled" color="success" size="small" />
           </Box>
         )}
-
-        {/* Event Settings Badge */}
-        <Box sx={{ position: "absolute", top: 0, right: 8, zIndex: 10, display: "flex", gap: 0.5 }}>
-          {digitalCertificates && (
-            <Chip
-              icon={<CertificateIcon />}
-              label="Certificates"
-              size="small"
-              color="info"
-              sx={{ fontSize: "0.6rem", height: 24 }}
-            />
-          )}
-          {sendReminders && (
-            <Chip
-              icon={<NotificationsIcon />}
-              label="Reminders"
-              size="small"
-              color="warning"
-              sx={{ fontSize: "0.6rem", height: 24 }}
-            />
-          )}
-        </Box>
 
         <MDBox padding="1rem">
           <MDBox position="relative">
             <MDBox
               component="img"
-              src={displayImage}
+              src={displayData.image}
               alt={title}
               width="100%"
               height="12.5rem"
@@ -201,22 +203,13 @@ function EventCard({ event, isEnrolled = false }) {
                 borderRadius: "12px",
                 boxShadow: darkMode ? 2 : 3,
                 mt: -5,
-                border: darkMode
-                  ? "1px solid rgba(255, 255, 255, 0.1)"
-                  : "1px solid rgba(0, 0, 0, 0.1)",
               }}
             />
             <Chip
-              label={calculatedStatus}
+              label={eventMetrics.calculatedStatus}
               color={statusColor}
               size="small"
-              sx={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                fontWeight: "bold",
-                textTransform: "uppercase",
-              }}
+              sx={{ position: "absolute", top: 10, right: 10, fontWeight: "bold" }}
             />
           </MDBox>
 
@@ -225,13 +218,6 @@ function EventCard({ event, isEnrolled = false }) {
               variant="h6"
               textTransform="capitalize"
               color={darkMode ? "white" : "dark"}
-              sx={{
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
             >
               {title}
             </MDTypography>
@@ -243,25 +229,18 @@ function EventCard({ event, isEnrolled = false }) {
               </MDTypography>
             </Box>
 
-            {daysUntilText && (
-              <Box display="flex" alignItems="center" mt={0.5}>
-                <MDTypography variant="caption" color="primary" fontWeight="medium">
-                  {daysUntilText}
-                </MDTypography>
-              </Box>
+            {displayData.daysUntilText && (
+              <MDTypography variant="caption" color="primary" fontWeight="medium">
+                {displayData.daysUntilText}
+              </MDTypography>
             )}
 
-            <Divider
-              sx={{
-                backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
-                my: 1,
-              }}
-            />
+            <Divider sx={{ my: 1 }} />
 
             <Box display="flex" alignItems="center" mb={0.5}>
               <EventAvailableIcon fontSize="small" color="secondary" />
               <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
-                {formattedDate}
+                {displayData.formattedDate}
               </MDTypography>
             </Box>
 
@@ -277,38 +256,53 @@ function EventCard({ event, isEnrolled = false }) {
                 <Box display="flex" alignItems="center">
                   <GroupIcon fontSize="small" color="secondary" />
                   <MDTypography variant="caption" ml={0.5} color="text" fontWeight="light">
-                    {currentParticipants}/{maxParticipants} spots filled
+                    {eventMetrics.currentParticipants}/{maxParticipants} spots filled
                   </MDTypography>
                 </Box>
                 <MDTypography variant="caption" color="text" fontWeight="medium">
-                  {participationPercentage}%
+                  {eventMetrics.participationPercentage}%
                 </MDTypography>
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={participationPercentage}
-                color={isFull ? "error" : participationPercentage > 80 ? "warning" : "secondary"}
+                value={eventMetrics.participationPercentage}
+                color={
+                  eventMetrics.isFull
+                    ? "error"
+                    : eventMetrics.participationPercentage > 80
+                      ? "warning"
+                      : "secondary"
+                }
                 sx={{ height: 6, borderRadius: 3 }}
               />
             </Box>
 
-            <MDBox display="flex" justifyContent="center" alignItems="center" padding="8px" mt={2}>
+            <MDBox display="flex" justifyContent="center" mt={2}>
               <MDButton
                 variant="gradient"
-                color={isCurrentlyEnrolled ? "success" : isFull ? "error" : sidenavColor}
+                color={
+                  cardState.isCurrentlyEnrolled
+                    ? "success"
+                    : eventMetrics.isFull
+                      ? "error"
+                      : sidenavColor
+                }
                 size="medium"
-                disabled={isFull && !isCurrentlyEnrolled}
+                disabled={eventMetrics.isFull && !cardState.isCurrentlyEnrolled}
               >
-                {isCurrentlyEnrolled ? "VIEW DETAILS" : isFull ? "FULLY BOOKED" : "SHOW DETAILS"}
+                {cardState.isCurrentlyEnrolled
+                  ? "VIEW DETAILS"
+                  : eventMetrics.isFull
+                    ? "FULLY BOOKED"
+                    : "SHOW DETAILS"}
               </MDButton>
             </MDBox>
           </MDBox>
         </MDBox>
       </Card>
 
-      {/* Enhanced Event Details Modal */}
       <Modal
-        open={open}
+        open={cardState.open}
         onClose={handleClose}
         BackdropComponent={Backdrop}
         BackdropProps={{
@@ -325,7 +319,7 @@ function EventCard({ event, isEnrolled = false }) {
           zIndex: 1300,
         }}
       >
-        <Fade in={open} timeout={300}>
+        <Fade in={cardState.open} timeout={300}>
           <Box
             sx={{
               position: "relative",
@@ -341,38 +335,20 @@ function EventCard({ event, isEnrolled = false }) {
             <IconButton
               onClick={handleClose}
               color={sidenavColor}
-              sx={{
-                position: "absolute",
-                right: 30,
-                top: 25,
-                zIndex: 1000,
-                backgroundColor: darkMode ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.5)",
-                backdropFilter: "blur(10px)",
-                "&:hover": {
-                  backgroundColor: darkMode ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)",
-                  transform: "rotate(90deg)",
-                },
-              }}
+              sx={{ position: "absolute", right: 30, top: 25, zIndex: 1000 }}
             >
               <CloseIcon />
             </IconButton>
 
-            <Card sx={{ backgroundColor: darkMode ? "background.default" : "background.paper" }}>
+            <Card>
               <Grid container spacing={4} sx={{ padding: 4 }}>
                 <Grid item xs={12} md={6}>
                   <Box
                     component="img"
-                    src={displayImage}
+                    src={displayData.image}
                     alt={title}
-                    sx={{
-                      width: "100%",
-                      height: "auto",
-                      maxHeight: "60vh",
-                      objectFit: "cover",
-                      borderRadius: "12px",
-                    }}
+                    sx={{ width: "100%", borderRadius: "12px" }}
                   />
-
                   {/* Event Settings */}
                   <Box
                     mt={3}
@@ -415,7 +391,7 @@ function EventCard({ event, isEnrolled = false }) {
                         Participation Status
                       </MDTypography>
                       <Box display="flex" gap={1}>
-                        {isCurrentlyEnrolled && (
+                        {cardState.isCurrentlyEnrolled && (
                           <Chip
                             icon={<CheckCircleIcon />}
                             label="Enrolled"
@@ -423,22 +399,30 @@ function EventCard({ event, isEnrolled = false }) {
                             size="medium"
                           />
                         )}
-                        <Chip label={calculatedStatus} color={statusColor} size="medium" />
+                        <Chip
+                          label={eventMetrics.calculatedStatus}
+                          color={statusColor}
+                          size="medium"
+                        />
                       </Box>
                     </Box>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
                       <MDTypography variant="body2" color="text">
-                        {currentParticipants}/{maxParticipants} participants
+                        {eventMetrics.currentParticipants} participants
                       </MDTypography>
                       <MDTypography variant="body2" color="text">
-                        {participationPercentage}% filled
+                        {eventMetrics.participationPercentage}% filled
                       </MDTypography>
                     </Box>
                     <LinearProgress
                       variant="determinate"
-                      value={participationPercentage}
+                      value={eventMetrics.participationPercentage}
                       color={
-                        isFull ? "error" : participationPercentage > 80 ? "warning" : "secondary"
+                        eventMetrics.isFull
+                          ? "error"
+                          : eventMetrics.participationPercentage > 80
+                            ? "warning"
+                            : "secondary"
                       }
                       sx={{ height: 10, borderRadius: 5 }}
                     />
@@ -477,12 +461,12 @@ function EventCard({ event, isEnrolled = false }) {
                     <EventAvailableIcon color="secondary" />
                     <Box ml={1}>
                       <MDTypography variant="body1" color="text">
-                        {formattedDate}
+                        {displayData.formattedDate}
                       </MDTypography>
                     </Box>
-                    {daysUntilText && (
+                    {displayData.daysUntilText && (
                       <MDTypography variant="caption" color="primary" ml={2}>
-                        {daysUntilText}
+                        {displayData.daysUntilText}
                       </MDTypography>
                     )}
                   </Box>
@@ -497,15 +481,15 @@ function EventCard({ event, isEnrolled = false }) {
                   <Box display="flex" alignItems="center" mb={2}>
                     <PersonIcon color="secondary" />
                     <MDTypography variant="body1" ml={1} color="text">
-                      Organized by: {organizerName}
+                      Organized by: {displayData.organizerName}
                     </MDTypography>
                   </Box>
 
-                  {organizerEmail && (
+                  {displayData.organizerEmail && (
                     <Box display="flex" alignItems="center" mb={2}>
                       <EmailIcon color="secondary" />
                       <MDTypography variant="body1" ml={1} color="text">
-                        {organizerEmail}
+                        {displayData.organizerEmail}
                       </MDTypography>
                     </Box>
                   )}
@@ -517,10 +501,11 @@ function EventCard({ event, isEnrolled = false }) {
                   >
                     Event Description
                   </MDTypography>
+
                   <MDTypography
                     variant="body1"
                     color="text"
-                    sx={{ mb: 3, whiteSpace: "pre-wrap", lineHeight: 1 }}
+                    sx={{ mb: 3, whiteSpace: "pre-wrap", lineHeight: 1.25 }}
                   >
                     {description}
                   </MDTypography>
@@ -528,24 +513,19 @@ function EventCard({ event, isEnrolled = false }) {
                   <MDButton
                     onClick={handleRegister}
                     variant="gradient"
-                    color={
-                      isCurrentlyEnrolled
-                        ? "error"
-                        : isFull || calculatedStatus === "completed"
-                          ? "error"
-                          : sidenavColor
-                    }
+                    color={cardState.isCurrentlyEnrolled ? "error" : sidenavColor}
                     size="large"
                     fullWidth
-                    disabled={(isFull && !isCurrentlyEnrolled) || calculatedStatus === "completed"}
+                    disabled={
+                      (eventMetrics.isFull && !cardState.isCurrentlyEnrolled) ||
+                      eventMetrics.calculatedStatus === "completed"
+                    }
                   >
-                    {isCurrentlyEnrolled
+                    {cardState.isCurrentlyEnrolled
                       ? "Unenroll from Event"
-                      : isFull
+                      : eventMetrics.isFull
                         ? "Event Full"
-                        : calculatedStatus === "completed"
-                          ? "Event Completed"
-                          : "Register Now"}
+                        : "Register Now"}
                   </MDButton>
                 </Grid>
               </Grid>
@@ -553,7 +533,7 @@ function EventCard({ event, isEnrolled = false }) {
           </Box>
         </Fade>
       </Modal>
-    </div>
+    </>
   );
 }
 
@@ -566,4 +546,6 @@ EventCard.defaultProps = {
   isEnrolled: false,
 };
 
-export default EventCard;
+EventCard.displayName = "EventCard";
+
+export default memo(EventCard);

@@ -12,6 +12,7 @@ import WelcomeBox from "layouts/dashboard/components/WelcomeBox";
 import LeaderboardTable from "layouts/dashboard/components/Leaderboard";
 import EventSkeleton from "components/EventSkeleton";
 import { useNotifications } from "context/NotifiContext";
+import { withRole } from "context/AuthContext";
 import MDButton from "components/MDButton";
 
 function DashboardOrg() {
@@ -172,4 +173,4 @@ function DashboardOrg() {
   );
 }
 
-export default DashboardOrg;
+export default withRole(DashboardOrg, "organizer");

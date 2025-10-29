@@ -1,17 +1,19 @@
-// prop-types is a library for typechecking of props
+import { memo, useMemo } from "react";
 import PropTypes from "prop-types";
-
-// react-router-dom components
 import { Link } from "react-router-dom";
-
-// @mui material components
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 function DefaultNavbarLink({ icon, name, route, light }) {
+  // Memoized icon color
+  const iconColor = useMemo(
+    () =>
+      ({ palette: { white, secondary } }) =>
+        light ? white.main : secondary.main,
+    [light]
+  );
+
   return (
     <MDBox
       component={Link}
@@ -22,14 +24,7 @@ function DefaultNavbarLink({ icon, name, route, light }) {
       alignItems="center"
       sx={{ cursor: "pointer", userSelect: "none" }}
     >
-      <Icon
-        sx={{
-          color: ({ palette: { white, secondary } }) => (light ? white.main : secondary.main),
-          verticalAlign: "middle",
-        }}
-      >
-        {icon}
-      </Icon>
+      <Icon sx={{ color: iconColor, verticalAlign: "middle" }}>{icon}</Icon>
       <MDTypography
         variant="button"
         fontWeight="regular"
@@ -43,7 +38,10 @@ function DefaultNavbarLink({ icon, name, route, light }) {
   );
 }
 
-// Typechecking props for the DefaultNavbarLink
+DefaultNavbarLink.defaultProps = {
+  light: false,
+};
+
 DefaultNavbarLink.propTypes = {
   icon: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
@@ -51,4 +49,6 @@ DefaultNavbarLink.propTypes = {
   light: PropTypes.bool,
 };
 
-export default DefaultNavbarLink;
+DefaultNavbarLink.displayName = "DefaultNavbarLink";
+
+export default memo(DefaultNavbarLink);

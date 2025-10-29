@@ -1,50 +1,82 @@
+import { useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import { Card, CardContent, CardActions, Button, Chip, Box } from "@mui/material";
 import Icon from "@mui/material/Icon";
 import MDTypography from "components/MDTypography";
 import { useMaterialUIController } from "context";
 
+// Memoized helper functions outside component
+const getTrendColor = (trend) => {
+  const colors = {
+    high: "success",
+    rising: "warning",
+    moderate: "info",
+  };
+  return colors[trend] || "default";
+};
+
+const getTrendLabel = (trend) => {
+  const labels = {
+    high: "High Demand",
+    rising: "Rising Fast",
+    moderate: "Steady Growth",
+  };
+  return labels[trend] || "Trending";
+};
+
 function SkillCard({ title, description, url, trend, demand, avgSalary }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
-  const getTrendColor = (trend) => {
-    switch (trend) {
-      case "high":
-        return "success";
-      case "rising":
-        return "warning";
-      case "moderate":
-        return "info";
-      default:
-        return "default";
-    }
-  };
+  // Memoized trend data
+  const trendData = useMemo(
+    () => ({
+      color: getTrendColor(trend),
+      label: getTrendLabel(trend),
+    }),
+    [trend]
+  );
 
-  const getTrendLabel = (trend) => {
-    switch (trend) {
-      case "high":
-        return "High Demand";
-      case "rising":
-        return "Rising Fast";
-      case "moderate":
-        return "Steady Growth";
-      default:
-        return "Trending";
-    }
-  };
+  // Memoized card styles
+  const cardStyles = useMemo(
+    () => ({
+      p: 2,
+      boxShadow: 2,
+      "&:hover": {
+        transform: "translateY(-2px)",
+        transition: "all 0.2s ease-in-out",
+        boxShadow: 4,
+      },
+    }),
+    []
+  );
+
+  // Memoized button styles
+  const buttonStyles = useMemo(
+    () => ({
+      textTransform: "none",
+      color: "primary.main",
+      "&:hover": {
+        backgroundColor: darkMode ? "rgba(25, 118, 210, 0.08)" : "rgba(25, 118, 210, 0.04)",
+      },
+    }),
+    [darkMode]
+  );
+
+  // Memoized chip styles
+  const chipStyles = useMemo(
+    () => ({
+      fontWeight: "bold",
+      fontSize: "0.7rem",
+    }),
+    []
+  );
+
+  // Check if metadata exists
+  const hasMetadata = useMemo(() => demand || avgSalary, [demand, avgSalary]);
 
   return (
-    <Card
-      sx={{
-        p: 2,
-        boxShadow: 2,
-        "&:hover": {
-          transform: "translateY(-2px)",
-          transition: "all 0.2s ease-in-out",
-        },
-      }}
-    >
+    <Card sx={cardStyles}>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
           <MDTypography
@@ -61,15 +93,7 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
             {title}
           </MDTypography>
           {trend && (
-            <Chip
-              label={getTrendLabel(trend)}
-              color={getTrendColor(trend)}
-              size="small"
-              sx={{
-                fontWeight: "bold",
-                fontSize: "0.7rem",
-              }}
-            />
+            <Chip label={trendData.label} color={trendData.color} size="small" sx={chipStyles} />
           )}
         </Box>
 
@@ -77,7 +101,7 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
           {description}
         </MDTypography>
 
-        {(demand || avgSalary) && (
+        {hasMetadata && (
           <Box display="flex" gap={1} flexWrap="wrap">
             {demand && (
               <MDTypography variant="caption" color="text" fontWeight="medium">
@@ -97,13 +121,9 @@ function SkillCard({ title, description, url, trend, demand, avgSalary }) {
           size="small"
           endIcon={<Icon>arrow_forward</Icon>}
           href={url}
-          sx={{
-            textTransform: "none",
-            color: "primary.main",
-            "&:hover": {
-              backgroundColor: darkMode ? "rgba(25, 118, 210, 0.08)" : "rgba(25, 118, 210, 0.04)",
-            },
-          }}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={buttonStyles}
         >
           Learn More
         </Button>
@@ -116,7 +136,7 @@ SkillCard.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
-  trend: PropTypes.string,
+  trend: PropTypes.oneOf(["high", "rising", "moderate"]),
   demand: PropTypes.string,
   avgSalary: PropTypes.string,
 };
@@ -127,4 +147,6 @@ SkillCard.defaultProps = {
   avgSalary: null,
 };
 
-export default SkillCard;
+SkillCard.displayName = "SkillCard";
+
+export default memo(SkillCard);

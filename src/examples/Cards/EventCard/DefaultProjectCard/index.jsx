@@ -1,40 +1,77 @@
-// react-router-dom components
+import { useMemo, memo } from "react";
 import { Link } from "react-router-dom";
-
-// prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
-
-// @mui material components
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import Tooltip from "@mui/material/Tooltip";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import MDAvatar from "components/MDAvatar";
 
 function DefaultProjectCard({ image, label, title, description, action, authors }) {
-  const renderAuthors = authors.map(({ image: media, name }) => (
-    <Tooltip key={name} title={name} placement="bottom">
-      <MDAvatar
-        src={media}
-        alt={name}
-        size="xs"
-        sx={({ borders: { borderWidth }, palette: { white } }) => ({
-          border: `${borderWidth[2]} solid ${white.main}`,
-          cursor: "pointer",
-          position: "relative",
-          ml: -1.25,
+  // Memoized authors rendering
+  const renderAuthors = useMemo(() => {
+    return authors.map(({ image: media, name }) => (
+      <Tooltip key={name} title={name} placement="bottom">
+        <MDAvatar
+          src={media}
+          alt={name}
+          size="xs"
+          sx={({ borders: { borderWidth }, palette: { white } }) => ({
+            border: `${borderWidth[2]} solid ${white.main}`,
+            cursor: "pointer",
+            position: "relative",
+            ml: -1.25,
+            "&:hover, &:focus": { zIndex: "10" },
+          })}
+        />
+      </Tooltip>
+    ));
+  }, [authors]);
 
-          "&:hover, &:focus": {
-            zIndex: "10",
-          },
-        })}
+  // Memoized button component
+  const ActionButton = useMemo(() => {
+    const buttonProps = {
+      variant: "outlined",
+      size: "small",
+      color: action.color,
+      children: action.label,
+    };
+
+    return action.type === "internal" ? (
+      <MDButton component={Link} to={action.route} {...buttonProps} />
+    ) : (
+      <MDButton
+        component="a"
+        href={action.route}
+        target="_blank"
+        rel="noreferrer"
+        {...buttonProps}
       />
-    </Tooltip>
-  ));
+    );
+  }, [action]);
+
+  // Memoized title component
+  const TitleComponent = useMemo(() => {
+    const titleProps = {
+      variant: "h5",
+      textTransform: "capitalize",
+      children: title,
+    };
+
+    return action.type === "internal" ? (
+      <MDTypography component={Link} to={action.route} {...titleProps} />
+    ) : (
+      <MDTypography
+        component="a"
+        href={action.route}
+        target="_blank"
+        rel="noreferrer"
+        {...titleProps}
+      />
+    );
+  }, [action, title]);
 
   return (
     <Card
@@ -51,71 +88,21 @@ function DefaultProjectCard({ image, label, title, description, action, authors 
           src={image}
           component="img"
           title={title}
-          sx={{
-            maxWidth: "100%",
-            margin: 0,
-            boxShadow: ({ boxShadows: { md } }) => md,
-            objectFit: "cover",
-            objectPosition: "center",
-          }}
+          sx={{ maxWidth: "100%", margin: 0, objectFit: "cover" }}
         />
       </MDBox>
       <MDBox mt={1} mx={0.5}>
         <MDTypography variant="button" fontWeight="regular" color="text" textTransform="capitalize">
           {label}
         </MDTypography>
-        <MDBox mb={1}>
-          {action.type === "internal" ? (
-            <MDTypography
-              component={Link}
-              to={action.route}
-              variant="h5"
-              textTransform="capitalize"
-            >
-              {title}
-            </MDTypography>
-          ) : (
-            <MDTypography
-              component="a"
-              href={action.route}
-              target="_blank"
-              rel="noreferrer"
-              variant="h5"
-              textTransform="capitalize"
-            >
-              {title}
-            </MDTypography>
-          )}
-        </MDBox>
+        <MDBox mb={1}>{TitleComponent}</MDBox>
         <MDBox mb={3} lineHeight={0}>
           <MDTypography variant="button" fontWeight="light" color="text">
             {description}
           </MDTypography>
         </MDBox>
         <MDBox display="flex" justifyContent="space-between" alignItems="center">
-          {action.type === "internal" ? (
-            <MDButton
-              component={Link}
-              to={action.route}
-              variant="outlined"
-              size="small"
-              color={action.color}
-            >
-              {action.label}
-            </MDButton>
-          ) : (
-            <MDButton
-              component="a"
-              href={action.route}
-              target="_blank"
-              rel="noreferrer"
-              variant="outlined"
-              size="small"
-              color={action.color}
-            >
-              {action.label}
-            </MDButton>
-          )}
+          {ActionButton}
           <MDBox display="flex">{renderAuthors}</MDBox>
         </MDBox>
       </MDBox>
@@ -123,12 +110,10 @@ function DefaultProjectCard({ image, label, title, description, action, authors 
   );
 }
 
-// Setting default values for the props of DefaultProjectCard
 DefaultProjectCard.defaultProps = {
   authors: [],
 };
 
-// Typechecking props for the DefaultProjectCard
 DefaultProjectCard.propTypes = {
   image: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
@@ -153,4 +138,6 @@ DefaultProjectCard.propTypes = {
   authors: PropTypes.arrayOf(PropTypes.object),
 };
 
-export default DefaultProjectCard;
+DefaultProjectCard.displayName = "DefaultProjectCard";
+
+export default memo(DefaultProjectCard);

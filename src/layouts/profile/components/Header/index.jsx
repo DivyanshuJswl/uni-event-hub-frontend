@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import PropTypes from "prop-types";
-
-// @mui material components
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import AppBar from "@mui/material/AppBar";
@@ -11,160 +9,182 @@ import Icon from "@mui/material/Icon";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
 import MDButton from "components/MDButton";
-
-// Material Dashboard 2 React base styles
 import breakpoints from "assets/theme/base/breakpoints";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 import { useNavigate } from "react-router-dom";
-import ImageCropper from "./ImageCropper";
 import { useMaterialUIController } from "context";
+import ImageCropper from "./ImageCropper";
 import PreviewModal from "./PreviewModal";
 
 function Header({ name, avatar, children, onAvatarUpdate }) {
-  const [tabsOrientation, setTabsOrientation] = useState("horizontal");
-  const [tabValue, setTabValue] = useState(0);
-  const [isOrganizer, setIsOrganizer] = useState(false);
-  const [avatarMenu, setAvatarMenu] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const navigate = useNavigate();
-  const { role, becomeOrganizer, showToast, updateProfilePicture, deleteProfilePicture } =
-    useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const fileInputRef = useRef(null);
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const { role, becomeOrganizer, updateProfilePicture, deleteProfilePicture } = useAuth();
+  const { showToast } = useNotifications();
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
+  // Consolidated state
+  const [headerState, setHeaderState] = useState({
+    tabsOrientation: "horizontal",
+    tabValue: 0,
+    isOrganizer: false,
+    avatarMenu: null,
+    isUploading: false,
+    isLoading: false,
+    previewModalOpen: false,
+    cropModalOpen: false,
+    selectedImage: null,
+  });
+
+  // Handle tabs orientation
   useEffect(() => {
-    function handleTabsOrientation() {
-      return window.innerWidth < breakpoints.values.sm
-        ? setTabsOrientation("vertical")
-        : setTabsOrientation("horizontal");
-    }
+    const handleTabsOrientation = () => {
+      setHeaderState((prev) => ({
+        ...prev,
+        tabsOrientation: window.innerWidth < breakpoints.values.sm ? "vertical" : "horizontal",
+      }));
+    };
 
     window.addEventListener("resize", handleTabsOrientation);
     handleTabsOrientation();
 
-    if (role === "organizer") {
-      setIsOrganizer(true);
-    } else {
-      setIsOrganizer(false);
-    }
-
     return () => window.removeEventListener("resize", handleTabsOrientation);
-  }, [tabsOrientation, role]);
+  }, []);
 
-  const handleSetTabValue = (event, newValue) => setTabValue(newValue);
+  // Handle organizer status
+  useEffect(() => {
+    setHeaderState((prev) => ({ ...prev, isOrganizer: role === "organizer" }));
+  }, [role]);
 
-  const handleAvatarClick = (event) => {
-    setAvatarMenu(event.currentTarget);
-  };
+  // Memoized handlers
+  const handleSetTabValue = useCallback((_, newValue) => {
+    setHeaderState((prev) => ({ ...prev, tabValue: newValue }));
+  }, []);
 
-  const handleAvatarMenuClose = () => {
-    setAvatarMenu(null);
-  };
+  const handleAvatarClick = useCallback((event) => {
+    setHeaderState((prev) => ({ ...prev, avatarMenu: event.currentTarget }));
+  }, []);
 
-  const handleFileInputClick = () => {
+  const handleAvatarMenuClose = useCallback(() => {
+    setHeaderState((prev) => ({ ...prev, avatarMenu: null }));
+  }, []);
+
+  const handleFileInputClick = useCallback(() => {
     fileInputRef.current?.click();
     handleAvatarMenuClose();
-  };
+  }, [handleAvatarMenuClose]);
 
-  const handlePreviewClick = () => {
-    setPreviewModalOpen(true);
-    handleAvatarMenuClose();
-  };
+  const handlePreviewClick = useCallback(() => {
+    setHeaderState((prev) => ({ ...prev, previewModalOpen: true, avatarMenu: null }));
+  }, []);
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const handleFileSelect = useCallback(
+    (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    // Validate file type and size
-    if (!file.type.startsWith("image/")) {
-      showToast("Please select an image file", "error");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("Image size should be less than 5MB", "error");
-      return;
-    }
-
-    // Create a preview URL and open crop modal
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target.result);
-      setCropModalOpen(true);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleCropComplete = async (croppedImageBlob) => {
-    setIsUploading(true);
-
-    try {
-      const result = await updateProfilePicture(croppedImageBlob);
-
-      if (result.success) {
-        showToast("Profile picture updated successfully!", "success");
-        if (onAvatarUpdate) {
-          onAvatarUpdate(result.avatarUrl);
-        }
-      } else {
-        showToast(result.message || "Failed to update profile picture", "error");
+      if (!file.type.startsWith("image/")) {
+        showToast("Please select an image file", "error", "Invalid File");
+        return;
       }
-    } catch (error) {
-      showToast("An error occurred while uploading", "error");
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
-      setCropModalOpen(false);
-      setSelectedImage(null);
-    }
-  };
 
-  const handleDeletePhoto = async () => {
-    setIsUploading(true);
-    handleAvatarMenuClose();
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Image size should be less than 5MB", "error", "File Too Large");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setHeaderState((prev) => ({
+          ...prev,
+          selectedImage: e.target.result,
+          cropModalOpen: true,
+        }));
+      };
+      reader.readAsDataURL(file);
+    },
+    [showToast]
+  );
+
+  const handleCropComplete = useCallback(
+    async (croppedImageBlob) => {
+      setHeaderState((prev) => ({ ...prev, isUploading: true }));
+
+      try {
+        const result = await updateProfilePicture(croppedImageBlob);
+
+        if (result.success) {
+          showToast("Profile picture updated successfully!", "success", "Upload Complete");
+          if (onAvatarUpdate) {
+            onAvatarUpdate(result.avatarUrl);
+          }
+        } else {
+          showToast(result.message || "Failed to update profile picture", "error", "Upload Failed");
+        }
+      } catch (error) {
+        showToast("An error occurred while uploading", "error", "Upload Failed");
+        console.error("Upload error:", error);
+      } finally {
+        setHeaderState((prev) => ({
+          ...prev,
+          isUploading: false,
+          cropModalOpen: false,
+          selectedImage: null,
+        }));
+      }
+    },
+    [updateProfilePicture, showToast, onAvatarUpdate]
+  );
+
+  const handleDeletePhoto = useCallback(async () => {
+    setHeaderState((prev) => ({ ...prev, isUploading: true, avatarMenu: null }));
 
     try {
       const result = await deleteProfilePicture();
 
       if (result.success) {
-        showToast("Profile picture removed successfully!", "success");
+        showToast("Profile picture removed successfully!", "success", "Photo Removed");
         if (onAvatarUpdate) {
           onAvatarUpdate(null);
         }
       } else {
-        showToast(result.message || "Failed to remove profile picture", "error");
+        showToast(result.message || "Failed to remove profile picture", "error", "Removal Failed");
       }
     } catch (error) {
-      showToast("An error occurred while removing photo", "error");
+      showToast("An error occurred while removing photo", "error", "Removal Failed");
       console.error("Delete error:", error);
     } finally {
-      setIsUploading(false);
+      setHeaderState((prev) => ({ ...prev, isUploading: false }));
     }
-  };
+  }, [deleteProfilePicture, showToast, onAvatarUpdate]);
 
-  const handleBecomeOrganizer = async () => {
-    setIsLoading(true);
+  const handleBecomeOrganizer = useCallback(async () => {
+    setHeaderState((prev) => ({ ...prev, isLoading: true }));
+
     const result = await becomeOrganizer();
 
     if (result.success) {
-      showToast("You are now an organizer!", "success");
-      setIsOrganizer(true);
+      showToast("You are now an organizer!", "success", "Role Updated");
+      setHeaderState((prev) => ({ ...prev, isOrganizer: true, isLoading: false }));
     } else if (result.requiresLogin) {
       navigate("/authentication/sign-in");
+    } else {
+      setHeaderState((prev) => ({ ...prev, isLoading: false }));
     }
-    setIsLoading(false);
-  };
+  }, [becomeOrganizer, showToast, navigate]);
+
+  // Memoized default avatar
+  const defaultAvatar = useMemo(
+    () =>
+      "https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915034/abstract-user-flat-4_liw6zf.png",
+    []
+  );
 
   return (
     <MDBox position="relative" mb={5}>
@@ -185,36 +205,18 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
           overflow: "hidden",
         }}
       />
-      <Card
-        sx={{
-          position: "relative",
-          mt: -8,
-          mx: 3,
-          py: 2,
-          px: 2,
-        }}
-      >
+      <Card sx={{ position: "relative", mt: -8, mx: 3, py: 2, px: 2 }}>
         <Grid container spacing={3} alignItems="center">
           <Grid item>
             <MDBox
               sx={{
                 position: "relative",
                 cursor: "pointer",
-                "&:hover .camera-overlay": {
-                  opacity: 1,
-                },
+                "&:hover .camera-overlay": { opacity: 1 },
               }}
               onClick={handleAvatarClick}
             >
-              <MDAvatar
-                src={
-                  avatar ||
-                  `https://res.cloudinary.com/dh5cebjwj/image/upload/v1756915034/abstract-user-flat-4_liw6zf.png`
-                }
-                alt="profile-image"
-                size="xl"
-                shadow="sm"
-              />
+              <MDAvatar src={avatar || defaultAvatar} alt="profile-image" size="xl" shadow="sm" />
               <MDBox
                 className="camera-overlay"
                 sx={{
@@ -230,25 +232,19 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                   justifyContent: "center",
                   opacity: 0,
                   transition: "opacity 0.3s ease",
-                  color: "white",
                 }}
               >
                 <Icon
                   sx={{
                     fontSize: "2rem",
                     color: "white",
-                    filter: `
-                      drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)) 
-                      drop-shadow(0 4px 4px rgba(0, 0, 0, 0.6))
-                      drop-shadow(0 6px 6px rgba(0, 0, 0, 0.4))
-                    `,
-                    textShadow: "0 1px 3px rgba(0, 0, 0, 0.9)",
+                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))",
                   }}
                 >
                   photo_camera
                 </Icon>
               </MDBox>
-              {isUploading && (
+              {headerState.isUploading && (
                 <MDBox
                   sx={{
                     position: "absolute",
@@ -263,12 +259,16 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                     justifyContent: "center",
                   }}
                 >
-                  <CircularProgress color="inherit" size={32} sx={{ color: "white" }} />
+                  <CircularProgress
+                    color="inherit"
+                    size={32}
+                    variant="indeterminate"
+                    sx={{ color: "white" }}
+                  />
                 </MDBox>
               )}
             </MDBox>
 
-            {/* Hidden file input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -277,8 +277,11 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
               style={{ display: "none" }}
             />
 
-            {/* Avatar menu */}
-            <Menu anchorEl={avatarMenu} open={Boolean(avatarMenu)} onClose={handleAvatarMenuClose}>
+            <Menu
+              anchorEl={headerState.avatarMenu}
+              open={Boolean(headerState.avatarMenu)}
+              onClose={handleAvatarMenuClose}
+            >
               <MenuItem onClick={handleFileInputClick}>
                 <Icon sx={{ mr: 1, color: "info.main" }}>photo_camera</Icon>
                 <MDTypography variant="button" fontWeight="medium">
@@ -303,34 +306,31 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
               )}
             </Menu>
 
-            {/* Preview Modal */}
             <PreviewModal
-              open={previewModalOpen}
-              onClose={() => setPreviewModalOpen(false)}
+              open={headerState.previewModalOpen}
+              onClose={() => setHeaderState((prev) => ({ ...prev, previewModalOpen: false }))}
               avatar={avatar}
             />
 
-            {/* Crop Modal */}
             <ImageCropper
-              open={cropModalOpen}
-              imageSrc={selectedImage}
-              onClose={() => {
-                setCropModalOpen(false);
-                setSelectedImage(null);
-              }}
+              open={headerState.cropModalOpen}
+              imageSrc={headerState.selectedImage}
+              onClose={() =>
+                setHeaderState((prev) => ({ ...prev, cropModalOpen: false, selectedImage: null }))
+              }
               onCropComplete={handleCropComplete}
-              aspect={1} // Square aspect for circular crop
-              darkMode={darkMode}
-              isUploading={isUploading}
+              aspect={1}
+              isUploading={headerState.isUploading}
             />
           </Grid>
+
           <Grid item xs={12} sm={6} md={5}>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
               <MDBox display="flex" justifyContent="space-between" alignItems="center">
                 <MDTypography variant="h5" fontWeight="medium">
                   {name}
                 </MDTypography>
-                {!isOrganizer ? (
+                {!headerState.isOrganizer ? (
                   <MDButton
                     variant="gradient"
                     color="info"
@@ -339,7 +339,7 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                     startIcon={<Icon>event_available</Icon>}
                     sx={{ ml: 2 }}
                   >
-                    {isLoading ? "Processing..." : "Become Organizer"}
+                    {headerState.isLoading ? "Processing..." : "Become Organizer"}
                   </MDButton>
                 ) : (
                   <MDBox
@@ -354,11 +354,7 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
                     <Icon color="success" sx={{ fontSize: "1rem", mr: 0.5 }}>
                       verified
                     </Icon>
-                    <MDTypography
-                      varient="gradient"
-                      fontWeight="regular"
-                      fontSize="0.875rem"
-                    >
+                    <MDTypography variant="gradient" fontWeight="regular" fontSize="0.875rem">
                       Organizer
                     </MDTypography>
                   </MDBox>
@@ -366,9 +362,14 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
               </MDBox>
             </MDBox>
           </Grid>
+
           <Grid item xs={12} md={6} lg={4} sx={{ ml: "auto" }}>
             <AppBar position="static">
-              <Tabs orientation={tabsOrientation} value={tabValue} onChange={handleSetTabValue}>
+              <Tabs
+                orientation={headerState.tabsOrientation}
+                value={headerState.tabValue}
+                onChange={handleSetTabValue}
+              >
                 <Tab
                   label="App"
                   icon={
@@ -403,7 +404,6 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
   );
 }
 
-// Setting default props for the Header
 Header.defaultProps = {
   children: "",
   name: "Student Name",
@@ -411,7 +411,6 @@ Header.defaultProps = {
   onAvatarUpdate: null,
 };
 
-// Typechecking props for the Header
 Header.propTypes = {
   children: PropTypes.node,
   name: PropTypes.string,
@@ -419,4 +418,4 @@ Header.propTypes = {
   onAvatarUpdate: PropTypes.func,
 };
 
-export default Header;
+export default memo(Header);

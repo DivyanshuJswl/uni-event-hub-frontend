@@ -1,5 +1,4 @@
-// layouts/event-details/components/index.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Box,
@@ -16,7 +15,6 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
-  Snackbar,
   Card,
   CardContent,
   Typography,
@@ -27,12 +25,10 @@ import {
   EventAvailable as EventAvailableIcon,
   LocationOn as LocationOnIcon,
   Category as CategoryIcon,
-  Group as GroupIcon,
   Person as PersonIcon,
   Email as EmailIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
-  Close as CloseIcon,
   Link as LinkIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
@@ -41,14 +37,14 @@ import {
   Update as UpdateIcon,
 } from "@mui/icons-material";
 import axios from "axios";
-
+import dayjs from "dayjs";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 import EventDetailsSkeleton from "./EventDetailsSkeleton";
-import dayjs from "dayjs";
 
 function EventDetails() {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -57,136 +53,191 @@ function EventDetails() {
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
   const { user, token } = useAuth();
+  const { showToast } = useNotifications();
 
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  // Consolidated state
+  const [pageState, setPageState] = useState({
+    event: null,
+    loading: true,
+    error: null,
+    actionLoading: false,
+    isEnrolled: false,
+  });
 
+  // Memoized fetch function
+  const fetchEventDetails = useCallback(async () => {
+    setPageState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 }
+        : { withCredentials: true, timeout: 10000 };
+
+      const res = await axios.get(`${BASE_URL}/api/events/${eventId}`, config);
+      const event = res.data.data.event;
+
+      const enrolled =
+        user && event.participants
+          ? event.participants.some((p) => p._id === user.id || p === user.id)
+          : false;
+
+      setPageState({
+        event,
+        loading: false,
+        error: null,
+        actionLoading: false,
+        isEnrolled: enrolled,
+      });
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || err.code === "ECONNABORTED"
+          ? "Request timeout"
+          : "Failed to fetch event details";
+
+      setPageState({
+        event: null,
+        loading: false,
+        error: errorMessage,
+        actionLoading: false,
+        isEnrolled: false,
+      });
+
+      showToast(errorMessage, "error", "Failed to Load Event");
+    }
+  }, [BASE_URL, eventId, token, user, showToast]);
+
+  // Initial fetch
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
     }
-  }, [eventId]);
+  }, [eventId, fetchEventDetails]);
 
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
-  };
-
-  const fetchEventDetails = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : { withCredentials: true };
-      const res = await axios.get(`${BASE_URL}/api/events/${eventId}`, config);
-
-      setEvent(res.data.data.event);
-
-      if (user && res.data.data.event.participants) {
-        const enrolled = res.data.data.event.participants.some(
-          (participant) => participant._id === user.id || participant === user.id
-        );
-        setIsEnrolled(enrolled);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to fetch event details");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEnroll = async () => {
+  // Memoized enrollment handler
+  const handleEnroll = useCallback(async () => {
     if (!user) {
       navigate("/authentication/sign-in");
       return;
     }
 
+    setPageState((prev) => ({ ...prev, actionLoading: true }));
+
     try {
-      setActionLoading(true);
       await axios.post(
         `${BASE_URL}/api/events/enroll/${eventId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          timeout: 10000,
+        }
       );
 
-      setIsEnrolled(true);
-      showSnackbar("Successfully enrolled in the event!");
+      setPageState((prev) => ({ ...prev, isEnrolled: true, actionLoading: false }));
+      showToast("Successfully enrolled in the event!", "success", "Enrollment Successful");
       await fetchEventDetails();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to enroll in event";
-      setError(errorMsg);
-      showSnackbar(errorMsg, "error");
-    } finally {
-      setActionLoading(false);
+      setPageState((prev) => ({ ...prev, actionLoading: false, error: errorMsg }));
+      showToast(errorMsg, "error", "Enrollment Failed");
     }
-  };
+  }, [user, BASE_URL, eventId, token, navigate, showToast, fetchEventDetails]);
 
-  const handleUnenroll = async () => {
+  // Memoized unenrollment handler
+  const handleUnenroll = useCallback(async () => {
+    setPageState((prev) => ({ ...prev, actionLoading: true }));
+
     try {
-      setActionLoading(true);
       await axios.post(
         `${BASE_URL}/api/events/unenroll/${eventId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          timeout: 10000,
+        }
       );
 
-      setIsEnrolled(false);
-      showSnackbar("Successfully unenrolled from the event!");
+      setPageState((prev) => ({ ...prev, isEnrolled: false, actionLoading: false }));
+      showToast("Successfully unenrolled from the event!", "info", "Unenrollment Successful");
       await fetchEventDetails();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to unenroll from event";
-      setError(errorMsg);
-      showSnackbar(errorMsg, "error");
-    } finally {
-      setActionLoading(false);
+      setPageState((prev) => ({ ...prev, actionLoading: false, error: errorMsg }));
+      showToast(errorMsg, "error", "Unenrollment Failed");
     }
-  };
+  }, [BASE_URL, eventId, token, showToast, fetchEventDetails]);
 
-  const calculateStatus = () => {
-    if (!event) return "loading";
-    if (event.status === "cancelled") return "cancelled";
+  // Memoized status calculation
+  const eventStatus = useMemo(() => {
+    if (!pageState.event) return { status: "loading", color: "default" };
+    if (pageState.event.status === "cancelled") return { status: "cancelled", color: "error" };
 
     const now = new Date();
-    const eventDate = new Date(event.date);
-    const eventEnd = event.endDate
-      ? new Date(event.endDate)
+    const eventDate = new Date(pageState.event.date);
+    const eventEnd = pageState.event.endDate
+      ? new Date(pageState.event.endDate)
       : new Date(eventDate.getTime() + 2 * 60 * 60 * 1000);
 
-    if (now < eventDate) return "upcoming";
-    if (now >= eventDate && now <= eventEnd) return "ongoing";
-    return "completed";
-  };
+    if (now < eventDate) return { status: "upcoming", color: "primary" };
+    if (now >= eventDate && now <= eventEnd) return { status: "ongoing", color: "secondary" };
+    return { status: "completed", color: "success" };
+  }, [pageState.event]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "upcoming":
-        return "primary";
-      case "ongoing":
-        return "secondary";
-      case "completed":
-        return "success";
-      case "cancelled":
-        return "error";
-      default:
-        return "default";
-    }
-  };
+  // Memoized event metadata
+  const eventMetadata = useMemo(() => {
+    if (!pageState.event) return null;
 
-  if (loading) {
+    const { event } = pageState;
+    const participationPercentage = Math.round(
+      ((event.participants?.length || 0) / Math.max(event.maxParticipants || 1, 1)) * 100
+    );
+    const isFull = (event.participants?.length || 0) >= (event.maxParticipants || 0);
+    const isOrganizer = user?.email === event.organizer?.email;
+    const daysUntil = dayjs(event.date).diff(dayjs(), "day");
+
+    const imageUrl =
+      event.featuredImage?.url ||
+      event.images?.[0]?.url ||
+      "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?auto=format&fit=crop&w=700&q=60";
+
+    return {
+      participationPercentage,
+      isFull,
+      isOrganizer,
+      daysUntil,
+      imageUrl,
+      formattedDate: dayjs(event.date).format("MMMM D, YYYY h:mm A"),
+      createdDate: dayjs(event.createdAt).format("MMM D, YYYY"),
+      updatedDate: dayjs(event.updatedAt).format("MMM D, YYYY"),
+    };
+  }, [pageState.event, user]);
+
+  // Memoized enrollment conditions
+  const enrollmentStatus = useMemo(() => {
+    if (!pageState.event || !eventMetadata) return {};
+
+    const { status } = eventStatus;
+    const { isFull } = eventMetadata;
+
+    return {
+      canEnroll: user && status === "upcoming" && !isFull && !pageState.isEnrolled,
+      canUnenroll: user && (status === "upcoming" || status === "ongoing") && pageState.isEnrolled,
+    };
+  }, [pageState.event, pageState.isEnrolled, eventStatus, eventMetadata, user]);
+
+  // Loading state
+  if (pageState.loading) {
     return <EventDetailsSkeleton />;
   }
 
-  if (error && !event) {
+  // Error state - no event
+  if (pageState.error && !pageState.event) {
     return (
       <Container maxWidth="xl">
         <MDBox py={4} textAlign="center">
           <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+            {pageState.error}
           </Alert>
           <MDButton
             variant="gradient"
@@ -201,7 +252,8 @@ function EventDetails() {
     );
   }
 
-  if (!event) {
+  // Event not found
+  if (!pageState.event) {
     return (
       <Container maxWidth="xl">
         <MDBox py={4} textAlign="center">
@@ -222,26 +274,7 @@ function EventDetails() {
     );
   }
 
-  const participationPercentage = Math.round(
-    ((event.participants?.length || 0) / Math.max(event.maxParticipants || 1, 1)) * 100
-  );
-  const status = calculateStatus();
-  const statusColor = getStatusColor(status);
-  const isFull = (event.participants?.length || 0) >= (event.maxParticipants || 0);
-  const canEnroll = user && status === "upcoming" && !isFull && !isEnrolled;
-  const canUnenroll = user && (status === "upcoming" || status === "ongoing") && isEnrolled;
-
-  const imageUrl =
-    event.featuredImage?.url ||
-    event.images?.[0]?.url ||
-    "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=60";
-
-  const formattedDate = dayjs(event.date).format("MMMM D, YYYY h:mm A");
-  const createdDate = dayjs(event.createdAt).format("MMM D, YYYY");
-  const updatedDate = dayjs(event.updatedAt).format("MMM D, YYYY");
-  const daysUntil =
-    event.daysUntil !== undefined ? event.daysUntil : dayjs(event.date).diff(dayjs(), "day");
-  const isOrganizer = user?.email === event.organizer?.email;
+  const { event } = pageState;
 
   return (
     <Container maxWidth="xl">
@@ -254,9 +287,13 @@ function EventDetails() {
         </MDTypography>
       </MDBox>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+      {pageState.error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          onClose={() => setPageState((prev) => ({ ...prev, error: null }))}
+        >
+          {pageState.error}
         </Alert>
       )}
 
@@ -265,7 +302,7 @@ function EventDetails() {
         <Grid item xs={12} md={6}>
           <Box
             component="img"
-            src={imageUrl}
+            src={eventMetadata.imageUrl}
             alt={event.title}
             sx={{
               width: "100%",
@@ -324,7 +361,9 @@ function EventDetails() {
                   <Box display="flex" alignItems="center">
                     <CalendarIcon color="primary" sx={{ mr: 1 }} />
                     <MDTypography variant="body2">
-                      {daysUntil > 0 ? `${daysUntil} days until` : "Event ongoing"}
+                      {eventMetadata.daysUntil > 0
+                        ? `${eventMetadata.daysUntil} days until`
+                        : "Event ongoing"}
                     </MDTypography>
                   </Box>
                 </Grid>
@@ -341,7 +380,7 @@ function EventDetails() {
               <Box display="flex" flexWrap="wrap" gap={1}>
                 <Chip
                   icon={<CalendarIcon />}
-                  label={`Created: ${createdDate}`}
+                  label={`Created: ${eventMetadata.createdDate}`}
                   variant="outlined"
                   size="medium"
                   color="warning"
@@ -349,7 +388,7 @@ function EventDetails() {
                 {event.createdAt !== event.updatedAt && (
                   <Chip
                     icon={<UpdateIcon />}
-                    label={`Updated: ${updatedDate}`}
+                    label={`Updated: ${eventMetadata.updatedDate}`}
                     variant="outlined"
                     size="medium"
                     color="info"
@@ -364,11 +403,7 @@ function EventDetails() {
         <Grid item xs={12} md={6}>
           <Paper
             elevation={3}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              backgroundColor: "background.default",
-            }}
+            sx={{ p: 3, borderRadius: 3, backgroundColor: "background.default" }}
           >
             {/* Title and Status */}
             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -376,8 +411,8 @@ function EventDetails() {
                 {event.title}
               </MDTypography>
               <Chip
-                label={status}
-                color={statusColor}
+                label={eventStatus.status}
+                color={eventStatus.color}
                 variant="filled"
                 sx={{ fontWeight: "bold", textTransform: "uppercase" }}
               />
@@ -419,11 +454,11 @@ function EventDetails() {
                   Date & Time
                 </MDTypography>
                 <MDTypography variant="body2" color="text">
-                  {formattedDate}
+                  {eventMetadata.formattedDate}
                 </MDTypography>
-                {daysUntil > 0 && (
+                {eventMetadata.daysUntil > 0 && (
                   <MDTypography variant="caption" color="primary">
-                    {daysUntil} days until event
+                    {eventMetadata.daysUntil} days until event
                   </MDTypography>
                 )}
               </Box>
@@ -471,16 +506,22 @@ function EventDetails() {
                 </MDTypography>
                 <MDTypography variant="body2" color="text">
                   {event.participants?.length || 0} / {event.maxParticipants || 0} participants (
-                  {participationPercentage}%)
+                  {eventMetadata.participationPercentage}%)
                 </MDTypography>
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={participationPercentage}
-                color={isFull ? "error" : participationPercentage > 80 ? "warning" : "secondary"}
+                value={eventMetadata.participationPercentage}
+                color={
+                  eventMetadata.isFull
+                    ? "error"
+                    : eventMetadata.participationPercentage > 80
+                      ? "warning"
+                      : "secondary"
+                }
                 sx={{ height: 8, borderRadius: 2 }}
               />
-              {isFull && (
+              {eventMetadata.isFull && (
                 <MDTypography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
                   This event is fully booked
                 </MDTypography>
@@ -499,7 +540,7 @@ function EventDetails() {
                 >
                   Log In to Enroll
                 </MDButton>
-              ) : isOrganizer ? (
+              ) : eventMetadata.isOrganizer ? (
                 <MDButton
                   variant="outlined"
                   color="primary"
@@ -509,29 +550,29 @@ function EventDetails() {
                 >
                   Manage Your Event
                 </MDButton>
-              ) : canEnroll ? (
+              ) : enrollmentStatus.canEnroll ? (
                 <MDButton
                   variant="gradient"
                   color="success"
                   fullWidth
                   onClick={handleEnroll}
-                  disabled={actionLoading}
-                  startIcon={actionLoading ? <Box width={20} height={20} /> : <CheckCircleIcon />}
+                  disabled={pageState.actionLoading}
+                  startIcon={<CheckCircleIcon />}
                 >
-                  {actionLoading ? "Enrolling..." : "Enroll in Event"}
+                  {pageState.actionLoading ? "Enrolling..." : "Enroll in Event"}
                 </MDButton>
-              ) : canUnenroll ? (
+              ) : enrollmentStatus.canUnenroll ? (
                 <MDButton
                   variant="gradient"
                   color="error"
                   fullWidth
                   onClick={handleUnenroll}
-                  disabled={actionLoading}
-                  startIcon={actionLoading ? <Box width={20} height={20} /> : <CancelIcon />}
+                  disabled={pageState.actionLoading}
+                  startIcon={<CancelIcon />}
                 >
-                  {actionLoading ? "Unenrolling..." : "Unenroll from Event"}
+                  {pageState.actionLoading ? "Unenrolling..." : "Unenroll from Event"}
                 </MDButton>
-              ) : isEnrolled ? (
+              ) : pageState.isEnrolled ? (
                 <MDButton
                   variant="outlined"
                   color="success"
@@ -543,23 +584,11 @@ function EventDetails() {
                 </MDButton>
               ) : (
                 <MDButton variant="outlined" color="error" fullWidth disabled>
-                  {status === "completed"
+                  {eventStatus.status === "completed"
                     ? "Event Completed"
-                    : status === "cancelled"
+                    : eventStatus.status === "cancelled"
                       ? "Event Cancelled"
                       : "Enrollment Closed"}
-                </MDButton>
-              )}
-
-              {user?.id === event.organizer?._id && (
-                <MDButton
-                  variant="outlined"
-                  color="primary"
-                  fullWidth
-                  component={Link}
-                  to="/organized-events"
-                >
-                  Manage Event
                 </MDButton>
               )}
             </Box>
@@ -570,11 +599,7 @@ function EventDetails() {
         <Grid item xs={12}>
           <Paper
             elevation={3}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              backgroundColor: "background.default",
-            }}
+            sx={{ p: 3, borderRadius: 3, backgroundColor: "background.default" }}
           >
             <MDTypography variant="h5" fontWeight="bold" mb={2}>
               Event Description
@@ -582,23 +607,19 @@ function EventDetails() {
             <MDTypography
               variant="body2"
               color="text"
-              sx={{ whiteSpace: "pre-wrap", lineHeight: 1 }}
+              sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}
             >
               {event.description || "No description provided for this event."}
             </MDTypography>
           </Paper>
         </Grid>
 
-        {/* Gallery if multiple images exist */}
+        {/* Gallery */}
         {event.images && event.images.length > 1 && (
           <Grid item xs={12}>
             <Paper
               elevation={3}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                backgroundColor: "background.default",
-              }}
+              sx={{ p: 3, borderRadius: 3, backgroundColor: "background.default" }}
             >
               <MDTypography variant="h5" fontWeight="bold" mb={2}>
                 Event Gallery ({event.images.length} images)
@@ -617,9 +638,7 @@ function EventDetails() {
                         borderRadius: 2,
                         cursor: "pointer",
                         transition: "transform 0.3s ease",
-                        "&:hover": {
-                          transform: "scale(1.05)",
-                        },
+                        "&:hover": { transform: "scale(1.05)" },
                       }}
                     />
                   </Grid>
@@ -630,55 +649,34 @@ function EventDetails() {
         )}
 
         {/* Participants List */}
-        {user?.id === event.organizer?._id &&
-          event.participants &&
-          event.participants.length > 0 && (
-            <Grid item xs={12}>
-              <Paper
-                elevation={3}
-                sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  backgroundColor: "background.default",
-                }}
-              >
-                <MDTypography variant="h5" fontWeight="bold" mb={2}>
-                  Participants ({event.participants.length})
-                </MDTypography>
-                <List>
-                  {event.participants.map((participant, index) => (
-                    <ListItem key={participant._id || index} divider>
-                      <ListItemAvatar>
-                        <Avatar>
-                          {participant.name ? participant.name.charAt(0).toUpperCase() : "U"}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={participant.name || "Unknown User"}
-                        secondary={participant.email || "No email provided"}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
+        {eventMetadata.isOrganizer && event.participants && event.participants.length > 0 && (
+          <Grid item xs={12}>
+            <Paper
+              elevation={3}
+              sx={{ p: 3, borderRadius: 3, backgroundColor: "background.default" }}
+            >
+              <MDTypography variant="h5" fontWeight="bold" mb={2}>
+                Participants ({event.participants.length})
+              </MDTypography>
+              <List>
+                {event.participants.map((participant, index) => (
+                  <ListItem key={participant._id || index} divider>
+                    <ListItemAvatar>
+                      <Avatar>
+                        {participant.name ? participant.name.charAt(0).toUpperCase() : "U"}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={participant.name || "Unknown User"}
+                      secondary={participant.email || "No email provided"}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+        )}
       </Grid>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }

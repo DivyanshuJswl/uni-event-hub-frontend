@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -22,8 +22,22 @@ import MDButton from "components/MDButton";
 import colors from "assets/theme/base/colors";
 import typography from "assets/theme/base/typography";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 
-const modalStyle = (darkMode) => ({
+// Constants
+const ALLOWED_BRANCHES = ["CSE", "ECE", "EEE", "ME", "CE", "IT", "OTHERS"];
+const MIN_YEAR = 1;
+const MAX_YEAR = 5;
+
+// Memoized validation functions
+const validators = {
+  email: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+  year: (year) => year >= MIN_YEAR && year <= MAX_YEAR,
+  branch: (branch) => ALLOWED_BRANCHES.includes(branch.toUpperCase()),
+  name: (name) => name.trim().length >= 2 && name.trim().length <= 50,
+};
+
+const modalStyle = () => ({
   position: "fixed",
   top: "50%",
   left: "50%",
@@ -40,218 +54,185 @@ const modalStyle = (darkMode) => ({
   outline: "none",
 });
 
-// Constants for validation
-const ALLOWED_BRANCHES = ["CSE", "ECE", "EEE", "ME", "CE", "IT", "OTHERS"];
-const MIN_YEAR = 1;
-const MAX_YEAR = 5;
-
-// Validation functions
-const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const validateYear = (year) => {
-  return year >= MIN_YEAR && year <= MAX_YEAR;
-};
-
-const validateBranch = (branch) => {
-  return ALLOWED_BRANCHES.includes(branch.toUpperCase());
-};
-
-const validateName = (name) => {
-  return name.trim().length >= 2 && name.trim().length <= 50;
-};
-
-// Function to format user data for display
-const formatUserData = (user) => {
-  if (!user) return {};
-
-  return {
-    name: user.name || "",
-    year: user.year || "",
-    email: user.email || "",
-    branch: user.branch || "",
-    metaMaskAddress: user.metaMaskAddress || "Not linked",
-    role: user.role || "Not set",
-    isVerified: user.isVerified ? "Verified" : "Not Verified",
-  };
-};
-
 function ProfileInfoCard({ title, description, social, action, shadow, darkMode }) {
   const { socialMediaColors } = colors;
   const { size } = typography;
-
-  // Use API context for making API calls
   const { updateProfile, user } = useAuth();
+  const { showToast } = useNotifications();
 
-  // Format user data for display
-  const userInfo = formatUserData(user);
+  // Consolidated state
+  const [modalState, setModalState] = useState({
+    open: false,
+    loading: false,
+  });
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
     year: "",
     branch: "",
   });
+
   const [editErrors, setEditErrors] = useState({});
-  const [editLoading, setEditLoading] = useState(false);
-  const [editMessage, setEditMessage] = useState({ type: "", text: "" });
 
-  // Reset form when modal opens or when user data changes
+  // Memoized user info formatting
+  const userInfo = useMemo(() => {
+    if (!user) return {};
+    return {
+      name: user.name || "",
+      year: user.year || "",
+      email: user.email || "",
+      branch: user.branch || "",
+      metaMaskAddress: user.metaMaskAddress || "Not linked",
+      role: user.role || "Not set",
+      isVerified: user.isVerified ? "Verified" : "Not Verified",
+    };
+  }, [user]);
+
+  // Reset form when modal opens or user changes
   useEffect(() => {
-    const formattedUserData = formatUserData(user);
     setEditForm({
-      name: formattedUserData.name,
-      email: formattedUserData.email,
-      year: formattedUserData.year,
-      branch: formattedUserData.branch,
+      name: userInfo.name,
+      email: userInfo.email,
+      year: userInfo.year,
+      branch: userInfo.branch,
     });
-  }, [user, editModalOpen]);
+  }, [userInfo, modalState.open]);
 
-  const handleOpenEditModal = () => {
-    setEditModalOpen(true);
+  // Memoized handlers
+  const handleOpenEditModal = useCallback(() => {
+    setModalState((prev) => ({ ...prev, open: true }));
     setEditErrors({});
-    setEditMessage({ type: "", text: "" });
-    if (action && action.onClick) {
-      action.onClick();
-    }
-  };
+    action?.onClick?.();
+  }, [action]);
 
-  const handleCloseEditModal = () => {
-    setEditModalOpen(false);
+  const handleCloseEditModal = useCallback(() => {
+    setModalState({ open: false, loading: false });
     setEditErrors({});
-    setEditMessage({ type: "", text: "" });
-  };
+  }, []);
 
-  const validateEditField = (field, value) => {
+  const validateEditField = useCallback((field, value) => {
     switch (field) {
       case "email":
         if (!value.trim()) return "Email is required";
-        if (!validateEmail(value.trim())) return "Please enter a valid email address";
+        if (!validators.email(value.trim())) return "Please enter a valid email address";
         return "";
-
       case "name":
         if (!value.trim()) return "Name is required";
-        if (!validateName(value.trim())) return "Name must be between 2 and 50 characters";
+        if (!validators.name(value.trim())) return "Name must be between 2 and 50 characters";
         return "";
-
       case "year":
         if (!value) return "Year is required";
         const yearNum = parseInt(value);
         if (isNaN(yearNum)) return "Year must be a number";
-        if (!validateYear(yearNum)) return `Year must be between ${MIN_YEAR} and ${MAX_YEAR}`;
+        if (!validators.year(yearNum)) return `Year must be between ${MIN_YEAR} and ${MAX_YEAR}`;
         return "";
-
       case "branch":
         if (!value) return "Branch is required";
-        if (!validateBranch(value)) return `Branch must be one of: ${ALLOWED_BRANCHES.join(", ")}`;
+        if (!validators.branch(value))
+          return `Branch must be one of: ${ALLOWED_BRANCHES.join(", ")}`;
         return "";
-
       default:
         return "";
     }
-  };
+  }, []);
 
-  const handleEditFieldChange = (field, value) => {
-    setEditForm((prev) => ({ ...prev, [field]: value }));
+  const handleEditFieldChange = useCallback(
+    (field, value) => {
+      setEditForm((prev) => ({ ...prev, [field]: value }));
+      if (editErrors[field]) {
+        setEditErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    },
+    [editErrors]
+  );
 
-    // Clear error when user starts typing
-    if (editErrors[field]) {
-      setEditErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const hasChanges = () => {
-    const currentData = formatUserData(user);
+  const hasChanges = useCallback(() => {
     return Object.keys(editForm).some((key) => {
-      const currentVal = currentData[key];
+      const currentVal = userInfo[key];
       const newVal = editForm[key];
-
       if (typeof currentVal === "number" || typeof newVal === "number") {
         return Number(currentVal) !== Number(newVal);
       }
       return currentVal !== newVal;
     });
-  };
+  }, [editForm, userInfo]);
 
-  const handleSubmit = async (e) => {
-    // Prevent default form submission behavior
-    if (e) {
-      e.preventDefault();
-    }
+  const handleSubmit = useCallback(
+    async (e) => {
+      e?.preventDefault();
 
-    // Validate all fields before submission
-    const newErrors = {};
-    Object.keys(editForm).forEach((field) => {
-      const error = validateEditField(field, editForm[field]);
-      if (error) newErrors[field] = error;
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setEditErrors(newErrors);
-      setEditMessage({ type: "error", text: "Please fix the errors before submitting" });
-      return;
-    }
-
-    if (!hasChanges()) {
-      setEditMessage({ type: "info", text: "No changes detected" });
-      return;
-    }
-
-    setEditLoading(true);
-    setEditMessage({ type: "", text: "" });
-
-    try {
-      // Prepare data for API call - only include fields that have changed
-      const updateData = {};
-      Object.keys(editForm).forEach((key) => {
-        const currentVal = formatUserData(user)[key];
-        const newVal = editForm[key];
-
-        if (currentVal !== newVal) {
-          updateData[key] = key === "year" ? parseInt(newVal) : newVal;
-        }
+      const newErrors = {};
+      Object.keys(editForm).forEach((field) => {
+        const error = validateEditField(field, editForm[field]);
+        if (error) newErrors[field] = error;
       });
 
-      const response = await updateProfile(updateData);
-
-      if (response.success) {
-        setEditMessage({ type: "success", text: "Profile updated successfully!" });
-
-        // Close modal after successful update
-        setTimeout(() => {
-          handleCloseEditModal();
-          // Refresh parent component data
-          if (action && action.onRefresh) {
-            action.onRefresh();
-          }
-        }, 1500);
-      } else {
-        throw new Error(response.message || "Update failed");
+      if (Object.keys(newErrors).length > 0) {
+        setEditErrors(newErrors);
+        showToast("Please fix the errors before submitting", "error", "Validation Error");
+        return;
       }
-    } catch (error) {
-      console.error("Update error:", error);
-      setEditMessage({
-        type: "error",
-        text: error.message || "Failed to update profile. Please try again.",
-      });
-    } finally {
-      setEditLoading(false);
-    }
-  };
 
-  // Handle Enter key press in form fields
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); // Prevent default form submission
-      handleSubmit(); // Trigger form submission
-    }
-  };
+      if (!hasChanges()) {
+        showToast("No changes detected", "info", "No Changes");
+        return;
+      }
 
-  // Format specific fields with special display logic
-  const formatValue = (key, value) => {
+      setModalState((prev) => ({ ...prev, loading: true }));
+
+      try {
+        const updateData = {};
+        Object.keys(editForm).forEach((key) => {
+          const currentVal = userInfo[key];
+          const newVal = editForm[key];
+          if (currentVal !== newVal) {
+            updateData[key] = key === "year" ? parseInt(newVal) : newVal;
+          }
+        });
+
+        const response = await updateProfile(updateData);
+
+        if (response.success) {
+          showToast("Profile updated successfully!", "success", "Update Complete");
+          setTimeout(() => {
+            handleCloseEditModal();
+            action?.onRefresh?.();
+          }, 1500);
+        } else {
+          throw new Error(response.message || "Update failed");
+        }
+      } catch (error) {
+        console.error("Update error:", error);
+        showToast(error.message || "Failed to update profile", "error", "Update Failed");
+      } finally {
+        setModalState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [
+      editForm,
+      validateEditField,
+      hasChanges,
+      userInfo,
+      updateProfile,
+      showToast,
+      handleCloseEditModal,
+      action,
+    ]
+  );
+
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit]
+  );
+
+  // Memoized format value function
+  const formatValue = useCallback((key, value) => {
     switch (key) {
       case "metaMaskAddress":
         return value && value !== "Not linked" ? (
@@ -287,210 +268,54 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
       default:
         return value || "Not set";
     }
-  };
+  }, []);
 
-  // Prepare the info items for rendering - only show the filtered fields
-  const renderItems = Object.entries(userInfo).map(([key, value]) => {
-    const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-    const formattedValue = formatValue(key, value);
+  // Memoized render items
+  const renderItems = useMemo(() => {
+    return Object.entries(userInfo).map(([key, value]) => {
+      const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+      const formattedValue = formatValue(key, value);
 
-    if (formattedValue === undefined || formattedValue === "" || formattedKey === "Name")
-      return null;
+      if (formattedValue === undefined || formattedValue === "" || formattedKey === "Name")
+        return null;
 
-    return (
-      <MDBox key={key} display="flex" py={1} pr={2}>
-        <MDTypography variant="button" fontWeight="bold" textTransform="capitalize">
-          {formattedKey}: &nbsp;
-        </MDTypography>
-        <MDTypography variant="button" fontWeight="regular" color="text">
-          {formattedValue}
-        </MDTypography>
+      return (
+        <MDBox key={key} display="flex" py={1} pr={2}>
+          <MDTypography variant="button" fontWeight="bold" textTransform="capitalize">
+            {formattedKey}: &nbsp;
+          </MDTypography>
+          <MDTypography variant="button" fontWeight="regular" color="text">
+            {formattedValue}
+          </MDTypography>
+        </MDBox>
+      );
+    });
+  }, [userInfo, formatValue]);
+
+  // Memoized social rendering
+  const renderSocial = useMemo(() => {
+    return social.map(({ link, icon, color }) => (
+      <MDBox
+        key={color}
+        component="a"
+        href={link}
+        target="_blank"
+        rel="noreferrer"
+        fontSize={size.lg}
+        color={socialMediaColors[color].main}
+        pr={1}
+        pl={0.5}
+        lineHeight={1}
+      >
+        {icon}
       </MDBox>
-    );
-  });
+    ));
+  }, [social, size.lg, socialMediaColors]);
 
-  const renderSocial = social.map(({ link, icon, color }) => (
-    <MDBox
-      key={color}
-      component="a"
-      href={link}
-      target="_blank"
-      rel="noreferrer"
-      fontSize={size.lg}
-      color={socialMediaColors[color].main}
-      pr={1}
-      pl={0.5}
-      lineHeight={1}
-    >
-      {icon}
-    </MDBox>
-  ));
-
-  // Render Edit Profile Modal following the same pattern as OrganizerEventCard
-  const renderEditProfileModal = () => (
-    <Modal
-      open={editModalOpen}
-      onClose={handleCloseEditModal}
-      aria-labelledby="edit-profile-title"
-      sx={{
-        backdropFilter: "blur(8px) brightness(0.7)",
-        backgroundColor: "rgba(0,0,0,0.35)",
-        zIndex: 1300,
-      }}
-      closeAfterTransition
-    >
-      <Fade in={editModalOpen}>
-        <Box sx={modalStyle(darkMode)}>
-          {/* Header */}
-          <MDBox
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            px={3}
-            py={2}
-            sx={{
-              background: "linear-gradient(90deg, #1976d2 0%, #21cbf3 100%)",
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-            }}
-          >
-            <MDBox display="flex" alignItems="center" gap={1}>
-              <Icon sx={{ color: "white" }}>edit</Icon>
-              <MDTypography variant="h6" color="white" fontWeight="bold">
-                Edit Profile
-              </MDTypography>
-            </MDBox>
-            <IconButton onClick={handleCloseEditModal} size="small" sx={{ color: "white" }}>
-              <Icon>close</Icon>
-            </IconButton>
-          </MDBox>
-
-          {/* Content - Wrap with form element */}
-          <MDBox component="form" onSubmit={handleSubmit} px={4} py={3}>
-            {editMessage.text && (
-              <Alert severity={editMessage.type || "info"} sx={{ mb: 2 }}>
-                {editMessage.text}
-              </Alert>
-            )}
-
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <MDBox mb={2}>
-                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
-                    Full Name
-                  </MDTypography>
-                  <MDInput
-                    value={editForm.name}
-                    onChange={(e) => handleEditFieldChange("name", e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    error={!!editErrors.name}
-                    helperText={editErrors.name}
-                    fullWidth
-                    placeholder="Enter your full name"
-                  />
-                </MDBox>
-              </Grid>
-
-              <Grid item xs={12}>
-                <MDBox mb={2}>
-                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
-                    Email Address
-                  </MDTypography>
-                  <MDInput
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => handleEditFieldChange("email", e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    error={!!editErrors.email}
-                    helperText={editErrors.email}
-                    fullWidth
-                    placeholder="Enter your email address"
-                  />
-                </MDBox>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <MDBox mb={2}>
-                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
-                    Academic Year
-                  </MDTypography>
-                  <FormControl fullWidth error={!!editErrors.year}>
-                    <Select
-                      value={editForm.year}
-                      onChange={(e) => handleEditFieldChange("year", e.target.value)}
-                      displayEmpty
-                      sx={{ height: "2.75rem" }}
-                    >
-                      <MenuItem value="">Select year</MenuItem>
-                      {Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i).map(
-                        (year) => (
-                          <MenuItem key={year} value={year}>
-                            Year {year}
-                          </MenuItem>
-                        )
-                      )}
-                    </Select>
-                    {editErrors.year && (
-                      <MDTypography variant="caption" color="error">
-                        {editErrors.year}
-                      </MDTypography>
-                    )}
-                  </FormControl>
-                </MDBox>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <MDBox mb={2}>
-                  <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
-                    Branch
-                  </MDTypography>
-                  <FormControl fullWidth error={!!editErrors.branch}>
-                    <Select
-                      value={editForm.branch}
-                      onChange={(e) => handleEditFieldChange("branch", e.target.value)}
-                      displayEmpty
-                      sx={{ height: "2.75rem" }}
-                    >
-                      <MenuItem value="">Select branch</MenuItem>
-                      {ALLOWED_BRANCHES.map((branch) => (
-                        <MenuItem key={branch} value={branch}>
-                          {branch}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {editErrors.branch && (
-                      <MDTypography variant="caption" color="error">
-                        {editErrors.branch}
-                      </MDTypography>
-                    )}
-                  </FormControl>
-                </MDBox>
-              </Grid>
-            </Grid>
-
-            <MDBox display="flex" justifyContent="flex-end" mt={3} gap={1}>
-              <MDButton
-                variant="outlined"
-                color="secondary"
-                onClick={handleCloseEditModal}
-                disabled={editLoading}
-              >
-                Cancel
-              </MDButton>
-              <MDButton
-                type="submit"
-                variant="gradient"
-                color="info"
-                disabled={editLoading || !hasChanges()}
-                startIcon={editLoading ? <CircularProgress size={16} /> : null}
-              >
-                {editLoading ? "Updating..." : "Update Profile"}
-              </MDButton>
-            </MDBox>
-          </MDBox>
-        </Box>
-      </Fade>
-    </Modal>
+  // Memoized year options
+  const yearOptions = useMemo(
+    () => Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i),
+    []
   );
 
   return (
@@ -542,13 +367,162 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
         </MDBox>
       </Card>
 
-      {/* Render Edit Profile Modal */}
-      {renderEditProfileModal()}
+      <Modal
+        open={modalState.open}
+        onClose={handleCloseEditModal}
+        sx={{
+          backdropFilter: "blur(8px) brightness(0.7)",
+          backgroundColor: "rgba(0,0,0,0.35)",
+          zIndex: 1300,
+        }}
+        closeAfterTransition
+      >
+        <Fade in={modalState.open}>
+          <Box sx={modalStyle()}>
+            <MDBox
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              px={3}
+              py={2}
+              sx={{
+                background: "linear-gradient(90deg, #1976d2 0%, #21cbf3 100%)",
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12,
+              }}
+            >
+              <MDBox display="flex" alignItems="center" gap={1}>
+                <Icon sx={{ color: "white" }}>edit</Icon>
+                <MDTypography variant="h6" color="white" fontWeight="bold">
+                  Edit Profile
+                </MDTypography>
+              </MDBox>
+              <IconButton onClick={handleCloseEditModal} size="small" sx={{ color: "white" }}>
+                <Icon>close</Icon>
+              </IconButton>
+            </MDBox>
+
+            <MDBox component="form" onSubmit={handleSubmit} px={4} py={3}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <MDBox mb={2}>
+                    <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                      Full Name
+                    </MDTypography>
+                    <MDInput
+                      value={editForm.name}
+                      onChange={(e) => handleEditFieldChange("name", e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      error={!!editErrors.name}
+                      helperText={editErrors.name}
+                      fullWidth
+                      placeholder="Enter your full name"
+                    />
+                  </MDBox>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <MDBox mb={2}>
+                    <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                      Email Address
+                    </MDTypography>
+                    <MDInput
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => handleEditFieldChange("email", e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      error={!!editErrors.email}
+                      helperText={editErrors.email}
+                      fullWidth
+                      placeholder="Enter your email address"
+                    />
+                  </MDBox>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <MDBox mb={2}>
+                    <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                      Academic Year
+                    </MDTypography>
+                    <FormControl fullWidth error={!!editErrors.year}>
+                      <Select
+                        value={editForm.year}
+                        onChange={(e) => handleEditFieldChange("year", e.target.value)}
+                        displayEmpty
+                        sx={{ height: "2.75rem" }}
+                      >
+                        <MenuItem value="">Select year</MenuItem>
+                        {yearOptions.map((year) => (
+                          <MenuItem key={year} value={year}>
+                            Year {year}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {editErrors.year && (
+                        <MDTypography variant="caption" color="error">
+                          {editErrors.year}
+                        </MDTypography>
+                      )}
+                    </FormControl>
+                  </MDBox>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <MDBox mb={2}>
+                    <MDTypography variant="body2" fontWeight="bold" color="text" mb={1}>
+                      Branch
+                    </MDTypography>
+                    <FormControl fullWidth error={!!editErrors.branch}>
+                      <Select
+                        value={editForm.branch}
+                        onChange={(e) => handleEditFieldChange("branch", e.target.value)}
+                        displayEmpty
+                        sx={{ height: "2.75rem" }}
+                      >
+                        <MenuItem value="">Select branch</MenuItem>
+                        {ALLOWED_BRANCHES.map((branch) => (
+                          <MenuItem key={branch} value={branch}>
+                            {branch}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {editErrors.branch && (
+                        <MDTypography variant="caption" color="error">
+                          {editErrors.branch}
+                        </MDTypography>
+                      )}
+                    </FormControl>
+                  </MDBox>
+                </Grid>
+              </Grid>
+
+              <MDBox display="flex" justifyContent="flex-end" mt={3} gap={1}>
+                <MDButton
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCloseEditModal}
+                  disabled={modalState.loading}
+                >
+                  Cancel
+                </MDButton>
+                <MDButton
+                  type="submit"
+                  variant="gradient"
+                  color="info"
+                  disabled={modalState.loading || !hasChanges()}
+                  startIcon={modalState.loading ? <CircularProgress size={16} /> : null}
+                >
+                  {modalState.loading ? "Updating..." : "Update Profile"}
+                </MDButton>
+              </MDBox>
+            </MDBox>
+          </Box>
+        </Fade>
+      </Modal>
     </>
   );
 }
 
-// Setting default props for the ProfileInfoCard
 ProfileInfoCard.defaultProps = {
   shadow: true,
   action: null,
@@ -558,7 +532,6 @@ ProfileInfoCard.defaultProps = {
   darkMode: false,
 };
 
-// Typechecking props for the ProfileInfoCard
 ProfileInfoCard.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string.isRequired,
@@ -587,4 +560,6 @@ ProfileInfoCard.propTypes = {
   darkMode: PropTypes.bool,
 };
 
-export default ProfileInfoCard;
+ProfileInfoCard.displayName = "ProfileInfoCard";
+
+export default memo(ProfileInfoCard);

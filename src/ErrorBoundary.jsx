@@ -1,14 +1,16 @@
-import React from 'react';
-import { Box, Typography, Button, Paper } from '@mui/material';
-import { Refresh, Warning } from '@mui/icons-material';
+import React, { Component } from "react";
+import { Box, Typography, Button, Paper } from "@mui/material";
+import { Refresh, Warning, BugReport } from "@mui/icons-material";
+import PropTypes from "prop-types";
 
-class ErrorBoundary extends React.Component {
+class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
+      errorCount: 0,
     };
   }
 
@@ -17,38 +19,37 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
-    
-    // Log error to monitoring service (you can integrate with Sentry, LogRocket, etc.)
-    console.error('Error caught by boundary:', error, errorInfo);
-    
-    // You can also send this to your error tracking service
-    // trackError(error, errorInfo);
+    this.setState((prev) => ({
+      error,
+      errorInfo,
+      errorCount: prev.errorCount + 1,
+    }));
+
+    console.error("Error Boundary caught:", error, errorInfo);
+
+    // Prevent infinite error loops
+    if (this.state.errorCount > 5) {
+      console.error("Too many errors, stopping error boundary");
+      return;
+    }
   }
 
   handleRefresh = () => {
-    this.setState({ 
+    this.setState({
       hasError: false,
       error: null,
-      errorInfo: null 
+      errorInfo: null,
     });
     window.location.reload();
   };
 
   handleReset = () => {
-    this.setState({ 
+    this.setState({
       hasError: false,
       error: null,
-      errorInfo: null 
+      errorInfo: null,
     });
-    
-    // If you have a way to reset the application state, call it here
-    if (this.props.onReset) {
-      this.props.onReset();
-    }
+    this.props.onReset?.();
   };
 
   render() {
@@ -56,75 +57,65 @@ class ErrorBoundary extends React.Component {
       return (
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '400px',
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
             p: 3,
-            backgroundColor: 'background.default',
+            backgroundColor: "background.default",
           }}
         >
           <Paper
             elevation={3}
             sx={{
               p: 4,
-              maxWidth: '500px',
-              textAlign: 'center',
-              borderRadius: 2,
+              maxWidth: "600px",
+              textAlign: "center",
+              borderRadius: 3,
             }}
           >
-            <Warning
-              sx={{
-                fontSize: 64,
-                color: 'warning.main',
-                mb: 2,
-              }}
-            />
-            
-            <Typography variant="h5" gutterBottom color="text.primary" fontWeight="bold">
-              Oops! Something went wrong
+            <Warning sx={{ fontSize: 72, color: "error.main", mb: 2 }} />
+
+            <Typography variant="h4" gutterBottom fontWeight="bold">
+              Something went wrong
             </Typography>
-            
+
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              We encountered an unexpected error. This might be temporary, and refreshing the page could help.
+              We encountered an unexpected error. Please try refreshing the page.
             </Typography>
 
             {this.props.showDetails && this.state.error && (
               <Box
                 sx={{
-                  backgroundColor: 'grey.100',
+                  backgroundColor: "grey.100",
                   p: 2,
-                  borderRadius: 1,
-                  textAlign: 'left',
+                  borderRadius: 2,
+                  textAlign: "left",
                   mb: 3,
-                  maxHeight: '200px',
-                  overflow: 'auto',
+                  maxHeight: "300px",
+                  overflow: "auto",
+                  fontFamily: "monospace",
                 }}
               >
-                <Typography variant="caption" component="pre" color="error">
+                <Typography variant="body2" component="pre" color="error.dark">
                   {this.state.error.toString()}
+                  {this.state.errorInfo?.componentStack}
                 </Typography>
               </Box>
             )}
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
               <Button
                 variant="contained"
                 color="primary"
                 startIcon={<Refresh />}
                 onClick={this.handleRefresh}
-                sx={{ borderRadius: 2 }}
               >
                 Refresh Page
               </Button>
-              
+
               {this.props.onReset && (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={this.handleReset}
-                  sx={{ borderRadius: 2 }}
-                >
+                <Button variant="outlined" color="primary" onClick={this.handleReset}>
                   Try Again
                 </Button>
               )}
@@ -132,11 +123,12 @@ class ErrorBoundary extends React.Component {
 
             {this.props.contactSupport && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-                If the problem persists, please{' '}
+                If the problem persists,{" "}
                 <Button
                   variant="text"
                   color="primary"
                   size="small"
+                  startIcon={<BugReport />}
                   onClick={this.props.contactSupport}
                 >
                   contact support
@@ -152,9 +144,15 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Default props
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
+  showDetails: PropTypes.bool,
+  contactSupport: PropTypes.func,
+  onReset: PropTypes.func,
+};
+
 ErrorBoundary.defaultProps = {
-  showDetails: process.env.NODE_ENV === 'development',
+  showDetails: process.env.NODE_ENV === "development",
   contactSupport: null,
   onReset: null,
 };

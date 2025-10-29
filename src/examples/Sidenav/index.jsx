@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback, useMemo, memo } from "react";
 import { useLocation, NavLink, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import List from "@mui/material/List";
@@ -11,7 +11,6 @@ import MDButton from "components/MDButton";
 import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
-import "react-toastify/dist/ReactToastify.css";
 import brandImage from "../../assets/images/Untitled design_prev_ui.png";
 import {
   useMaterialUIController,
@@ -20,100 +19,110 @@ import {
   setWhiteSidenav,
 } from "context";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
-  const collapseName = location.pathname.replace("/", "");
   const navigate = useNavigate();
-  const { token, role, logout, showToast } = useAuth();
+  const { token, role, logout } = useAuth();
+  const { showToast } = useNotifications();
 
-  const handleLogout = async () => {
-    const result = await logout();
+  // Memoized values
+  const collapseName = useMemo(() => location.pathname.replace("/", ""), [location.pathname]);
+  const isAuthenticated = useMemo(() => !!token, [token]);
+  const userRole = useMemo(() => role, [role]);
 
-    if (result.success) {
-      showToast("Logged out successfully", "success");
-      setTimeout(() => {
-        navigate("/authentication/sign-in");
-      }, 1000);
-    } else {
-      showToast("Logout failed. Please try again.", "error");
+  // Memoized text color
+  const textColor = useMemo(() => {
+    if (transparentSidenav || (whiteSidenav && !darkMode)) {
+      return "dark";
+    } else if (whiteSidenav && darkMode) {
+      return "inherit";
     }
-  };
+    return "white";
+  }, [transparentSidenav, whiteSidenav, darkMode]);
 
-  // Get user authentication status and role
-  const isAuthenticated = !!token;
-  const userRole = role;
+  // Memoized close sidenav handler
+  const closeSidenav = useCallback(() => {
+    setMiniSidenav(dispatch, true);
+  }, [dispatch]);
 
-  let textColor = "white";
+  // Memoized logout handler
+  const handleLogout = useCallback(async () => {
+    try {
+      const result = await logout();
 
-  if (transparentSidenav || (whiteSidenav && !darkMode)) {
-    textColor = "dark";
-  } else if (whiteSidenav && darkMode) {
-    textColor = "inherit";
-  }
+      if (result.success) {
+        showToast("Logged out successfully", "success", "Goodbye!");
+        setTimeout(() => navigate("/authentication/sign-in"), 1000);
+      } else {
+        showToast(result.message || "Logout failed. Please try again.", "error", "Logout Failed");
+      }
+    } catch (error) {
+      showToast("An error occurred during logout", "error", "Logout Error");
+      console.error("Logout error:", error);
+    }
+  }, [logout, showToast, navigate]);
 
-  const closeSidenav = () => setMiniSidenav(dispatch, true);
-
+  // Handle responsive sidenav
   useEffect(() => {
-    function handleMiniSidenav() {
-      setMiniSidenav(dispatch, window.innerWidth < 1200);
-      setTransparentSidenav(dispatch, window.innerWidth < 1200 ? false : transparentSidenav);
-      setWhiteSidenav(dispatch, window.innerWidth < 1200 ? false : whiteSidenav);
-    }
+    const handleMiniSidenav = () => {
+      const isMobile = window.innerWidth < 1200;
+      setMiniSidenav(dispatch, isMobile);
+      setTransparentSidenav(dispatch, isMobile ? false : transparentSidenav);
+      setWhiteSidenav(dispatch, isMobile ? false : whiteSidenav);
+    };
 
     window.addEventListener("resize", handleMiniSidenav);
     handleMiniSidenav();
 
     return () => window.removeEventListener("resize", handleMiniSidenav);
-  }, [dispatch, location]);
+  }, [dispatch, transparentSidenav, whiteSidenav]);
 
-  const filteredRoutes = routes.filter((route) => {
-    // Check if route has custom show function (highest priority)
-    if (route.show) {
-      return route.show(userRole ? { role: userRole } : null);
-    }
+  // Memoized filtered routes
+  const filteredRoutes = useMemo(() => {
+    return routes.filter((route) => {
+      // Custom show function has highest priority
+      if (route.show) {
+        return route.show(userRole ? { role: userRole } : null);
+      }
 
-    if(userRole === "admin") {
-      // Admin can see all routes
-      return true;
-    }
+      // Admin sees everything
+      if (userRole === "admin") return true;
 
-    // 2. Handle Sign In/Sign Up routes specifically
-    if (route.key === "sign-in" || route.key === "sign-up") {
-      return !isAuthenticated; // Only show when not authenticated
-    }
+      // Sign In/Sign Up routes
+      if (route.key === "sign-in" || route.key === "sign-up") {
+        return !isAuthenticated;
+      }
 
-    // 3. Public routes (visible to everyone, including non-authenticated users)
-    if (route.public) {
-      // Hide public routes that should be hidden when authenticated
-      if (route.hideWhenAuthenticated && isAuthenticated) return false;
-      // Hide devOnly routes for non-developers
-      if (route.devOnly) return false;
-      return true;
-    }
+      // Public routes
+      if (route.public) {
+        if (route.hideWhenAuthenticated && isAuthenticated) return false;
+        if (route.devOnly) return false;
+        return true;
+      }
 
-    // 4. Authenticated routes (no specific role required)
-    if (route.authenticated) {
-      return isAuthenticated;
-    }
+      // Authenticated routes
+      if (route.authenticated) {
+        return isAuthenticated;
+      }
 
-    // 5. Role-specific routes
-    if (route.roles) {
-      return isAuthenticated && route.roles.includes(userRole);
-    }
+      // Role-specific routes
+      if (route.roles) {
+        return isAuthenticated && route.roles.includes(userRole);
+      }
 
-    return false;
-  });
+      return false;
+    });
+  }, [routes, userRole, isAuthenticated]);
 
-  // Render the filtered routes
-  const renderRoutes = filteredRoutes.map(
-    ({ type, name, icon, title, noCollapse, key, href, route }) => {
-      let returnValue;
-
+  // Memoized rendered routes
+  const renderRoutes = useMemo(() => {
+    return filteredRoutes.map(({ type, name, icon, title, noCollapse, key, href, route }) => {
       if (type === "collapse") {
-        returnValue = href ? (
+        return href ? (
           <Link
             href={href}
             key={key}
@@ -134,7 +143,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           </NavLink>
         );
       } else if (type === "title") {
-        returnValue = (
+        return (
           <MDTypography
             key={key}
             color={textColor}
@@ -151,7 +160,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           </MDTypography>
         );
       } else if (type === "divider") {
-        returnValue = (
+        return (
           <Divider
             key={key}
             light={
@@ -161,10 +170,17 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           />
         );
       }
+      return null;
+    });
+  }, [filteredRoutes, collapseName, textColor, darkMode, whiteSidenav, transparentSidenav]);
 
-      return returnValue;
-    }
-  );
+  // Memoized divider light prop
+  const dividerLight = useMemo(() => {
+    return (
+      (!darkMode && !whiteSidenav && !transparentSidenav) ||
+      (darkMode && !transparentSidenav && whiteSidenav)
+    );
+  }, [darkMode, whiteSidenav, transparentSidenav]);
 
   return (
     <SidenavRoot
@@ -199,22 +215,16 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
           </MDBox>
         </MDBox>
       </MDBox>
-      <Divider
-        light={
-          (!darkMode && !whiteSidenav && !transparentSidenav) ||
-          (darkMode && !transparentSidenav && whiteSidenav)
-        }
-      />
+      <Divider light={dividerLight} />
       <List>{renderRoutes}</List>
       <MDBox p={2} mt="auto" display="flex" flexDirection="column">
-        {/* Logout Button - Only shown when authenticated */}
         {isAuthenticated && (
           <MDButton
             variant="gradient"
             color="error"
             fullWidth
             onClick={handleLogout}
-            sx={{ mb: 1 }} // Add margin bottom to separate from Contact Us button
+            sx={{ mb: 1 }}
           >
             <Icon sx={{ mr: 1 }}>logout</Icon>
             LOG OUT
@@ -261,4 +271,6 @@ Sidenav.propTypes = {
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-export default Sidenav;
+Sidenav.displayName = "Sidenav";
+
+export default memo(Sidenav);

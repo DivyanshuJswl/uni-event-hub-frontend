@@ -1,11 +1,6 @@
-// @mui material components
+import { memo } from "react";
 import Grid from "@mui/material/Grid";
-import axios from "axios";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-
-// Material Dashboard 2 React examples
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
@@ -13,7 +8,7 @@ import NewsSection from "./components/NewsSection";
 import Transactions from "./components/Transactions";
 import Explore from "./components/EventExplore";
 
-function ExplorePage() {
+const ExplorePage = memo(() => {
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -32,10 +27,11 @@ function ExplorePage() {
           </Grid>
         </MDBox>
       </MDBox>
-
       <Footer />
     </DashboardLayout>
   );
-}
+});
+
+ExplorePage.displayName = "ExplorePage";
 
 export default ExplorePage;
