@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Box,
@@ -18,8 +18,7 @@ import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import MDInput from "components/MDInput";
 import { useMaterialUIController } from "context";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useNotifications } from "context/NotifiContext";
 import axios from "axios";
 import { Add, Delete, EmojiEvents, CloudUpload, Warning } from "@mui/icons-material";
 import { useAuth } from "context/AuthContext";
@@ -27,12 +26,18 @@ import { useAuth } from "context/AuthContext";
 const CertificatePublisher = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const { token } = useAuth();
-  const { control, handleSubmit, reset, setValue, watch } = useForm();
+  const { control, handleSubmit, reset, watch } = useForm();
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
+  const { showToast } = useNotifications();
+
+  // Consolidated state
+  const [pageState, setPageState] = useState({
+    isSubmitting: false,
+    events: [],
+    loadingEvents: true,
+  });
+
   const [winners, setWinners] = useState([
     { studentEmail: "", winnerPosition: 1, certificateURL: "" },
     { studentEmail: "", winnerPosition: 2, certificateURL: "" },
@@ -42,140 +47,188 @@ const CertificatePublisher = () => {
   // Fetch organizer's completed events
   useEffect(() => {
     const fetchEvents = async () => {
-      setLoadingEvents(true);
+      setPageState((prev) => ({ ...prev, loadingEvents: true }));
       try {
         const response = await axios.get(`${BASE_URL}/api/events/organizer/completed`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setEvents(response.data.data.events || []);
+        setPageState((prev) => ({
+          ...prev,
+          events: response.data.data.events || [],
+          loadingEvents: false,
+        }));
       } catch (error) {
         console.error("Error fetching events:", error);
-        toast.error("Failed to load events");
-      } finally {
-        setLoadingEvents(false);
+        showToast("Failed to load events", "error", "Loading Error");
+        setPageState((prev) => ({ ...prev, loadingEvents: false }));
       }
     };
 
     fetchEvents();
-  }, [BASE_URL]);
+  }, [BASE_URL, token, showToast]);
 
-  const addWinner = () => {
+  // Add winner
+  const addWinner = useCallback(() => {
     if (winners.length < 20) {
-      setWinners([
-        ...winners,
-        { studentEmail: "", winnerPosition: winners.length + 1, certificateURL: "" },
+      setWinners((prev) => [
+        ...prev,
+        { studentEmail: "", winnerPosition: prev.length + 1, certificateURL: "" },
       ]);
+      showToast("Winner slot added", "success", "Added");
+    } else {
+      showToast("Maximum 20 winners allowed", "warning", "Limit Reached");
     }
-  };
+  }, [winners.length, showToast]);
 
-  const removeWinner = (index) => {
-    if (winners.length > 1) {
-      const newWinners = winners.filter((_, i) => i !== index);
-      setWinners(newWinners.map((winner, i) => ({ ...winner, winnerPosition: i + 1 })));
-    }
-  };
+  // Remove winner
+  const removeWinner = useCallback(
+    (index) => {
+      if (winners.length > 1) {
+        setWinners((prev) => {
+          const newWinners = prev.filter((_, i) => i !== index);
+          return newWinners.map((winner, i) => ({ ...winner, winnerPosition: i + 1 }));
+        });
+        showToast("Winner removed", "info", "Removed");
+      } else {
+        showToast("At least one winner is required", "warning", "Cannot Remove");
+      }
+    },
+    [winners.length, showToast]
+  );
 
-  const updateWinner = (index, field, value) => {
-    const newWinners = [...winners];
-    newWinners[index][field] = value;
-    setWinners(newWinners);
-  };
+  // Update winner field
+  const updateWinner = useCallback((index, field, value) => {
+    setWinners((prev) => {
+      const newWinners = [...prev];
+      newWinners[index][field] = value;
+      return newWinners;
+    });
+  }, []);
 
-  const getPositionLabel = (position) => {
-    switch (position) {
-      case 1:
-        return "🥇 1st Place";
-      case 2:
-        return "🥈 2nd Place";
-      case 3:
-        return "🥉 3rd Place";
-      default:
-        return `🏅 ${position}th Place`;
-    }
-  };
+  // Get position label with emoji
+  const getPositionLabel = useCallback((position) => {
+    const labels = {
+      1: "🥇 1st Place",
+      2: "🥈 2nd Place",
+      3: "🥉 3rd Place",
+    };
+    return labels[position] || `🏅 ${position}th Place`;
+  }, []);
 
-  const validateWinners = () => {
+  // Validate winners data
+  const validateWinners = useCallback(() => {
     const errors = [];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const urlRegex = /^https?:\/\/.+\..+/;
 
     winners.forEach((winner, index) => {
+      const position = index + 1;
+
       if (!winner.studentEmail?.trim()) {
-        errors.push(`Winner ${index + 1}: Email is required`);
+        errors.push(`Winner ${position}: Email is required`);
+      } else if (!emailRegex.test(winner.studentEmail)) {
+        errors.push(`Winner ${position}: Invalid email format`);
       }
+
       if (!winner.certificateURL?.trim()) {
-        errors.push(`Winner ${index + 1}: Certificate URL is required`);
-      }
-      if (winner.studentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(winner.studentEmail)) {
-        errors.push(`Winner ${index + 1}: Invalid email format`);
-      }
-      if (winner.certificateURL && !/^https?:\/\/.+\..+/.test(winner.certificateURL)) {
-        errors.push(`Winner ${index + 1}: Invalid certificate URL format`);
+        errors.push(`Winner ${position}: Certificate URL is required`);
+      } else if (!urlRegex.test(winner.certificateURL)) {
+        errors.push(`Winner ${position}: Invalid certificate URL format`);
       }
     });
 
     return errors;
-  };
+  }, [winners]);
 
-  const onSubmit = async (data) => {
-    // Validate winners before submission
-    const validationErrors = validateWinners();
-    if (validationErrors.length > 0) {
-      validationErrors.forEach((error) => toast.error(error));
-      return;
-    }
+  // Form submission handler
+  const onSubmit = useCallback(
+    async (data) => {
+      // Validate event selection
+      if (!data.eventId) {
+        showToast("Please select an event", "warning", "Event Required");
+        return;
+      }
 
-    // Validate event selection
-    if (!data.eventId) {
-      toast.error("Please select an event");
-      return;
-    }
+      // Validate winners
+      const validationErrors = validateWinners();
+      if (validationErrors.length > 0) {
+        validationErrors.forEach((error) => showToast(error, "error", "Validation Error"));
+        return;
+      }
 
-    setIsSubmitting(true);
-    try {
-      const certificateData = {
-        eventId: data.eventId,
-        winners: winners.map((winner) => ({
-          studentEmail: winner.studentEmail.trim(),
-          winnerPosition: winner.winnerPosition,
-          certificateURL: winner.certificateURL.trim(),
-        })),
-      };
+      setPageState((prev) => ({ ...prev, isSubmitting: true }));
 
-      const res = await axios.post(`${BASE_URL}/api/certificates/issue`, certificateData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      try {
+        const certificateData = {
+          eventId: data.eventId,
+          winners: winners.map((winner) => ({
+            studentEmail: winner.studentEmail.trim(),
+            winnerPosition: winner.winnerPosition,
+            certificateURL: winner.certificateURL.trim(),
+          })),
+        };
 
-      if (res.data.data.errors && res.data.data.errors.length > 0) {
-        res.data.data.errors.forEach((error) => {
-          toast.warning(error);
+        const res = await axios.post(`${BASE_URL}/api/certificates/issue`, certificateData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
-      }
 
-      if (res.data.data.certificates && res.data.data.certificates.length > 0) {
-        toast.success(`🎉 ${res.data.message}`);
-        reset();
-        setWinners([
-          { studentEmail: "", winnerPosition: 1, certificateURL: "" },
-          { studentEmail: "", winnerPosition: 2, certificateURL: "" },
-          { studentEmail: "", winnerPosition: 3, certificateURL: "" },
-        ]);
-      } else {
-        toast.warning("No certificates were issued. Please check the errors above.");
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      toast.error(err.response?.data?.message || "Failed to issue certificates");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        // Handle partial errors
+        if (res.data.data.errors && res.data.data.errors.length > 0) {
+          res.data.data.errors.forEach((error) => {
+            showToast(error, "warning", "Partial Success");
+          });
+        }
 
+        // Handle successful certificates
+        if (res.data.data.certificates && res.data.data.certificates.length > 0) {
+          showToast(
+            `Successfully issued ${res.data.data.certificates.length} certificate(s)`,
+            "success",
+            "Certificates Issued"
+          );
+
+          // Reset form
+          reset();
+          setWinners([
+            { studentEmail: "", winnerPosition: 1, certificateURL: "" },
+            { studentEmail: "", winnerPosition: 2, certificateURL: "" },
+            { studentEmail: "", winnerPosition: 3, certificateURL: "" },
+          ]);
+        } else {
+          showToast(
+            "No certificates were issued. Check errors above.",
+            "warning",
+            "No Certificates"
+          );
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        const errorMessage = err.response?.data?.message || "Failed to issue certificates";
+        showToast(errorMessage, "error", "Issuance Failed");
+      } finally {
+        setPageState((prev) => ({ ...prev, isSubmitting: false }));
+      }
+    },
+    [winners, validateWinners, BASE_URL, token, reset, showToast]
+  );
+
+  // Watch selected event
   const selectedEventId = watch("eventId");
-  const selectedEvent = events.find((event) => event.id === selectedEventId);
+  const selectedEvent = useMemo(
+    () => pageState.events.find((event) => event.id === selectedEventId),
+    [pageState.events, selectedEventId]
+  );
+
+  // Get chip color based on position
+  const getPositionColor = useCallback((position) => {
+    if (position === 1) return "success";
+    if (position === 2) return "warning";
+    if (position === 3) return "secondary";
+    return "default";
+  }, []);
 
   return (
     <Box
@@ -186,8 +239,6 @@ const CertificatePublisher = () => {
         px: 2,
       }}
     >
-      <ToastContainer position="top-right" autoClose={5000} theme={darkMode ? "dark" : "light"} />
-
       <Grid container justifyContent="center">
         <Grid item xs={12} md={10} lg={8}>
           <Card
@@ -202,13 +253,7 @@ const CertificatePublisher = () => {
             <CardContent sx={{ p: 3 }}>
               {/* Header Section */}
               <MDBox textAlign="center" mb={2}>
-                <EmojiEvents
-                  sx={{
-                    fontSize: 40,
-                    color: sidenavColor,
-                    mb: 1,
-                  }}
-                />
+                <EmojiEvents sx={{ fontSize: 40, color: "text.main", mb: 1 }} />
                 <MDTypography variant="h3" gutterBottom fontWeight="bold">
                   Issue Blockchain Certificates
                 </MDTypography>
@@ -251,8 +296,8 @@ const CertificatePublisher = () => {
                         render={({ field, fieldState: { error } }) => (
                           <Autocomplete
                             {...field}
-                            options={events}
-                            loading={loadingEvents}
+                            options={pageState.events}
+                            loading={pageState.loadingEvents}
                             getOptionLabel={(option) =>
                               `${option.title} - ${new Date(option.date).toLocaleDateString()}`
                             }
@@ -267,6 +312,17 @@ const CertificatePublisher = () => {
                                 variant="outlined"
                                 error={!!error}
                                 helperText={error?.message}
+                                InputProps={{
+                                  ...params.InputProps,
+                                  endAdornment: (
+                                    <>
+                                      {pageState.loadingEvents ? (
+                                        <CircularProgress color="inherit" size={20} />
+                                      ) : null}
+                                      {params.InputProps.endAdornment}
+                                    </>
+                                  ),
+                                }}
                               />
                             )}
                           />
@@ -304,7 +360,7 @@ const CertificatePublisher = () => {
                   <Grid item xs={12}>
                     <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                       <MDTypography variant="h5" fontWeight="medium">
-                        🏅 Assign Certificate
+                        🏅 Assign Certificates ({winners.length}/20)
                       </MDTypography>
                       <MDButton
                         onClick={addWinner}
@@ -334,15 +390,7 @@ const CertificatePublisher = () => {
                           >
                             <Chip
                               label={getPositionLabel(winner.winnerPosition)}
-                              color={
-                                winner.winnerPosition === 1
-                                  ? "success"
-                                  : winner.winnerPosition === 2
-                                    ? "warning"
-                                    : winner.winnerPosition === 3
-                                      ? "secondary"
-                                      : "default"
-                              }
+                              color={getPositionColor(winner.winnerPosition)}
                               sx={{ mb: 2, fontWeight: "bold" }}
                             />
 
@@ -389,10 +437,12 @@ const CertificatePublisher = () => {
                                   }
                                   variant="outlined"
                                   required
-                                  placeholder="https://drive.com/certificate.pdf"
+                                  placeholder="https://drive.google.com/certificate.pdf"
                                   InputProps={{
                                     startAdornment: (
-                                      <CloudUpload sx={{ opacity: 0.8, color: "primary.main" }} />
+                                      <CloudUpload
+                                        sx={{ opacity: 0.8, color: "primary.main", mr: 1 }}
+                                      />
                                     ),
                                   }}
                                 />
@@ -415,14 +465,15 @@ const CertificatePublisher = () => {
                         type="submit"
                         variant="gradient"
                         color={sidenavColor}
-                        disabled={isSubmitting || !selectedEvent}
+                        disabled={pageState.isSubmitting || !selectedEvent}
                         sx={{
                           borderRadius: 2,
                           fontSize: "1.1rem",
                           py: 1.5,
+                          minWidth: 280,
                         }}
                       >
-                        {isSubmitting ? (
+                        {pageState.isSubmitting ? (
                           <>
                             <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
                             Processing...

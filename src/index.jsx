@@ -9,8 +9,6 @@ import ErrorBoundary from "./ErrorBoundary";
 import { MaterialUIControllerProvider } from "./context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "context/AuthContext";
-import { NotificationProvider } from "context/NotifiContext";
-import NotificationToast from "./components/NotifiToast";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -24,14 +22,11 @@ root.render(
   <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
-        <NotificationProvider>
-          <MaterialUIControllerProvider>
-            <GoogleOAuthProvider clientId={clientId}>
-              <App />
-              <NotificationToast />
-            </GoogleOAuthProvider>
-          </MaterialUIControllerProvider>
-        </NotificationProvider>
+        <MaterialUIControllerProvider>
+          <GoogleOAuthProvider clientId={clientId}>
+            <App />
+          </GoogleOAuthProvider>
+        </MaterialUIControllerProvider>
       </AuthProvider>
     </BrowserRouter>
   </ErrorBoundary>

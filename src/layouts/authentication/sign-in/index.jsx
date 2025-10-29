@@ -1,8 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { ToastContainer } from "react-toastify";
 import { GoogleLogin } from "@react-oauth/google";
-
-// react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
 // @mui material components
@@ -24,6 +21,7 @@ import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
+import { useNotifications } from "context/NotifiContext";
 
 import { Divider, Icon, InputAdornment } from "@mui/material";
 import ResetPasswordModal from "../forgotPassword";
@@ -35,7 +33,8 @@ function Basic() {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const navigate = useNavigate();
-  const { login, googleLogin, showToast } = useAuth();
+  const { showToast } = useNotifications();
+  const { login, googleLogin } = useAuth();
   const production = import.meta.env.VITE_NODE_ENV === "production";
   const googleButtonRef = useRef(null);
 
@@ -50,7 +49,7 @@ function Basic() {
     isLoading: false,
     showPassword: false,
     resetOpen: false,
-    rememberMe: sessionStorage.getItem("rememberMe") === "true" || false,
+    rememberMe: localStorage.getItem("rememberMe") === "true" || false,
   });
 
   // Captcha state
@@ -63,8 +62,8 @@ function Basic() {
   // Load saved credentials if rememberMe was checked
   useEffect(() => {
     if (uiState.rememberMe) {
-      const savedEmail = sessionStorage.getItem("savedEmail");
-      const savedPassword = sessionStorage.getItem("savedPassword");
+      const savedEmail = localStorage.getItem("savedEmail");
+      const savedPassword = localStorage.getItem("savedPassword");
       if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
       if (savedPassword) setFormData((prev) => ({ ...prev, password: savedPassword }));
     }
@@ -78,8 +77,11 @@ function Basic() {
   const handleResetSubmit = useCallback(
     (email) => {
       console.log("Reset password for:", email);
-      showToast("Reset password link sent to " + email, "success");
-      setUiState((prev) => ({ ...prev, resetOpen: false }));
+      showToast("Reset password link sent to " + email, "success", "Reset link sent!");
+      // Close modal after 3 seconds to allow user to see success message
+      setTimeout(() => {
+        setUiState((prev) => ({ ...prev, resetOpen: false }));
+      }, 3000);
     },
     [showToast]
   );
@@ -104,13 +106,13 @@ function Basic() {
 
     // Save credentials if rememberMe is checked
     if (uiState.rememberMe) {
-      sessionStorage.setItem("savedEmail", formData.email);
-      sessionStorage.setItem("savedPassword", formData.password);
-      sessionStorage.setItem("rememberMe", "true");
+      localStorage.setItem("savedEmail", formData.email);
+      localStorage.setItem("savedPassword", formData.password);
+      localStorage.setItem("rememberMe", "true");
     } else {
-      sessionStorage.removeItem("savedEmail");
-      sessionStorage.removeItem("savedPassword");
-      sessionStorage.removeItem("rememberMe");
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+      localStorage.removeItem("rememberMe");
     }
 
     try {
@@ -122,19 +124,19 @@ function Basic() {
       });
 
       if (result.success) {
-        showToast("Login successful! Redirecting...", "success");
+        showToast("Login successful! Redirecting...", "success", "Login Successful");
         const role = result.data?.role;
         setTimeout(() => {
           navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
         }, 1500);
       } else {
         setCaptchaState((prev) => ({ ...prev, reset: !prev.reset, token: null }));
-        showToast(result.message);
+        showToast(result.message, "error");
       }
     } catch (err) {
       setCaptchaState((prev) => ({ ...prev, reset: !prev.reset, token: null }));
       console.log(err);
-      showToast("An unexpected error occurred");
+      showToast("An unexpected error occurred", "error");
     } finally {
       setUiState((prev) => ({ ...prev, isLoading: false }));
     }
@@ -162,10 +164,10 @@ function Basic() {
           );
         }, 700);
       } else {
-        showToast(result.message);
+        showToast(result.message, "error");
       }
     } catch (error) {
-      showToast("Google login failed");
+      showToast("Google login failed", "error");
     }
   };
 
@@ -177,8 +179,8 @@ function Basic() {
     setUiState((prev) => {
       const newRememberMe = !prev.rememberMe;
       if (!newRememberMe) {
-        sessionStorage.removeItem("savedEmail");
-        sessionStorage.removeItem("savedPassword");
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
       }
       return { ...prev, rememberMe: newRememberMe };
     });
@@ -202,7 +204,6 @@ function Basic() {
 
   return (
     <BasicLayout image={bgImage}>
-      <ToastContainer />
       <Card>
         <MDBox
           variant="gradient"
@@ -365,9 +366,8 @@ function Basic() {
                   <GoogleLogin
                     onSuccess={handleGoogleLogin}
                     onError={() => {
-                      showToast("Google login failed. Please try again.");
+                      showToast("Google login failed. Please try again.", "error");
                     }}
-                    ref={googleButtonRef}
                   />
                 </div>
                 <MDButton

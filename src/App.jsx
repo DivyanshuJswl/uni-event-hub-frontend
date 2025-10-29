@@ -1,5 +1,4 @@
-// App.jsx - Updated imports and main content
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -11,11 +10,13 @@ import MDBox from "components/MDBox";
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
 import LoadingScreen from "components/LoadingScreen";
+import NotificationToast from "components/NotifiToast";
 import theme from "assets/theme";
 import themeRTL from "assets/theme/theme-rtl";
 import themeDark from "assets/theme-dark";
 import themeDarkRTL from "assets/theme-dark/theme-rtl";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
+import { NotificationProvider } from "context/NotifiContext";
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 import routes from "./routes";
@@ -25,8 +26,9 @@ import { ChatProvider } from "context/ChatContext";
 import FloatingChatButton from "components/FloatingChatButton";
 import ChatWindow from "components/ChatWindow";
 
-export default function App() {
-  const { role, isLoading, user, token } = useAuth();
+// Main App Content Component (for better organization)
+const AppContent = () => {
+  const { role, user } = useAuth();
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -39,36 +41,31 @@ export default function App() {
     darkMode,
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
-  const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
 
-  // Initialize RTL cache
-  useMemo(() => {
-    const cacheRtl = createCache({
-      key: "rtl",
-      stylisPlugins: [rtlPlugin],
-    });
-    setRtlCache(cacheRtl);
-  }, []);
+  // Memoized brand image
+  const brandImage = useMemo(() => {
+    return (transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite;
+  }, [transparentSidenav, darkMode, whiteSidenav]);
 
   // Sidenav mouse handlers
-  const handleOnMouseEnter = () => {
+  const handleOnMouseEnter = useCallback(() => {
     if (miniSidenav && !onMouseEnter) {
       setMiniSidenav(dispatch, false);
       setOnMouseEnter(true);
     }
-  };
+  }, [miniSidenav, onMouseEnter, dispatch]);
 
-  const handleOnMouseLeave = () => {
+  const handleOnMouseLeave = useCallback(() => {
     if (onMouseEnter) {
       setMiniSidenav(dispatch, true);
       setOnMouseEnter(false);
     }
-  };
+  }, [onMouseEnter, dispatch]);
 
-  // Route generator
-  const getRoutes = (allRoutes) =>
-    allRoutes.map((route) => {
+  // Memoized route generator
+  const getRoutes = useCallback((allRoutes) => {
+    return allRoutes.map((route) => {
       if (route.collapse) {
         return getRoutes(route.collapse);
       }
@@ -77,9 +74,12 @@ export default function App() {
       }
       return null;
     });
+  }, []);
 
   // Configurator toggle
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
+  const handleConfiguratorOpen = useCallback(() => {
+    setOpenConfigurator(dispatch, !openConfigurator);
+  }, [dispatch, openConfigurator]);
 
   // Set document direction
   useEffect(() => {
@@ -92,39 +92,50 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  // Configurator button - Only show if user is logged in
-  const configsButton = user ? (
-    <MDBox
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="3.25rem"
-      height="3.25rem"
-      bgColor="white"
-      shadow="sm"
-      borderRadius="50%"
-      position="fixed"
-      right="2rem"
-      bottom="2rem"
-      zIndex={99}
-      color="dark"
-      sx={{ cursor: "pointer" }}
-      onClick={handleConfiguratorOpen}
-    >
-      <Icon fontSize="small" color="inherit">
-        settings
-      </Icon>
-    </MDBox>
-  ) : null;
+  // Memoized configurator button
+  const configsButton = useMemo(() => {
+    if (!user) return null;
 
-  // Main content
-  const mainContent = (
+    return (
+      <MDBox
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        width="3.25rem"
+        height="3.25rem"
+        bgColor="white"
+        shadow="sm"
+        borderRadius="50%"
+        position="fixed"
+        right="2rem"
+        bottom="2rem"
+        zIndex={99}
+        color="dark"
+        sx={{ cursor: "pointer" }}
+        onClick={handleConfiguratorOpen}
+      >
+        <Icon fontSize="small" color="inherit">
+          settings
+        </Icon>
+      </MDBox>
+    );
+  }, [user, handleConfiguratorOpen]);
+
+  // Memoized default redirect
+  const defaultRedirect = useMemo(() => {
+    return role === "organizer" ? "/organizer-dashboard" : "/user-dashboard";
+  }, [role]);
+
+  return (
     <ChatProvider>
+      {/* Unified Notification Toast - Available Throughout App */}
+      <NotificationToast />
+
       {layout === "dashboard" && (
         <>
           <Sidenav
             color={sidenavColor}
-            brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+            brand={brandImage}
             brandName="Uni-Event HUB"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
@@ -152,33 +163,60 @@ export default function App() {
             window.location.pathname.startsWith("/reset-password/") ? (
               <ResetPasswordPage />
             ) : (
-              <Navigate to={role == "organizer" ? "/organizer-dashboard" : "/user-dashboard"} />
+              <Navigate to={defaultRedirect} />
             )
           }
         />
       </Routes>
     </ChatProvider>
   );
+};
 
-  return (
-    <>
-      {isLoading ? (
-        <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
-          <LoadingScreen />
-        </ThemeProvider>
-      ) : direction === "rtl" ? (
-        <CacheProvider value={rtlCache}>
-          <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
-            <CssBaseline />
-            {mainContent}
-          </ThemeProvider>
-        </CacheProvider>
-      ) : (
-        <ThemeProvider theme={darkMode ? themeDark : theme}>
-          <CssBaseline />
-          {mainContent}
-        </ThemeProvider>
-      )}
-    </>
+// Main App Component with Providers
+export default function App() {
+  const { isLoading } = useAuth();
+  const [controller] = useMaterialUIController();
+  const { direction, darkMode } = controller;
+
+  // Memoized RTL cache
+  const rtlCache = useMemo(() => {
+    return createCache({
+      key: "rtl",
+      stylisPlugins: [rtlPlugin],
+    });
+  }, []);
+
+  // Memoized theme selection
+  const selectedTheme = useMemo(() => {
+    if (direction === "rtl") {
+      return darkMode ? themeDarkRTL : themeRTL;
+    }
+    return darkMode ? themeDark : theme;
+  }, [direction, darkMode]);
+
+  // Loading screen
+  if (isLoading) {
+    return (
+      <ThemeProvider theme={selectedTheme}>
+        <CssBaseline />
+        <LoadingScreen />
+      </ThemeProvider>
+    );
+  }
+
+  // Main render with RTL support
+  const mainContent = (
+    <NotificationProvider>
+      <ThemeProvider theme={selectedTheme}>
+        <CssBaseline />
+        <AppContent />
+      </ThemeProvider>
+    </NotificationProvider>
+  );
+
+  return direction === "rtl" ? (
+    <CacheProvider value={rtlCache}>{mainContent}</CacheProvider>
+  ) : (
+    mainContent
   );
 }

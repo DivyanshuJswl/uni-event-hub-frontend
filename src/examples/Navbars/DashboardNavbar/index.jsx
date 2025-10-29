@@ -256,10 +256,9 @@ function DashboardNavbar({ absolute, light, isMini }) {
                         </MDTypography>
                         <MDTypography
                           variant="caption"
-                          color="text.secondary"
                           sx={{
                             backgroundColor:
-                              result.type === "event" ? "primary.light" : "secondary.light",
+                              result.type === "event" ? "primary.main" : "secondary.main",
                             px: 1,
                             borderRadius: 1,
                             mt: 0.5,

@@ -1,8 +1,6 @@
 // react-router-dom components
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
-import { ToastContainer } from "react-toastify";
 import { styled } from "@mui/material/styles";
 // @mui material components
 import Card from "@mui/material/Card";
@@ -15,8 +13,7 @@ import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 // Authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
-
-// Images
+import { useNotifications } from "context/NotifiContext";
 import { Icon, IconButton, InputAdornment, Switch, Tooltip } from "@mui/material";
 import PasswordGeneratorModal from "../components/PasswordGenerator";
 import zxcvbn from "zxcvbn";
@@ -60,7 +57,8 @@ function Cover() {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const navigate = useNavigate();
-  const { signup, showToast } = useAuth();
+  const { showToast } = useNotifications();
+  const { signup } = useAuth();
 
   // Consolidated form data state
   const [formData, setFormData] = useState({
@@ -77,7 +75,7 @@ function Cover() {
     showPassword: false,
     generatorOpen: false,
     agreedToTerms: false,
-    rememberMe: sessionStorage.getItem("rememberMe") === "true" || false,
+    rememberMe: localStorage.getItem("rememberMe") === "true" || false,
   });
 
   // Branch validation state
@@ -103,8 +101,8 @@ function Cover() {
     setUiState((prev) => {
       const newRememberMe = !prev.rememberMe;
       if (!newRememberMe) {
-        sessionStorage.removeItem("savedEmail");
-        sessionStorage.removeItem("savedPassword");
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
       }
       return { ...prev, rememberMe: newRememberMe };
     });
@@ -145,7 +143,7 @@ function Cover() {
       });
 
       if (result.success) {
-        showToast("Registration successful! Redirecting to login...", "success");
+        showToast("Registration successful! Redirecting to login...", "success", "User registered");
 
         // Redirect after 1.5 seconds
         setTimeout(() => {
@@ -182,13 +180,13 @@ function Cover() {
   // Save/remove credentials based on rememberMe
   useEffect(() => {
     if (uiState.rememberMe) {
-      sessionStorage.setItem("savedEmail", formData.email);
-      sessionStorage.setItem("savedPassword", formData.password);
-      sessionStorage.setItem("rememberMe", "true");
+      localStorage.setItem("savedEmail", formData.email);
+      localStorage.setItem("savedPassword", formData.password);
+      localStorage.setItem("rememberMe", "true");
     } else {
-      sessionStorage.removeItem("savedEmail");
-      sessionStorage.removeItem("savedPassword");
-      sessionStorage.removeItem("rememberMe");
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+      localStorage.removeItem("rememberMe");
     }
   }, [uiState.rememberMe, formData.email, formData.password]);
 
@@ -244,19 +242,6 @@ function Cover() {
   return (
     <CoverLayout sx={{ minHeight: "100vh" }} image={bgImage}>
       <BackgroundWrapper />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={darkMode ? "dark" : "light"}
-      />
-
       <Card sx={{ maxWidth: 400, zIndex: 10, mx: "auto" }}>
         <MDBox
           variant="gradient"

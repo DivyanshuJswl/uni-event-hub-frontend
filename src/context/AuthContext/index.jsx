@@ -1,14 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  CircularProgress,
-  Typography,
-  Button,
-  Container,
-  Paper,
-  Alert
-} from '@mui/material';
+import { Box, CircularProgress, Typography, Button, Container, Paper, Alert } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Warning, Lock, Security } from "@mui/icons-material";
@@ -18,14 +10,14 @@ const AuthContext = createContext();
 const LoadingScreen = () => (
   <Box
     sx={{
-      position: 'fixed',
+      position: "fixed",
       inset: 0,
       zIndex: (theme) => theme.zIndex.modal + 2,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      bgcolor: 'background.default'
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      bgcolor: "background.default",
     }}
   >
     <CircularProgress size={60} thickness={4} sx={{ mb: 3 }} />
@@ -39,14 +31,14 @@ const LoadingScreen = () => (
 const AccessDeniedScreen = ({ message, onRedirect }) => (
   <Box
     sx={{
-      position: 'fixed',
+      position: "fixed",
       inset: 0,
       zIndex: (theme) => theme.zIndex.modal + 2,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       p: 2,
-      bgcolor: 'background.default'
+      bgcolor: "background.default",
     }}
   >
     <Container maxWidth="sm">
@@ -54,23 +46,29 @@ const AccessDeniedScreen = ({ message, onRedirect }) => (
         elevation={8}
         sx={{
           p: 6,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center'
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
         }}
       >
-        <Warning sx={{ fontSize: 80, color: 'warning.main', mb: 3 }} />
+        <Warning sx={{ fontSize: 80, color: "warning.main", mb: 3 }} />
         <Typography component="h1" variant="h4" gutterBottom color="error">
           Access Denied
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           {message}
         </Typography>
-        <Alert severity="warning" sx={{ width: '100%', mb: 3 }}>
+        <Alert severity="warning" sx={{ width: "100%", mb: 3 }}>
           You will be redirected to the login page shortly...
         </Alert>
-        <Button variant="contained" color="primary" onClick={onRedirect} startIcon={<Lock />} size="large">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onRedirect}
+          startIcon={<Lock />}
+          size="large"
+        >
           Go to Login Now
         </Button>
       </Paper>
@@ -82,14 +80,14 @@ const AccessDeniedScreen = ({ message, onRedirect }) => (
 const LoginRequiredScreen = ({ onRedirect }) => (
   <Box
     sx={{
-      position: 'fixed',
+      position: "fixed",
       inset: 0,
       zIndex: (theme) => theme.zIndex.modal + 2,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       p: 2,
-      bgcolor: 'background.default'
+      bgcolor: "background.default",
     }}
   >
     <Container maxWidth="sm">
@@ -97,23 +95,29 @@ const LoginRequiredScreen = ({ onRedirect }) => (
         elevation={8}
         sx={{
           p: 6,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center'
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
         }}
       >
-        <Security sx={{ fontSize: 80, color: 'primary.main', mb: 3 }} />
+        <Security sx={{ fontSize: 80, color: "primary.main", mb: 3 }} />
         <Typography component="h1" variant="h4" color="GrayText" gutterBottom>
           Authentication Required
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Please log in to access this page
         </Typography>
-        <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
+        <Alert severity="info" sx={{ width: "100%", mb: 3 }}>
           Redirecting to login page...
         </Alert>
-        <Button variant="contained" color="primary" onClick={onRedirect} startIcon={<Lock />} size="large">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onRedirect}
+          startIcon={<Lock />}
+          size="large"
+        >
           Login Now
         </Button>
       </Paper>
@@ -135,7 +139,7 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       try {
         // Check if we have a token in memory (from previous session)
-        const storedToken = sessionStorage.getItem("token");
+        const storedToken = localStorage.getItem("token");
         if (storedToken) {
           // Verify the token is still valid with the backend
           const response = await axios.get(BASE_URL + "/api/auth/me", {
@@ -151,12 +155,12 @@ export const AuthProvider = ({ children }) => {
             setRole(userData.role);
           } else {
             // Token is invalid, clear it
-            sessionStorage.removeItem("token");
+            localStorage.removeItem("token");
           }
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
       } finally {
         setIsLoading(false);
       }
@@ -185,7 +189,7 @@ export const AuthProvider = ({ children }) => {
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
-      theme: theme
+      theme: theme,
     };
 
     // Dismiss any existing toasts before showing new one
@@ -213,8 +217,8 @@ export const AuthProvider = ({ children }) => {
         const student = data.student;
         const role = data.role;
 
-        // Store token in sessionStorage
-        sessionStorage.setItem("token", token);
+        // Store token in localStorage
+        localStorage.setItem("token", token);
 
         // Set state values
         setToken(token);
@@ -274,8 +278,8 @@ export const AuthProvider = ({ children }) => {
       setUser(student);
       setRole(userRole);
 
-      // Store in sessionStorage
-      sessionStorage.setItem("token", authToken);
+      // Store in localStorage
+      localStorage.setItem("token", authToken);
 
       return {
         success: true,
@@ -321,12 +325,12 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setRole(null);
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("role");
-      sessionStorage.removeItem("savedEmail");
-      sessionStorage.removeItem("savedPassword");
-      sessionStorage.removeItem("rememberMe");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("savedEmail");
+      localStorage.removeItem("savedPassword");
+      localStorage.removeItem("rememberMe");
 
       // Return success even if API call failed
       return { success: true };
@@ -407,9 +411,9 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         setUser(null);
         setRole(null);
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("role");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
 
         showToast("Session expired. Please log in again.", "error");
         return { success: false, requiresLogin: true };
@@ -479,7 +483,7 @@ export const AuthProvider = ({ children }) => {
           setToken(null);
           setUser(null);
           setRole(null);
-          sessionStorage.clear();
+          localStorage.clear();
           errorMessage = "Session expired. Please log in again.";
         } else if (error.response.status === 409) {
           errorMessage = "This wallet is already linked to another account";
@@ -615,20 +619,18 @@ export const useAuth = () => {
 export const withAuth = (Component) => {
   return function WithAuthComponent(props) {
     const { token, isLoading, navigateWithDelay } = useAuth();
-    
+
     if (isLoading) {
       return <LoadingScreen />;
     }
-    
+
     if (!token) {
-      navigateWithDelay('/authentication/sign-in');
+      navigateWithDelay("/authentication/sign-in");
       return (
-        <LoginRequiredScreen 
-          onRedirect={() => navigateWithDelay('/authentication/sign-in', 0)}
-        />
+        <LoginRequiredScreen onRedirect={() => navigateWithDelay("/authentication/sign-in", 0)} />
       );
     }
-    
+
     return <Component {...props} />;
   };
 };
@@ -637,30 +639,28 @@ export const withAuth = (Component) => {
 export const withRole = (Component, requiredRole) => {
   return function WithRoleComponent(props) {
     const { token, role, isLoading, navigateWithDelay } = useAuth();
-    
+
     if (isLoading) {
       return <LoadingScreen />;
     }
-    
+
     if (!token) {
-      navigateWithDelay('/authentication/sign-in');
+      navigateWithDelay("/authentication/sign-in");
       return (
-        <LoginRequiredScreen 
-          onRedirect={() => navigateWithDelay('/authentication/sign-in', 0)}
-        />
+        <LoginRequiredScreen onRedirect={() => navigateWithDelay("/authentication/sign-in", 0)} />
       );
     }
-    
+
     if (role !== requiredRole) {
-      navigateWithDelay('/authentication/sign-in');
+      navigateWithDelay("/authentication/sign-in");
       return (
-        <AccessDeniedScreen 
+        <AccessDeniedScreen
           message={`Access denied. Required role: ${requiredRole}. Your current role: ${role}`}
-          onRedirect={() => navigateWithDelay('/authentication/sign-in', 0)}
+          onRedirect={() => navigateWithDelay("/authentication/sign-in", 0)}
         />
       );
     }
-    
+
     return <Component {...props} />;
   };
 };
@@ -668,21 +668,21 @@ export const withRole = (Component, requiredRole) => {
 // Hook for protecting routes in functional components
 export const useRouteGuard = (requiredRole = null) => {
   const { token, role, isLoading, navigateWithDelay } = useAuth();
-  
+
   useEffect(() => {
     if (!isLoading) {
       if (!token) {
-        navigateWithDelay('/authentication/sign-in');
+        navigateWithDelay("/authentication/sign-in");
         return;
       }
-      
+
       if (requiredRole && role !== requiredRole) {
-        navigateWithDelay('/authentication/sign-in');
+        navigateWithDelay("/authentication/sign-in");
         return;
       }
     }
   }, [token, role, isLoading, requiredRole, navigateWithDelay]);
-  
+
   return { hasAccess: !!token && (!requiredRole || role === requiredRole), isLoading };
 };
 
@@ -692,7 +692,7 @@ export const useRouteGuard = (requiredRole = null) => {
 // const EventManager = () => {
 //   // This will automatically redirect if user doesn't have organizer role
 //   useRouteGuard('organizer');
-  
+
 //   const { user } = useAuth();
 
 //   return (
@@ -709,28 +709,28 @@ export const useRouteGuard = (requiredRole = null) => {
 // Component wrapper for route protection
 export const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { hasAccess, isLoading } = useRouteGuard(requiredRole);
-  
+
   if (isLoading) {
     return <LoadingScreen />;
   }
-  
+
   if (!hasAccess) {
     if (!requiredRole) {
       return (
-        <LoginRequiredScreen 
-          onRedirect={() => window.location.href = '/authentication/sign-in'}
+        <LoginRequiredScreen
+          onRedirect={() => (window.location.href = "/authentication/sign-in")}
         />
       );
     } else {
       return (
-        <AccessDeniedScreen 
+        <AccessDeniedScreen
           message={`Access denied. Required role: ${requiredRole}`}
-          onRedirect={() => window.location.href = '/authentication/sign-in'}
+          onRedirect={() => (window.location.href = "/authentication/sign-in")}
         />
       );
     }
   }
-  
+
   return children;
 };
 // USAGE EXAMPLE:
@@ -742,22 +742,22 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
 //       {/* Public routes */}
 //       <Route path="/authentication/sign-in" element={<Login />} />
 //       <Route path="/authentication/sign-up" element={<Register />} />
-      
+
 //       {/* Protected routes */}
-//       <Route 
-//         path="/dashboard" 
+//       <Route
+//         path="/dashboard"
 //         element={
 //           <ProtectedRoute requiredRole="organizer">
 //             <Dashboard />
 //           </ProtectedRoute>
-//         } 
+//         }
 //       />
-      
-//       <Route 
-//         path="/events" 
+
+//       <Route
+//         path="/events"
 //         element={
 //           <ProtectedRoute>
 //             <EventsPage />
 //           </ProtectedRoute>
-//         } 
+//         }
 //       />

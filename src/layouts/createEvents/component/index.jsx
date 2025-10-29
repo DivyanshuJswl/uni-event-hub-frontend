@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import {
@@ -28,294 +28,286 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "context/AuthContext";
+import { useNotifications } from "context/NotifiContext";
 import { useMaterialUIController } from "context";
 import MDTypography from "components/MDTypography";
+import PropTypes from "prop-types";
 
-const CreateEvent = () => {
+const CreateEvent = ({ onEventCreated }) => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const { handleSubmit, control, reset } = useForm();
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [createdEvent, setCreatedEvent] = useState(null);
+  const { showToast } = useNotifications();
   const { token } = useAuth();
 
-  const pickerTheme = createTheme({
-    palette: {
-      mode: darkMode ? "dark" : "light",
-      primary: {
-        main: sidenavColor === "info" ? "#2196f3" : sidenavColor || "#1976d2",
-      },
-      background: {
-        paper: darkMode ? "#030303ff" : "#e1e1e1ff",
-        default: darkMode ? "#100e0eff" : "#ffffff",
-      },
-      text: {
-        primary: darkMode ? "#ffffff" : "#000000",
-        secondary: darkMode ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
-      },
-    },
-    components: {
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundColor: darkMode ? "#030303ff" : "#e1e1e1ff",
-            color: darkMode ? "#ffffff" : "#000000",
-            borderRadius: 20,
-            boxShadow: darkMode
-              ? "0px 0px 5px rgba(255, 255, 255, 0.15)"
-              : "0px 0px 5px rgba(0, 0, 0, 0.1)",
-          },
-        },
-      },
-      MuiPickersDay: {
-        styleOverrides: {
-          root: ({ ownerState, theme }) => ({
-            color: darkMode ? "#ffffff" : theme.palette.text.primary,
-            "&.Mui-selected": {
-              backgroundColor: theme.palette.primary.main,
-              color: "white",
-            },
-            "&:hover": {
-              backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.04)",
-            },
-          }),
-        },
-      },
-      MuiPickersCalendarHeader: {
-        styleOverrides: {
-          root: { color: darkMode ? "#ffffff" : "#000000" },
-        },
-      },
-      MuiClock: {
-        styleOverrides: {
-          root: { color: darkMode ? "#ffffff" : "#000000" },
-          pin: {
-            backgroundColor: sidenavColor === "info" ? "#2196f3" : sidenavColor,
-          },
-          clockPointer: {
-            backgroundColor: sidenavColor === "info" ? "#2196f3" : sidenavColor,
-          },
-          clockNumber: { color: darkMode ? "#ffffff" : "#000000" },
-        },
-      },
-    },
+  // Consolidated state
+  const [formState, setFormState] = useState({
+    isSubmitting: false,
+    imagePreview: null,
+    imageFile: null,
+    createdEvent: null,
   });
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  // Memoized picker theme
+  const pickerTheme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: darkMode ? "dark" : "light",
+          primary: {
+            main: sidenavColor === "info" ? "#2196f3" : sidenavColor || "#1976d2",
+          },
+          background: {
+            paper: darkMode ? "#030303ff" : "#e1e1e1ff",
+            default: darkMode ? "#100e0eff" : "#ffffff",
+          },
+          text: {
+            primary: darkMode ? "#ffffff" : "#000000",
+            secondary: darkMode ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
+          },
+        },
+        components: {
+          MuiPaper: {
+            styleOverrides: {
+              root: {
+                backgroundColor: darkMode ? "#030303ff" : "#e1e1e1ff",
+                color: darkMode ? "#ffffff" : "#000000",
+                borderRadius: 20,
+                boxShadow: darkMode
+                  ? "0px 0px 5px rgba(255, 255, 255, 0.15)"
+                  : "0px 0px 5px rgba(0, 0, 0, 0.1)",
+              },
+            },
+          },
+          MuiPickersDay: {
+            styleOverrides: {
+              root: {
+                color: darkMode ? "#ffffff" : "#000000",
+                "&.Mui-selected": {
+                  backgroundColor: sidenavColor === "info" ? "#2196f3" : sidenavColor,
+                  color: "white",
+                },
+                "&:hover": {
+                  backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.04)",
+                },
+              },
+            },
+          },
+          MuiPickersCalendarHeader: {
+            styleOverrides: {
+              root: { color: darkMode ? "#ffffff" : "#000000" },
+            },
+          },
+          MuiClock: {
+            styleOverrides: {
+              root: { color: darkMode ? "#ffffff" : "#000000" },
+              pin: {
+                backgroundColor: sidenavColor === "info" ? "#2196f3" : sidenavColor,
+              },
+              clockPointer: {
+                backgroundColor: sidenavColor === "info" ? "#2196f3" : sidenavColor,
+              },
+              clockNumber: { color: darkMode ? "#ffffff" : "#000000" },
+            },
+          },
+        },
+      }),
+    [darkMode, sidenavColor]
+  );
+
+  // Handle image change
+  const handleImageChange = useCallback(
+    (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
       // Validate file type
       const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP)");
+        showToast(
+          "Please upload a valid image file (JPEG, PNG, GIF, WebP)",
+          "warning",
+          "Invalid File Type"
+        );
         return;
       }
 
-      // Validate file size
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      // Validate file size (5MB)
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        toast.error("Image size should be less than 5MB");
+        showToast("Image size should be less than 5MB", "warning", "File Too Large");
         return;
       }
 
-      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setFormState((prev) => ({
+          ...prev,
+          imageFile: file,
+          imagePreview: reader.result,
+        }));
       };
       reader.readAsDataURL(file);
-    }
-  };
+    },
+    [showToast]
+  );
 
-  const removeImage = () => {
-    setImagePreview(null);
-    setImageFile(null);
-  };
+  // Remove image
+  const removeImage = useCallback(() => {
+    setFormState((prev) => ({
+      ...prev,
+      imagePreview: null,
+      imageFile: null,
+    }));
+  }, []);
 
-  const onSubmit = async (data) => {
-    // Enhanced validation
-    if (!data.title || !data.date || !data.location || !data.category || !data.capacity) {
-      toast.warning(
-        "Please fill in all required fields (Title, Date, Location, Category, Capacity)",
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
-      return;
-    }
+  // Reset form to initial state
+  const resetForm = useCallback(() => {
+    reset({
+      title: "",
+      description: "",
+      date: null,
+      location: "",
+      capacity: "",
+      category: "",
+      eventURL: "",
+      enableRegistration: false,
+      digitalCertificates: false,
+      sendReminders: false,
+    });
+    setFormState({
+      isSubmitting: false,
+      imagePreview: null,
+      imageFile: null,
+      createdEvent: null,
+    });
+  }, [reset]);
 
-    // Validate capacity is positive number
-    if (data.capacity && (data.capacity <= 0 || isNaN(data.capacity))) {
-      toast.warning("Capacity must be a positive number", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const formattedDate = data.date ? dayjs(data.date).toISOString() : null;
-
-      // Create FormData for multipart request
-      const formData = new FormData();
-
-      // Append event data as individual fields for better backend parsing
-      formData.append("title", data.title);
-      formData.append("description", data.description || "");
-      formData.append("date", formattedDate);
-      formData.append("location", data.location);
-      formData.append("maxParticipants", data.capacity);
-      formData.append("category", data.category);
-      formData.append("eventURL", data.eventURL || "");
-      formData.append("enableRegistration", data.enableRegistration ? "true" : "false");
-      formData.append("digitalCertificates", data.digitalCertificates ? "true" : "false");
-      formData.append("sendReminders", data.sendReminders ? "true" : "false");
-
-      // Append image file if exists
-      if (imageFile) {
-        formData.append("image", imageFile);
+  // Form submission
+  const onSubmit = useCallback(
+    async (data) => {
+      // Validation
+      if (!data.title || !data.date || !data.location || !data.category || !data.capacity) {
+        showToast("Please fill in all required fields", "warning", "Missing Required Fields");
+        return;
       }
 
-      // Single API call for event creation and image upload
-      const response = await axios.post(`${BASE_URL}/api/events/create`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-        timeout: 30000, // 30 seconds timeout
-      });
+      if (data.capacity <= 0 || isNaN(data.capacity)) {
+        showToast("Capacity must be a positive number", "warning", "Invalid Capacity");
+        return;
+      }
 
-      console.log("Event creation response:", response);
+      setFormState((prev) => ({ ...prev, isSubmitting: true }));
 
-      if (response.data.status === "success") {
-        setCreatedEvent(response.data.data.event);
+      try {
+        const formData = new FormData();
+        const formattedDate = dayjs(data.date).toISOString();
 
-        toast.success(
-          `Event created successfully! ${
-            response.data.data.imageUploaded ? "Image uploaded." : "No image uploaded."
-          }`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
-        );
+        // Append all fields
+        formData.append("title", data.title);
+        formData.append("description", data.description || "");
+        formData.append("date", formattedDate);
+        formData.append("location", data.location);
+        formData.append("maxParticipants", data.capacity);
+        formData.append("category", data.category);
+        formData.append("eventURL", data.eventURL || "");
+        formData.append("enableRegistration", data.enableRegistration ? "true" : "false");
+        formData.append("digitalCertificates", data.digitalCertificates ? "true" : "false");
+        formData.append("sendReminders", data.sendReminders ? "true" : "false");
 
-        // Reset form
-        reset({
-          title: "",
-          description: "",
-          date: null,
-          location: "",
-          capacity: "",
-          category: "",
-          eventURL: "",
-          enableRegistration: false,
-          digitalCertificates: false,
-          sendReminders: false,
+        if (formState.imageFile) {
+          formData.append("image", formState.imageFile);
+        }
+
+        const response = await axios.post(`${BASE_URL}/api/events/create`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+          timeout: 30000,
         });
-        setImagePreview(null);
-        setImageFile(null);
-      }
-    } catch (err) {
-      let errorMessage = "Failed to create event";
 
-      if (err.response) {
-        console.error("Error response data:", err.response.data);
-        console.error("Error response status:", err.response.status);
+        if (response.data.status === "success") {
+          const event = response.data.data.event;
+          setFormState((prev) => ({
+            ...prev,
+            createdEvent: event,
+            isSubmitting: false,
+          }));
 
-        if (err.response.data?.message) {
-          errorMessage = "Error: " + err.response.data.message;
-        } else if (err.response.status === 400) {
-          errorMessage = "Validation error: " + (err.response.data?.message || "Invalid data");
-        } else if (err.response.status === 401) {
-          errorMessage = "Unauthorized - Please login again";
-        } else if (err.response.status === 413) {
-          errorMessage = "File too large - Please upload a smaller image (max 5MB)";
-        } else if (err.response.status === 500) {
-          errorMessage = "Server error - Please try again later";
+          showToast(`Event "${data.title}" created successfully!`, "success", "Event Published");
+
+          // Call parent callback to refresh events list
+          if (onEventCreated) {
+            onEventCreated();
+          }
+
+          resetForm();
         }
-      } else if (err.code === "ERR_NETWORK" || err.code === "ERR_CONNECTION_REFUSED") {
-        errorMessage = "Network error - Please check your connection";
-      } else if (err.code === "ECONNABORTED") {
-        errorMessage = "Request timeout - Please try again";
-      } else if (err.request) {
-        errorMessage = "No response received from server";
-      }
+      } catch (err) {
+        console.error("Error creating event:", err);
 
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        let errorMessage = "Failed to create event";
 
-  // Handle Enter key press in form fields
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (e.target.type !== "textarea") {
-        handleSubmit(onSubmit)(); // Trigger form submission
+        if (err.response) {
+          if (err.response.data?.message) {
+            errorMessage = err.response.data.message;
+          } else if (err.response.status === 400) {
+            errorMessage = "Invalid data - Please check all fields";
+          } else if (err.response.status === 401) {
+            errorMessage = "Unauthorized - Please login again";
+          } else if (err.response.status === 413) {
+            errorMessage = "File too large - Max 5MB";
+          } else if (err.response.status === 500) {
+            errorMessage = "Server error - Please try again later";
+          }
+        } else if (err.code === "ERR_NETWORK") {
+          errorMessage = "Network error - Check your connection";
+        } else if (err.code === "ECONNABORTED") {
+          errorMessage = "Request timeout - Please try again";
+        }
+
+        showToast(errorMessage, "error", "Creation Failed");
+        setFormState((prev) => ({ ...prev, isSubmitting: false }));
       }
-    }
-  };
+    },
+    [BASE_URL, token, formState.imageFile, showToast, resetForm, onEventCreated]
+  );
+
+  // Handle Enter key press
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Enter" && e.target.type !== "textarea") {
+        e.preventDefault();
+        handleSubmit(onSubmit)();
+      }
+    },
+    [handleSubmit, onSubmit]
+  );
+
+  // Event categories
+  const categories = useMemo(
+    () => [
+      { value: "workshop", label: "Workshop" },
+      { value: "seminar", label: "Seminar" },
+      { value: "social", label: "Social" },
+      { value: "hackathon", label: "Hackathon" },
+      { value: "cultural", label: "Cultural" },
+      { value: "technology", label: "Technology" },
+      { value: "others", label: "Others" },
+    ],
+    []
+  );
 
   return (
-    <Box
-      sx={{
-        backgroundColor: "background.default",
-        py: 1,
-        minHeight: "100vh",
-      }}
-    >
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={darkMode ? "dark" : "light"}
-      />
-
+    <Box sx={{ backgroundColor: "background.default", py: 1, minHeight: "100vh" }}>
       <Grid container justifyContent="center">
         <Grid item xs={12} md={8} lg={8}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: darkMode ? 1 : 3,
-              overflow: "visible",
-            }}
-          >
+          <Card sx={{ borderRadius: 3, boxShadow: darkMode ? 1 : 3, overflow: "visible" }}>
             <CardContent sx={{ p: 4 }}>
               <Typography
                 variant="h4"
@@ -330,20 +322,18 @@ const CreateEvent = () => {
                 Create New Event
               </Typography>
 
-              {createdEvent ? (
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    p: 4,
-                    backgroundColor: "background.default",
-                  }}
-                >
+              {formState.createdEvent ? (
+                <Box sx={{ textAlign: "center", p: 4, backgroundColor: "background.default" }}>
                   <Typography variant="h5" color="success.main" gutterBottom>
                     Event Created Successfully!
                   </Typography>
-                  {(createdEvent.featuredImage?.url || createdEvent.images?.[0]?.url) && (
+                  {(formState.createdEvent.featuredImage?.url ||
+                    formState.createdEvent.images?.[0]?.url) && (
                     <Avatar
-                      src={createdEvent.featuredImage?.url || createdEvent.images?.[0]?.url}
+                      src={
+                        formState.createdEvent.featuredImage?.url ||
+                        formState.createdEvent.images?.[0]?.url
+                      }
                       alt="Event cover"
                       sx={{
                         width: 200,
@@ -357,36 +347,22 @@ const CreateEvent = () => {
                     />
                   )}
                   <MDTypography variant="h6" gutterBottom color={darkMode ? "white" : "dark"}>
-                    {createdEvent.title}
+                    {formState.createdEvent.title}
                   </MDTypography>
                   <MDTypography variant="body1" gutterBottom color={darkMode ? "white" : "dark"}>
-                    {dayjs(createdEvent.date).format("MMMM D, YYYY h:mm A")}
+                    {dayjs(formState.createdEvent.date).format("MMMM D, YYYY h:mm A")}
                   </MDTypography>
                   <MDTypography variant="body1" gutterBottom color={darkMode ? "white" : "dark"}>
-                    {createdEvent.location}
+                    {formState.createdEvent.location}
                   </MDTypography>
                   <MDTypography variant="body1" gutterBottom color={darkMode ? "white" : "dark"}>
-                    Category: {createdEvent.category}
+                    Category: {formState.createdEvent.category}
                   </MDTypography>
                   <MDButton
                     variant="gradient"
                     color={sidenavColor}
                     sx={{ mt: 3 }}
-                    onClick={() => {
-                      setCreatedEvent(null);
-                      reset({
-                        title: "",
-                        description: "",
-                        date: null,
-                        location: "",
-                        capacity: "",
-                        category: "",
-                        eventURL: "",
-                        enableRegistration: false,
-                        digitalCertificates: false,
-                        sendReminders: false,
-                      });
-                    }}
+                    onClick={resetForm}
                   >
                     Create Another Event
                   </MDButton>
@@ -394,6 +370,7 @@ const CreateEvent = () => {
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <Grid container spacing={3}>
+                    {/* Title */}
                     <Grid item xs={12}>
                       <Controller
                         name="title"
@@ -410,16 +387,13 @@ const CreateEvent = () => {
                             error={!!error}
                             helperText={error?.message}
                             onKeyPress={handleKeyPress}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                              },
-                            }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                           />
                         )}
                       />
                     </Grid>
 
+                    {/* Description */}
                     <Grid item xs={12}>
                       <Controller
                         name="description"
@@ -433,26 +407,21 @@ const CreateEvent = () => {
                             multiline
                             rows={4}
                             variant="outlined"
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                              },
-                            }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                           />
                         )}
                       />
                     </Grid>
 
-                    <Grid item xs={12} md={12}>
+                    {/* Date & Time */}
+                    <Grid item xs={12}>
                       <ThemeProvider theme={pickerTheme}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <Controller
                             name="date"
                             control={control}
                             defaultValue={null}
-                            rules={{
-                              required: "Event date and time is required",
-                            }}
+                            rules={{ required: "Event date and time is required" }}
                             render={({
                               field: { onChange, value, ref },
                               fieldState: { error },
@@ -464,13 +433,7 @@ const CreateEvent = () => {
                                 label="Event Date & Time"
                                 sx={{
                                   width: "100%",
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: 2,
-                                    fontSize: "0.9rem",
-                                  },
-                                  "& .MuiInputLabel-root": {
-                                    fontSize: "0.9rem",
-                                  },
+                                  "& .MuiOutlinedInput-root": { borderRadius: 2 },
                                 }}
                                 slotProps={{
                                   textField: {
@@ -489,6 +452,7 @@ const CreateEvent = () => {
                       </ThemeProvider>
                     </Grid>
 
+                    {/* Category & Capacity */}
                     <Grid item xs={12} md={6}>
                       <FormControl fullWidth>
                         <InputLabel id="category-label" required>
@@ -506,18 +470,13 @@ const CreateEvent = () => {
                               label="Category"
                               variant="outlined"
                               error={!!error}
-                              sx={{
-                                borderRadius: 2,
-                                height: "2.75rem",
-                              }}
+                              sx={{ borderRadius: 2, height: "2.75rem" }}
                             >
-                              <MenuItem value="workshop">Workshop</MenuItem>
-                              <MenuItem value="seminar">Seminar</MenuItem>
-                              <MenuItem value="social">Social</MenuItem>
-                              <MenuItem value="hackathon">Hackathon</MenuItem>
-                              <MenuItem value="cultural">Cultural</MenuItem>
-                              <MenuItem value="technology">Technology</MenuItem>
-                              <MenuItem value="others">Others</MenuItem>
+                              {categories.map((cat) => (
+                                <MenuItem key={cat.value} value={cat.value}>
+                                  {cat.label}
+                                </MenuItem>
+                              ))}
                             </Select>
                           )}
                         />
@@ -531,10 +490,7 @@ const CreateEvent = () => {
                         defaultValue=""
                         rules={{
                           required: "Capacity is required",
-                          min: {
-                            value: 1,
-                            message: "Capacity must be at least 1",
-                          },
+                          min: { value: 1, message: "Capacity must be at least 1" },
                         }}
                         render={({ field, fieldState: { error } }) => (
                           <TextField
@@ -548,16 +504,13 @@ const CreateEvent = () => {
                             helperText={error?.message}
                             onKeyPress={handleKeyPress}
                             inputProps={{ min: 1 }}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                              },
-                            }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                           />
                         )}
                       />
                     </Grid>
 
+                    {/* Location */}
                     <Grid item xs={12}>
                       <Controller
                         name="location"
@@ -574,16 +527,13 @@ const CreateEvent = () => {
                             error={!!error}
                             helperText={error?.message}
                             onKeyPress={handleKeyPress}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                              },
-                            }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                           />
                         )}
                       />
                     </Grid>
 
+                    {/* Event URL */}
                     <Grid item xs={12}>
                       <Controller
                         name="eventURL"
@@ -596,16 +546,13 @@ const CreateEvent = () => {
                             label="Event URL"
                             variant="outlined"
                             onKeyPress={handleKeyPress}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                              },
-                            }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                           />
                         )}
                       />
                     </Grid>
 
+                    {/* Image Upload */}
                     <Grid item xs={12}>
                       <input
                         accept="image/*,.gif"
@@ -631,24 +578,18 @@ const CreateEvent = () => {
                             "&:hover": {
                               borderStyle: "groove",
                               borderWidth: 0.5,
-                              borderColor: "primary.main",
+                              borderColor: "grey.600",
                               opacity: 0.6,
                             },
                           }}
                         >
-                          {imageFile ? imageFile.name : "Upload Cover Image (Max 5MB)"}
+                          {formState.imageFile
+                            ? formState.imageFile.name
+                            : "Upload Cover Image (Max 5MB)"}
                         </Button>
                       </label>
-                      {imagePreview && (
-                        <Box
-                          sx={{
-                            mt: 2,
-                            position: "relative",
-                            width: "100%",
-                            maxWidth: 400,
-                            mx: "auto",
-                          }}
-                        >
+                      {formState.imagePreview && (
+                        <Box sx={{ mt: 2, position: "relative", maxWidth: 400, mx: "auto" }}>
                           <IconButton
                             onClick={removeImage}
                             sx={{
@@ -657,16 +598,13 @@ const CreateEvent = () => {
                               top: 8,
                               backgroundColor: "rgba(0,0,0,0.5)",
                               color: "white",
-                              zIndex: 10,
-                              "&:hover": {
-                                backgroundColor: "rgba(0,0,0,0.7)",
-                              },
+                              "&:hover": { backgroundColor: "rgba(0,0,0,0.7)" },
                             }}
                           >
                             <CloseIcon />
                           </IconButton>
                           <img
-                            src={imagePreview}
+                            src={formState.imagePreview}
                             alt="Preview"
                             style={{
                               width: "100%",
@@ -679,25 +617,16 @@ const CreateEvent = () => {
                       )}
                     </Grid>
 
+                    {/* Event Settings */}
                     <Grid item xs={12}>
                       <Divider sx={{ my: 2 }} />
                       <Typography
                         variant="h6"
-                        sx={{
-                          mb: 2,
-                          color: darkMode ? "white" : "primary",
-                        }}
+                        sx={{ mb: 2, color: darkMode ? "white" : "primary" }}
                       >
                         Event Settings
                       </Typography>
-
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 1,
-                        }}
-                      >
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                         <Controller
                           name="enableRegistration"
                           control={control}
@@ -740,6 +669,7 @@ const CreateEvent = () => {
                       </Box>
                     </Grid>
 
+                    {/* Submit Button */}
                     <Grid item xs={12}>
                       <MDButton
                         type="submit"
@@ -747,15 +677,10 @@ const CreateEvent = () => {
                         color={sidenavColor}
                         fullWidth
                         size="large"
-                        disabled={isSubmitting}
-                        sx={{
-                          py: 1.5,
-                          borderRadius: 2,
-                          fontWeight: 600,
-                          fontSize: "1rem",
-                        }}
+                        disabled={formState.isSubmitting}
+                        sx={{ py: 1.5, borderRadius: 2, fontWeight: 600, fontSize: "1rem" }}
                       >
-                        {isSubmitting ? (
+                        {formState.isSubmitting ? (
                           <>
                             <CircularProgress size={24} color="inherit" sx={{ mr: 2 }} />
                             Creating Event...
@@ -774,6 +699,10 @@ const CreateEvent = () => {
       </Grid>
     </Box>
   );
+};
+
+CreateEvent.propTypes = {
+  onEventCreated: PropTypes.func,
 };
 
 export default CreateEvent;
