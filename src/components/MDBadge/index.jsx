@@ -1,13 +1,28 @@
-import { forwardRef } from "react";
+/**
+ * MDBadge Component
+ * Customizable badge with gradient and contained variants
+ * @module components/MDBadge
+ */
 
-// prop-types is a library for typechecking of props
+import { forwardRef, memo } from "react";
 import PropTypes from "prop-types";
-
-// Custom styles for the MDBadge
 import MDBadgeRoot from "components/MDBadge/MDBadgeRoot";
 
 const MDBadge = forwardRef(
-  ({ color, variant, size, circular, indicator, border, container, children, ...rest }, ref) => (
+  (
+    {
+      color = "info",
+      variant = "gradient",
+      size = "sm",
+      circular = false,
+      indicator = false,
+      border = false,
+      container = false,
+      children = false,
+      ...rest
+    },
+    ref
+  ) => (
     <MDBadgeRoot
       {...rest}
       ownerState={{
@@ -28,19 +43,6 @@ const MDBadge = forwardRef(
   )
 );
 
-// Setting default values for the props of MDBadge
-MDBadge.defaultProps = {
-  color: "info",
-  variant: "gradient",
-  size: "sm",
-  circular: false,
-  indicator: false,
-  border: false,
-  children: false,
-  container: false,
-};
-
-// Typechecking props of the MDBadge
 MDBadge.propTypes = {
   color: PropTypes.oneOf([
     "primary",
@@ -61,4 +63,6 @@ MDBadge.propTypes = {
   container: PropTypes.bool,
 };
 
-export default MDBadge;
+MDBadge.displayName = "MDBadge";
+
+export default memo(MDBadge);

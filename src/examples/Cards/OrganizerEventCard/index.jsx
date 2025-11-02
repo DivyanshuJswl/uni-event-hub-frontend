@@ -9,7 +9,6 @@ import {
   Fade,
   Grid,
   IconButton,
-  LinearProgress,
   Menu,
   MenuItem,
   Modal,
@@ -41,6 +40,7 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import MDInput from "components/MDInput";
+import MDProgress from "components/MDProgress";
 import { useMaterialUIController } from "context";
 import { useAuth } from "context/AuthContext";
 import { useNotifications } from "context/NotifiContext";
@@ -917,8 +917,8 @@ function OrganizerEventCard({ event, onUpdated }) {
                   {eventMetrics.participationPercentage}%
                 </MDTypography>
               </Box>
-              <LinearProgress
-                variant="determinate"
+              <MDProgress
+                variant="contained"
                 value={eventMetrics.participationPercentage}
                 color={
                   (event.participants?.length || 0) >= (event.maxParticipants || 0)
@@ -927,7 +927,6 @@ function OrganizerEventCard({ event, onUpdated }) {
                       ? "warning"
                       : "secondary"
                 }
-                sx={{ height: 6, borderRadius: 3 }}
               />
             </Box>
 
@@ -1064,8 +1063,8 @@ function OrganizerEventCard({ event, onUpdated }) {
                         {eventMetrics.participationPercentage}% filled
                       </MDTypography>
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
+                    <MDProgress
+                      variant="contained"
                       value={eventMetrics.participationPercentage}
                       color={
                         (event.participants?.length || 0) >= (event.maxParticipants || 0)
@@ -1074,10 +1073,6 @@ function OrganizerEventCard({ event, onUpdated }) {
                             ? "warning"
                             : "secondary"
                       }
-                      sx={{
-                        height: 10,
-                        borderRadius: 5,
-                      }}
                     />
                   </Box>
                 </Grid>

@@ -1,5 +1,5 @@
-// components/ChatWindow.jsx
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
+import PropTypes from "prop-types";
 import {
   Box,
   IconButton,
@@ -20,13 +20,65 @@ import { useChat } from "context/ChatContext";
 import { useAuth } from "context/AuthContext";
 import { useMaterialUIController } from "context";
 
-// Component to render formatted message content
-const FormattedMessage = ({ content, darkMode }) => {
-  const renderFormattedContent = (text) => {
-    if (!text) return null;
+// Memoized FormattedMessage Component
+const FormattedMessage = memo(({ content, darkMode }) => {
+  const renderInlineFormatting = useCallback(
+    (text) => {
+      if (!text) return null;
 
-    // Split by lines and process each line
-    const lines = text.split("\n");
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      const elements = [];
+      let lastIndex = 0;
+      let match;
+
+      while ((match = boldRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+          elements.push(text.slice(lastIndex, match.index));
+        }
+
+        elements.push(
+          <Box
+            component="span"
+            key={match.index}
+            sx={{
+              fontWeight: "bold",
+              color: darkMode ? "primary.light" : "primary.main",
+            }}
+          >
+            {match[1]}
+          </Box>
+        );
+
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < text.length) {
+        elements.push(text.slice(lastIndex));
+      }
+
+      return elements.length > 0 ? elements : text;
+    },
+    [darkMode]
+  );
+  const cleanMarkdownText = useCallback((text) => {
+    if (!text) return "";
+
+    return (
+      text
+        // Remove excessive blank lines
+        .replace(/\n{3,}/g, "\n\n")
+        // Trim trailing spaces
+        .replace(/[ \t]+$/gm, "")
+        // Ensure consistent list markers
+        .replace(/^[\-•]\s+/gm, "• ")
+    );
+  }, []);
+
+  const renderFormattedContent = useMemo(() => {
+    if (!content) return null;
+
+    const cleanedContent = cleanMarkdownText(content);
+    const lines = cleanedContent.split("\n");
     const elements = [];
 
     let inTable = false;
@@ -62,7 +114,6 @@ const FormattedMessage = ({ content, darkMode }) => {
 
     const processTable = () => {
       if (tableRows.length > 0) {
-        // Filter out separator rows (---)
         const filteredRows = tableRows.filter((row) => !row.includes("---") && row.trim() !== "");
 
         elements.push(
@@ -135,53 +186,13 @@ const FormattedMessage = ({ content, darkMode }) => {
       }
     };
 
-    const renderInlineFormatting = (text) => {
-      if (!text) return null;
-
-      // Process bold text **bold**
-      const boldRegex = /\*\*(.*?)\*\*/g;
-      const elements = [];
-      let lastIndex = 0;
-      let match;
-
-      while ((match = boldRegex.exec(text)) !== null) {
-        // Add text before bold
-        if (match.index > lastIndex) {
-          elements.push(text.slice(lastIndex, match.index));
-        }
-
-        // Add bold text
-        elements.push(
-          <Box
-            component="span"
-            key={match.index}
-            sx={{
-              fontWeight: "bold",
-              color: darkMode ? "primary.light" : "primary.main",
-            }}
-          >
-            {match[1]}
-          </Box>
-        );
-
-        lastIndex = match.index + match[0].length;
-      }
-
-      // Add remaining text
-      if (lastIndex < text.length) {
-        elements.push(text.slice(lastIndex));
-      }
-
-      return elements.length > 0 ? elements : text;
-    };
-
     lines.forEach((line, index) => {
       const trimmedLine = line.trim();
 
-      // Check for table rows (ignore separator rows for now)
+      // Table processing
       if (trimmedLine.includes("|") && !trimmedLine.includes("---")) {
         if (!inTable) {
-          processList(); // End any ongoing list
+          processList();
           inTable = true;
         }
         tableRows.push(trimmedLine);
@@ -191,7 +202,7 @@ const FormattedMessage = ({ content, darkMode }) => {
         inTable = false;
       }
 
-      // Check for list items
+      // List processing
       if (
         (trimmedLine.startsWith("- ") ||
           trimmedLine.startsWith("• ") ||
@@ -208,12 +219,11 @@ const FormattedMessage = ({ content, darkMode }) => {
         inList = false;
         return;
       } else if (inList) {
-        // Continue list with same line
         listItems.push(trimmedLine);
         return;
       }
 
-      // Process headings with smaller sizes
+      // Heading processing
       if (trimmedLine.startsWith("### ")) {
         processList();
         elements.push(
@@ -265,9 +275,7 @@ const FormattedMessage = ({ content, darkMode }) => {
             {renderInlineFormatting(trimmedLine.replace("# ", ""))}
           </MDTypography>
         );
-      }
-      // Process regular paragraphs with smaller font
-      else if (trimmedLine !== "") {
+      } else if (trimmedLine !== "") {
         processList();
         elements.push(
           <MDTypography
@@ -285,23 +293,29 @@ const FormattedMessage = ({ content, darkMode }) => {
         );
       } else {
         processList();
-        // Add spacing for empty lines
         if (elements.length > 0 && index < lines.length - 1) {
           elements.push(<Box key={index} sx={{ mb: 0.75 }} />);
         }
       }
     });
 
-    // Process any remaining list or table
     processList();
     processTable();
 
     return elements;
-  };
+  }, [content, darkMode, renderInlineFormatting]);
 
-  return <Box>{renderFormattedContent(content)}</Box>;
+  return <Box>{renderFormattedContent}</Box>;
+});
+
+FormattedMessage.propTypes = {
+  content: PropTypes.string.isRequired,
+  darkMode: PropTypes.bool.isRequired,
 };
 
+FormattedMessage.displayName = "FormattedMessage";
+
+// Main ChatWindow Component
 const ChatWindow = () => {
   const { isOpen, messages, isLoading, suggestions, sendMessage, toggleChat, clearMessages } =
     useChat();
@@ -314,71 +328,124 @@ const ChatWindow = () => {
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Responsive dimensions
-  const chatWidth = isMobile ? "calc(100vw - 2rem)" : "380px";
-  const chatHeight = isMobile ? "calc(100vh - 8rem)" : "500px";
+  // Memoized responsive dimensions
+  const dimensions = useMemo(
+    () => ({
+      chatWidth: isMobile ? "calc(100vw - 2rem)" : "380px",
+      chatHeight: isMobile ? "calc(100vh - 8rem)" : "500px",
+    }),
+    [isMobile]
+  );
 
-  const scrollToBottom = () => {
+  // Memoized scroll function
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
+  // Auto-scroll on new messages
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (inputMessage.trim() && !isLoading) {
-      await sendMessage(inputMessage.trim());
-      setInputMessage("");
-    }
-  };
-
-  const handleSuggestionClick = async (suggestion) => {
-    await sendMessage(suggestion);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  // Memoized handlers
+  const handleSendMessage = useCallback(
+    async (e) => {
       e.preventDefault();
-      handleSendMessage(e);
-    }
-  };
+      if (inputMessage.trim() && !isLoading) {
+        await sendMessage(inputMessage.trim());
+        setInputMessage("");
+      }
+    },
+    [inputMessage, isLoading, sendMessage]
+  );
 
-  const formatTime = (timestamp) => {
+  const handleSuggestionClick = useCallback(
+    async (suggestion) => {
+      await sendMessage(suggestion);
+    },
+    [sendMessage]
+  );
+
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage(e);
+      }
+    },
+    [handleSendMessage]
+  );
+
+  const formatTime = useCallback((timestamp) => {
     return new Date(timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+  }, []);
 
-  const isFirstInteraction = messages.length === 0;
+  // Memoized computed values
+  const isFirstInteraction = useMemo(() => messages.length === 0, [messages.length]);
 
-  // Theme-based styles
-  const styles = {
-    container: {
-      position: "fixed",
-      bottom: isMobile ? "1rem" : "6rem",
-      right: isMobile ? "1rem" : "2rem",
-      width: chatWidth,
-      height: chatHeight,
-      zIndex: 9998,
-      boxShadow: darkMode ? "0 10px 30px rgba(0,0,0,0.4)" : "0 10px 30px rgba(0,0,0,0.15)",
-      borderRadius: "12px",
-      overflow: "hidden",
-    },
-    card: {
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: darkMode ? "background.paper" : "background.paper",
-    },
-    header: {
-      background: darkMode
-        ? "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)"
-        : "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
-    },
-    messageBubble: (role) => ({
+  // Memoized styles
+  const styles = useMemo(
+    () => ({
+      container: {
+        position: "fixed",
+        bottom: isMobile ? "1rem" : "6rem",
+        right: isMobile ? "1rem" : "2rem",
+        width: dimensions.chatWidth,
+        height: dimensions.chatHeight,
+        zIndex: 9998,
+        boxShadow: darkMode ? "0 10px 30px rgba(0,0,0,0.4)" : "0 10px 30px rgba(0,0,0,0.15)",
+        borderRadius: "12px",
+        overflow: "hidden",
+      },
+      card: {
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "background.paper",
+      },
+      header: {
+        background: darkMode
+          ? "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)"
+          : "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
+      },
+      inputField: {
+        backgroundColor: darkMode ? "grey.900" : "white",
+        borderRadius: "8px",
+        "& .MuiOutlinedInput-root": {
+          fontSize: "0.875rem",
+          "& fieldset": {
+            borderColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+          },
+          "&:hover fieldset": {
+            borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main",
+          },
+        },
+      },
+      suggestionChip: {
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        backgroundColor: darkMode ? "grey.700" : "grey.200",
+        color: darkMode ? "white" : "text.primary",
+        fontSize: "0.75rem",
+        "&:hover": {
+          backgroundColor: darkMode ? "primary.main" : "primary.light",
+          color: "white",
+          transform: "translateY(-1px)",
+        },
+      },
+    }),
+    [darkMode, isMobile, dimensions]
+  );
+
+  // Memoized message bubble style function
+  const getMessageBubbleStyle = useCallback(
+    (role) => ({
       maxWidth: "90%",
       backgroundColor:
         role === "user"
@@ -394,35 +461,8 @@ const ChatWindow = () => {
       boxShadow: darkMode ? "0 1px 4px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.1)",
       border: darkMode && role === "assistant" ? "1px solid rgba(255,255,255,0.1)" : "none",
     }),
-    inputField: {
-      backgroundColor: darkMode ? "grey.900" : "white",
-      borderRadius: "8px",
-      "& .MuiOutlinedInput-root": {
-        fontSize: "0.875rem",
-        "& fieldset": {
-          borderColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
-        },
-        "&:hover fieldset": {
-          borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)",
-        },
-        "&.Mui-focused fieldset": {
-          borderColor: "primary.main",
-        },
-      },
-    },
-    suggestionChip: {
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      backgroundColor: darkMode ? "grey.700" : "grey.200",
-      color: darkMode ? "white" : "text.primary",
-      fontSize: "0.75rem",
-      "&:hover": {
-        backgroundColor: darkMode ? "primary.main" : "primary.light",
-        color: "white",
-        transform: "translateY(-1px)",
-      },
-    },
-  };
+    [darkMode]
+  );
 
   return (
     <AnimatePresence>
@@ -452,7 +492,7 @@ const ChatWindow = () => {
                     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                   }}
                 >
-                  <Icon fontSize="small" color="primary.main">
+                  <Icon fontSize="small" sx={{ color: "primary.main" }}>
                     smart_toy
                   </Icon>
                 </Avatar>
@@ -586,7 +626,7 @@ const ChatWindow = () => {
                         mb: 1.5,
                       }}
                     >
-                      <Box sx={styles.messageBubble(message.role)}>
+                      <Box sx={getMessageBubbleStyle(message.role)}>
                         {message.role === "user" ? (
                           <MDTypography
                             variant="body2"
@@ -627,7 +667,7 @@ const ChatWindow = () => {
                   {/* Loading Indicator */}
                   {isLoading && (
                     <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1.5 }}>
-                      <Box sx={styles.messageBubble("assistant")}>
+                      <Box sx={getMessageBubbleStyle("assistant")}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                           <Box
                             sx={{ width: 20, height: 20, display: "flex", alignItems: "center" }}
@@ -637,8 +677,10 @@ const ChatWindow = () => {
                               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                             >
                               <Icon
-                                sx={{ fontSize: 16 }}
-                                color={darkMode ? "primary.light" : "primary.main"}
+                                sx={{
+                                  fontSize: 16,
+                                  color: darkMode ? "primary.light" : "primary.main",
+                                }}
                               >
                                 autorenew
                               </Icon>
@@ -682,15 +724,15 @@ const ChatWindow = () => {
                       <IconButton
                         type="submit"
                         disabled={!inputMessage.trim() || isLoading}
-                        color="#1976d2"
                         size="small"
                         sx={{
+                          color: "#1976d2",
                           opacity: !inputMessage.trim() || isLoading ? 0.5 : 1,
                           transition: "opacity 0.2s ease",
                           padding: "6px",
                         }}
                       >
-                        <Icon fontSize="small" color="#1976d2">
+                        <Icon fontSize="small" color="info">
                           send
                         </Icon>
                       </IconButton>
@@ -718,4 +760,6 @@ const ChatWindow = () => {
   );
 };
 
-export default ChatWindow;
+ChatWindow.displayName = "ChatWindow";
+
+export default memo(ChatWindow);

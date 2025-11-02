@@ -1,16 +1,26 @@
-import { forwardRef } from "react";
+/**
+ * MDButton Component
+ * Customizable button with multiple variants and styles
+ * @module components/MDButton
+ */
 
-// prop-types is a library for typechecking of props
-import PropTypes from "prop-types";
-
-// Custom styles for MDButton
+import { forwardRef, memo } from "react";
 import MDButtonRoot from "components/MDButton/MDButtonRoot";
-
-// Material Dashboard 2 React contexts
 import { useMaterialUIController } from "context";
 
 const MDButton = forwardRef(
-  ({ color, variant, size, circular, iconOnly, children, ...rest }, ref) => {
+  (
+    {
+      color = "white",
+      variant = "contained",
+      size = "medium",
+      circular = false,
+      iconOnly = false,
+      children,
+      ...rest
+    },
+    ref
+  ) => {
     const [controller] = useMaterialUIController();
     const { darkMode } = controller;
 
@@ -21,7 +31,7 @@ const MDButton = forwardRef(
         color="primary"
         variant={variant === "gradient" ? "contained" : variant}
         size={size}
-        ownerState={{ color, variant, size, circular, iconOnly }}
+        ownerState={{ color, variant, size, circular, iconOnly, darkMode }}
       >
         {children}
       </MDButtonRoot>
@@ -29,33 +39,6 @@ const MDButton = forwardRef(
   }
 );
 
-// Setting default values for the props of MDButton
-MDButton.defaultProps = {
-  size: "medium",
-  variant: "contained",
-  color: "white",
-  circular: false,
-  iconOnly: false,
-};
+MDButton.displayName = "MDButton";
 
-// Typechecking props for the MDButton
-MDButton.propTypes = {
-  size: PropTypes.oneOf(["small", "medium", "large"]),
-  variant: PropTypes.oneOf(["text", "contained", "outlined", "gradient"]),
-  color: PropTypes.oneOf([
-    "white",
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  circular: PropTypes.bool,
-  iconOnly: PropTypes.bool,
-  children: PropTypes.node.isRequired,
-};
-
-export default MDButton;
+export default memo(MDButton);

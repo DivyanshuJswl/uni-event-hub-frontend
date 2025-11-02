@@ -1,10 +1,19 @@
-// @mui material components
-import { styled } from "@mui/material/styles";
+/**
+ * Styled root component for MDPagination items
+ * @module components/MDPagination/MDPaginationItemRoot
+ */
 
-// Material Dashboard 2 React components
+import { styled } from "@mui/material/styles";
 import MDButton from "components/MDButton";
 
-export default styled(MDButton)(({ theme, ownerState }) => {
+// Size configuration map
+const PAGINATION_SIZE_MAP = {
+  small: 30,
+  medium: 36,
+  large: 46,
+};
+
+const MDPaginationItemRoot = styled(MDButton)(({ theme, ownerState }) => {
   const { borders, functions, typography, palette } = theme;
   const { variant, paginationSize, active } = ownerState;
 
@@ -13,14 +22,9 @@ export default styled(MDButton)(({ theme, ownerState }) => {
   const { fontWeightRegular, size: fontSize } = typography;
   const { light } = palette;
 
-  // width, height, minWidth and minHeight values
-  let sizeValue = pxToRem(36);
-
-  if (paginationSize === "small") {
-    sizeValue = pxToRem(30);
-  } else if (paginationSize === "large") {
-    sizeValue = pxToRem(46);
-  }
+  // Get size value from map
+  const sizeConfig = PAGINATION_SIZE_MAP[paginationSize] || PAGINATION_SIZE_MAP.medium;
+  const sizeValue = pxToRem(sizeConfig);
 
   return {
     borderColor,
@@ -35,7 +39,7 @@ export default styled(MDButton)(({ theme, ownerState }) => {
 
     "&:hover, &:focus, &:active": {
       transform: "none",
-      boxShadow: (variant !== "gradient" || variant !== "contained") && "none !important",
+      boxShadow: variant !== "gradient" && variant !== "contained" ? "none !important" : undefined,
       opacity: "1 !important",
     },
 
@@ -45,3 +49,7 @@ export default styled(MDButton)(({ theme, ownerState }) => {
     },
   };
 });
+
+MDPaginationItemRoot.displayName = "MDPaginationItemRoot";
+
+export default MDPaginationItemRoot;

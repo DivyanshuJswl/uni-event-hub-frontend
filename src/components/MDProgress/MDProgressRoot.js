@@ -1,24 +1,25 @@
-// @mui material components
+/**
+ * Styled root component for MDProgress
+ * @module components/MDProgress/MDProgressRoot
+ */
+
 import { styled } from "@mui/material/styles";
 import LinearProgress from "@mui/material/LinearProgress";
 
-export default styled(LinearProgress)(({ theme, ownerState }) => {
+const MDProgressRoot = styled(LinearProgress)(({ theme, ownerState }) => {
   const { palette, functions } = theme;
   const { color, value, variant } = ownerState;
 
   const { text, gradients } = palette;
   const { linearGradient } = functions;
 
-  // background value
-  let backgroundValue;
-
-  if (variant === "gradient") {
-    backgroundValue = gradients[color]
-      ? linearGradient(gradients[color].main, gradients[color].state)
-      : linearGradient(gradients.info.main, gradients.info.state);
-  } else {
-    backgroundValue = palette[color] ? palette[color].main : palette.info.main;
-  }
+  // Compute background value
+  const backgroundValue =
+    variant === "gradient"
+      ? gradients[color]
+        ? linearGradient(gradients[color].main, gradients[color].state)
+        : linearGradient(gradients.info.main, gradients.info.state)
+      : palette[color]?.main || palette.info.main;
 
   return {
     "& .MuiLinearProgress-bar": {
@@ -28,3 +29,7 @@ export default styled(LinearProgress)(({ theme, ownerState }) => {
     },
   };
 });
+
+MDProgressRoot.displayName = "MDProgressRoot";
+
+export default MDProgressRoot;

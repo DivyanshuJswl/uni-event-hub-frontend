@@ -1,8 +1,17 @@
-// @mui material components
+/**
+ * Styled root component for MDAlert
+ * Creates gradient background alert container
+ * @module components/MDAlert/MDAlertRoot
+ */
+
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 
-export default styled(Box)(({ theme, ownerState }) => {
+/**
+ * Styled MDAlert root component
+ * Memoized by styled-components internally
+ */
+const MDAlertRoot = styled(Box)(({ theme, ownerState }) => {
   const { palette, typography, borders, functions } = theme;
   const { color } = ownerState;
 
@@ -11,7 +20,7 @@ export default styled(Box)(({ theme, ownerState }) => {
   const { borderRadius } = borders;
   const { pxToRem, linearGradient } = functions;
 
-  // backgroundImage value
+  // Compute background gradient
   const backgroundImageValue = gradients[color]
     ? linearGradient(gradients[color].main, gradients[color].state)
     : linearGradient(gradients.info.main, gradients.info.state);
@@ -31,3 +40,7 @@ export default styled(Box)(({ theme, ownerState }) => {
     fontWeight: fontWeightMedium,
   };
 });
+
+MDAlertRoot.displayName = "MDAlertRoot";
+
+export default MDAlertRoot;

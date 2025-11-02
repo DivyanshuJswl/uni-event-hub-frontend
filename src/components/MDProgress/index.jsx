@@ -1,38 +1,31 @@
-import { forwardRef } from "react";
+/**
+ * MDProgress Component
+ * Linear progress bar with optional label
+ * @module components/MDProgress
+ */
 
-// prop-types is a library for typechecking of props
+import { forwardRef, memo } from "react";
 import PropTypes from "prop-types";
-
-// Material Dashboard 2 React components
 import MDTypography from "components/MDTypography";
-
-// Custom styles for MDProgress
 import MDProgressRoot from "components/MDProgress/MDProgressRoot";
 
-const MDProgress = forwardRef(({ variant, color, value, label, ...rest }, ref) => (
-  <>
-    {label && (
-      <MDTypography variant="button" fontWeight="medium" color="text">
-        {value}%
-      </MDTypography>
-    )}
-    <MDProgressRoot
-      {...rest}
-      ref={ref}
-      variant="determinate"
-      value={value}
-      ownerState={{ color, value, variant }}
-    />
-  </>
+const MDProgress = forwardRef(
+  ({ variant = "contained", color = "info", value = 0, label = false, ...rest }, ref) => (
+    <>
+      {label && (
+        <MDTypography variant="button" fontWeight="medium" color="text">
+          {value}%
+        </MDTypography>
+      )}
+      <MDProgressRoot
+        {...rest}
+        ref={ref}
+        variant="determinate"
+        value={value}
+        ownerState={{ color, value, variant }}
+      />
+    </>
 ));
-
-// Setting default values for the props of MDProgress
-MDProgress.defaultProps = {
-  variant: "contained",
-  color: "info",
-  value: 0,
-  label: false,
-};
 
 // Typechecking props for the MDProgress
 MDProgress.propTypes = {
@@ -51,4 +44,4 @@ MDProgress.propTypes = {
   label: PropTypes.bool,
 };
 
-export default MDProgress;
+export default memo(MDProgress);

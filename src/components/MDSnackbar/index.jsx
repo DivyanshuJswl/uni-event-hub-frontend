@@ -1,53 +1,108 @@
-// prop-types is a library for typechecking of props
-import PropTypes from "prop-types";
+/**
+ * MDSnackbar Component
+ * Notification snackbar with customizable colors and content
+ * @module components/MDSnackbar
+ */
 
-// @mui material components
+import { useMemo, memo } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import IconButton from "@mui/material/IconButton";
 import Icon from "@mui/material/Icon";
 import Divider from "@mui/material/Divider";
 import Fade from "@mui/material/Fade";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-// Custom styles for the MDSnackbar
 import MDSnackbarIconRoot from "components/MDSnackbar/MDSnackbarIconRoot";
-
-// Material Dashboard 2 React context
 import { useMaterialUIController } from "context";
 
-function MDSnackbar({ color, icon, title, dateTime, content, close, bgWhite, ...rest }) {
+const MDSnackbar = ({
+  color = "info",
+  icon,
+  title,
+  dateTime,
+  content,
+  close,
+  bgWhite = false,
+  open,
+  ...rest
+}) => {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
-  let titleColor;
-  let dateTimeColor;
-  let dividerColor;
+  // Memoized color configuration
+  const colors = useMemo(() => {
+    if (bgWhite) {
+      return {
+        titleColor: color,
+        dateTimeColor: "dark",
+        dividerColor: false,
+      };
+    }
 
-  if (bgWhite) {
-    titleColor = color;
-    dateTimeColor = "dark";
-    dividerColor = false;
-  } else if (color === "light") {
-    titleColor = darkMode ? "inherit" : "dark";
-    dateTimeColor = darkMode ? "inherit" : "text";
-    dividerColor = false;
-  } else {
-    titleColor = "white";
-    dateTimeColor = "white";
-    dividerColor = true;
-  }
+    if (color === "light") {
+      return {
+        titleColor: darkMode ? "inherit" : "dark",
+        dateTimeColor: darkMode ? "inherit" : "text",
+        dividerColor: false,
+      };
+    }
+
+    return {
+      titleColor: "white",
+      dateTimeColor: "white",
+      dividerColor: true,
+    };
+  }, [bgWhite, color, darkMode]);
+
+  // Fixed: Use proper background color from palette
+  const backgroundColor = useMemo(
+    () => (palette) => {
+      if (bgWhite) {
+        return palette.white?.main || "#ffffff";
+      }
+      if (darkMode) {
+        return palette.background?.default || palette.grey?.[900] || "#1a1a1a";
+      }
+      return palette[color]?.main || palette.info?.main || "#1976d2";
+    },
+    [darkMode, color, bgWhite]
+  );
+
+  // Memoized close icon color
+  const closeIconColor = useMemo(
+    () => (palette) =>
+      (bgWhite && !darkMode) || color === "light"
+        ? palette.dark?.main || "#000000"
+        : palette.white?.main || "#ffffff",
+    [bgWhite, darkMode, color]
+  );
+
+  // Memoized content color
+  const contentColor = useMemo(
+    () => (palette) => {
+      if (darkMode) {
+        return color === "light" ? "inherit" : palette.white?.main || "#ffffff";
+      }
+      return bgWhite || color === "light"
+        ? palette.text?.main || "#000000"
+        : palette.white?.main || "#ffffff";
+    },
+    [bgWhite, color, darkMode]
+  );
+
+  // Memoized content font size
+  const contentFontSize = useMemo(() => (typography) => typography.size?.sm || "0.875rem", []);
 
   return (
     <Snackbar
+      open={open}
       TransitionComponent={Fade}
       autoHideDuration={5000}
       anchorOrigin={{
         vertical: "bottom",
         horizontal: "right",
       }}
+      onClose={close}
       {...rest}
       action={
         <IconButton size="small" aria-label="close" color="inherit" onClick={close}>
@@ -64,8 +119,7 @@ function MDSnackbar({ color, icon, title, dateTime, content, close, bgWhite, ...
         borderRadius="md"
         p={1}
         sx={{
-          backgroundColor: ({ palette }) =>
-            darkMode ? palette.background.card : palette[color] || palette.white.main,
+          backgroundColor,
         }}
       >
         <MDBox
@@ -82,21 +136,20 @@ function MDSnackbar({ color, icon, title, dateTime, content, close, bgWhite, ...
             <MDTypography
               variant="button"
               fontWeight="medium"
-              color={titleColor}
+              color={colors.titleColor}
               textGradient={bgWhite}
             >
               {title}
             </MDTypography>
           </MDBox>
           <MDBox display="flex" alignItems="center" lineHeight={0}>
-            <MDTypography variant="caption" color={dateTimeColor}>
+            <MDTypography variant="caption" color={colors.dateTimeColor}>
               {dateTime}
             </MDTypography>
             <Icon
               sx={{
-                color: ({ palette: { dark, white } }) =>
-                  (bgWhite && !darkMode) || color === "light" ? dark.main : white.main,
-                fontWeight: ({ typography: { fontWeightBold } }) => fontWeightBold,
+                color: closeIconColor,
+                fontWeight: ({ typography }) => typography.fontWeightBold,
                 cursor: "pointer",
                 marginLeft: 2,
                 transform: "translateY(-1px)",
@@ -107,20 +160,12 @@ function MDSnackbar({ color, icon, title, dateTime, content, close, bgWhite, ...
             </Icon>
           </MDBox>
         </MDBox>
-        <Divider sx={{ margin: 0 }} light={dividerColor} />
+        <Divider sx={{ margin: 0 }} light={colors.dividerColor} />
         <MDBox
           p={1.5}
           sx={{
-            fontSize: ({ typography: { size } }) => size.sm,
-            color: ({ palette: { white, text } }) => {
-              let colorValue = bgWhite || color === "light" ? text.main : white.main;
-
-              if (darkMode) {
-                colorValue = color === "light" ? "inherit" : white.main;
-              }
-
-              return colorValue;
-            },
+            fontSize: contentFontSize,
+            color: contentColor,
           }}
         >
           {content}
@@ -128,32 +173,8 @@ function MDSnackbar({ color, icon, title, dateTime, content, close, bgWhite, ...
       </MDBox>
     </Snackbar>
   );
-}
-
-// Setting default values for the props of MDSnackbar
-MDSnackbar.defaultProps = {
-  bgWhite: false,
-  color: "info",
 };
 
-// Typechecking props for MDSnackbar
-MDSnackbar.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "dark",
-    "light",
-  ]),
-  icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-  dateTime: PropTypes.string.isRequired,
-  content: PropTypes.node.isRequired,
-  close: PropTypes.func.isRequired,
-  bgWhite: PropTypes.bool,
-};
+MDSnackbar.displayName = "MDSnackbar";
 
-export default MDSnackbar;
+export default memo(MDSnackbar);

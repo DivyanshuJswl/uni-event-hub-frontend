@@ -1,8 +1,30 @@
-// @mui material components
+/**
+ * Styled root component for MDAvatar
+ * Creates gradient background avatar with customizable size
+ * @module components/MDAvatar/MDAvatarRoot
+ */
+
 import Avatar from "@mui/material/Avatar";
 import { styled } from "@mui/material/styles";
 
-export default styled(Avatar)(({ theme, ownerState }) => {
+/**
+ * Size configuration map
+ * Extracted as constant for better performance
+ */
+const SIZE_MAP = {
+  xs: { width: 24, height: 24, fontSizeKey: "xs" },
+  sm: { width: 36, height: 36, fontSizeKey: "sm" },
+  md: { width: 48, height: 48, fontSizeKey: "md" },
+  lg: { width: 58, height: 58, fontSizeKey: "sm" },
+  xl: { width: 74, height: 74, fontSizeKey: "md" },
+  xxl: { width: 110, height: 110, fontSizeKey: "md" },
+};
+
+/**
+ * Styled MDAvatar root component
+ * Memoized by styled-components internally
+ */
+const MDAvatarRoot = styled(Avatar)(({ theme, ownerState }) => {
   const { palette, functions, typography, boxShadows } = theme;
   const { shadow, bgColor, size } = ownerState;
 
@@ -10,59 +32,19 @@ export default styled(Avatar)(({ theme, ownerState }) => {
   const { pxToRem, linearGradient } = functions;
   const { size: fontSize, fontWeightRegular } = typography;
 
-  // backgroundImage value
+  // Compute background value
   const backgroundValue =
     bgColor === "transparent"
       ? transparent.main
       : linearGradient(gradients[bgColor].main, gradients[bgColor].state);
 
-  // size value
-  let sizeValue;
-
-  switch (size) {
-    case "xs":
-      sizeValue = {
-        width: pxToRem(24),
-        height: pxToRem(24),
-        fontSize: fontSize.xs,
-      };
-      break;
-    case "sm":
-      sizeValue = {
-        width: pxToRem(36),
-        height: pxToRem(36),
-        fontSize: fontSize.sm,
-      };
-      break;
-    case "lg":
-      sizeValue = {
-        width: pxToRem(58),
-        height: pxToRem(58),
-        fontSize: fontSize.sm,
-      };
-      break;
-    case "xl":
-      sizeValue = {
-        width: pxToRem(74),
-        height: pxToRem(74),
-        fontSize: fontSize.md,
-      };
-      break;
-    case "xxl":
-      sizeValue = {
-        width: pxToRem(110),
-        height: pxToRem(110),
-        fontSize: fontSize.md,
-      };
-      break;
-    default: {
-      sizeValue = {
-        width: pxToRem(48),
-        height: pxToRem(48),
-        fontSize: fontSize.md,
-      };
-    }
-  }
+  // Get size configuration
+  const sizeConfig = SIZE_MAP[size] || SIZE_MAP.md;
+  const sizeValue = {
+    width: pxToRem(sizeConfig.width),
+    height: pxToRem(sizeConfig.height),
+    fontSize: fontSize[sizeConfig.fontSizeKey],
+  };
 
   return {
     background: backgroundValue,
@@ -72,3 +54,7 @@ export default styled(Avatar)(({ theme, ownerState }) => {
     ...sizeValue,
   };
 });
+
+MDAvatarRoot.displayName = "MDAvatarRoot";
+
+export default MDAvatarRoot;

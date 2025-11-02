@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 import Icon from "@mui/material/Icon";
 
 import { useMaterialUIController } from "context";
+import { Box } from "@mui/system";
 
 const data = () => {
   // Images - using existing team images as student profile pictures
@@ -109,18 +110,15 @@ const data = () => {
 
   // Success rate progress component
   const SuccessRate = ({ rate }) => (
-    <MDBox width="8rem" textAlign="left">
-      <MDBox display="flex" alignItems="center">
+    <MDBox width="8rem" textAlign="center">
+      <Box width="100%">
         <MDProgress
           value={rate}
-          color={rate > 75 ? "success" : rate > 50 ? "info" : "warning"}
+          color={rate > 70 ? "success" : rate > 50 ? "info" : "warning"}
           variant="gradient"
-          label={false}
+          label
         />
-        <MDTypography variant="button" fontWeight="regular" color="text" ml={1}>
-          {rate}%
-        </MDTypography>
-      </MDBox>
+      </Box>
     </MDBox>
   );
 

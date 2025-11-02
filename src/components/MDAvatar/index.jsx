@@ -1,23 +1,19 @@
-import { forwardRef } from "react";
+/**
+ * MDAvatar Component
+ * Customizable avatar with gradient backgrounds and sizes
+ * @module components/MDAvatar
+ */
 
-// prop-types is a library for typechecking of props
+import { forwardRef, memo } from "react";
 import PropTypes from "prop-types";
-
-// Custom styles for MDAvatar
 import MDAvatarRoot from "components/MDAvatar/MDAvatarRoot";
 
-const MDAvatar = forwardRef(({ bgColor, size, shadow, ...rest }, ref) => (
-  <MDAvatarRoot ref={ref} ownerState={{ shadow, bgColor, size }} {...rest} />
-));
+const MDAvatar = forwardRef(
+  ({ bgColor = "transparent", size = "md", shadow = "none", ...rest }, ref) => (
+    <MDAvatarRoot ref={ref} ownerState={{ shadow, bgColor, size }} {...rest} />
+  )
+);
 
-// Setting default values for the props of MDAvatar
-MDAvatar.defaultProps = {
-  bgColor: "transparent",
-  size: "md",
-  shadow: "none",
-};
-
-// Typechecking props for the MDAvatar
 MDAvatar.propTypes = {
   bgColor: PropTypes.oneOf([
     "transparent",
@@ -34,4 +30,6 @@ MDAvatar.propTypes = {
   shadow: PropTypes.oneOf(["none", "xs", "sm", "md", "lg", "xl", "xxl", "inset"]),
 };
 
-export default MDAvatar;
+MDAvatar.displayName = "MDAvatar";
+
+export default memo(MDAvatar);

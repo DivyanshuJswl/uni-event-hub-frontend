@@ -36,7 +36,6 @@ function Basic() {
   const { showToast } = useNotifications();
   const { login, googleLogin } = useAuth();
   const production = import.meta.env.VITE_NODE_ENV === "production";
-  const googleButtonRef = useRef(null);
 
   // Consolidated form data state
   const [formData, setFormData] = useState({

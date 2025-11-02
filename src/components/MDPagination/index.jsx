@@ -1,32 +1,43 @@
-import { forwardRef, createContext, useContext, useMemo } from "react";
+/**
+ * MDPagination Component
+ * Pagination wrapper and item component
+ * @module components/MDPagination
+ */
 
-// prop-types is a library for typechecking of props
-import PropTypes from "prop-types";
-
-// Material Dashboard 2 React components
+import { forwardRef, createContext, useContext, useMemo, memo } from "react";
 import MDBox from "components/MDBox";
-
-// Custom styles for MDPagination
 import MDPaginationItemRoot from "components/MDPagination/MDPaginationItemRoot";
 
-// The Pagination main context
-const Context = createContext();
+// Pagination context
+const PaginationContext = createContext(null);
 
 const MDPagination = forwardRef(
-  ({ item, variant, color, size, active, children, ...rest }, ref) => {
-    const context = useContext(Context);
-    const paginationSize = context ? context.size : null;
+  (
+    {
+      item = false,
+      variant = "gradient",
+      color = "info",
+      size = "medium",
+      active = false,
+      children,
+      ...rest
+    },
+    ref
+  ) => {
+    const context = useContext(PaginationContext);
+    const paginationSize = context?.size || size;
 
-    const value = useMemo(() => ({ variant, color, size }), [variant, color, size]);
+    // Memoized context value
+    const contextValue = useMemo(() => ({ variant, color, size }), [variant, color, size]);
 
     return (
-      <Context.Provider value={value}>
+      <PaginationContext.Provider value={contextValue}>
         {item ? (
           <MDPaginationItemRoot
             {...rest}
             ref={ref}
-            variant={active ? context.variant : "outlined"}
-            color={active ? context.color : "secondary"}
+            variant={active ? context?.variant || variant : "outlined"}
+            color={active ? context?.color || color : "secondary"}
             iconOnly
             circular
             ownerState={{ variant, active, paginationSize }}
@@ -43,38 +54,12 @@ const MDPagination = forwardRef(
             {children}
           </MDBox>
         )}
-      </Context.Provider>
+      </PaginationContext.Provider>
     );
   }
 );
 
-// Setting default values for the props of MDPagination
-MDPagination.defaultProps = {
-  item: false,
-  variant: "gradient",
-  color: "info",
-  size: "medium",
-  active: false,
-};
+MDPagination.displayName = "MDPagination";
 
-// Typechecking props for the MDPagination
-MDPagination.propTypes = {
-  item: PropTypes.bool,
-  variant: PropTypes.oneOf(["gradient", "contained"]),
-  color: PropTypes.oneOf([
-    "white",
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  size: PropTypes.oneOf(["small", "medium", "large"]),
-  active: PropTypes.bool,
-  children: PropTypes.node,
-};
-
-export default MDPagination;
+export default memo(MDPagination);
+export { PaginationContext };

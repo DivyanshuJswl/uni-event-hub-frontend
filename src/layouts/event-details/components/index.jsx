@@ -9,7 +9,6 @@ import {
   Alert,
   IconButton,
   Paper,
-  LinearProgress,
   Avatar,
   List,
   ListItem,
@@ -40,6 +39,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDProgress from "components/MDProgress";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import { useAuth } from "context/AuthContext";
@@ -509,8 +509,8 @@ function EventDetails() {
                   {eventMetadata.participationPercentage}%)
                 </MDTypography>
               </Box>
-              <LinearProgress
-                variant="determinate"
+              <MDProgress
+                variant="contained"
                 value={eventMetadata.participationPercentage}
                 color={
                   eventMetadata.isFull
@@ -519,7 +519,6 @@ function EventDetails() {
                       ? "warning"
                       : "secondary"
                 }
-                sx={{ height: 8, borderRadius: 2 }}
               />
               {eventMetadata.isFull && (
                 <MDTypography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>

@@ -32,7 +32,7 @@ const LoadingScreen = () => {
         justifyContent: "center",
         gap: 3,
         backgroundColor: theme.palette.background.default || "#000000",
-        zIndex: 1300,
+        zIndex: 9999,
         animation: `${fadeIn} 0.6s ease-out forwards`,
       }}
     >

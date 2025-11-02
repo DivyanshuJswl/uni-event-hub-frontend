@@ -1,5 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+/**
+ * MDCalendar Component
+ * Interactive calendar with event display
+ * @module components/MDCalendar
+ */
+
+import { useState, useMemo, useCallback, memo } from "react";
+import { Box, Button, IconButton, Typography, Skeleton, Tooltip } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import {
   startOfMonth,
@@ -13,28 +19,147 @@ import {
   endOfWeek,
   isSameMonth,
 } from "date-fns";
-import Tooltip from "@mui/material/Tooltip";
-import PropTypes from "prop-types";
 import { useMaterialUIController } from "context";
-import { Skeleton } from "@mui/material";
+
+// Weekday headers constant
+const WEEKDAY_HEADERS = ["S", "M", "T", "W", "T", "F", "S"];
+
+// Skeleton loading component
+const CalendarSkeleton = memo(({ darkMode, styles }) => (
+  <Box
+    sx={{
+      width: "100%",
+      mx: "auto",
+      p: 3,
+      borderRadius: 3,
+      boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.24)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
+      backgroundColor: styles.calendar.backgroundColor,
+      border: `1px solid ${styles.border.color}`,
+    }}
+  >
+    {/* Header Skeleton */}
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      mb={1.5}
+      sx={{
+        borderBottom: `1px solid ${styles.border.color}`,
+        pb: 1.5,
+      }}
+    >
+      <Skeleton
+        variant="rounded"
+        width={75}
+        height={30}
+        sx={{
+          bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          borderRadius: 1,
+        }}
+      />
+      <Box display="flex" alignItems="center" gap={1}>
+        <Skeleton
+          variant="rounded"
+          width={60}
+          height={32}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+            borderRadius: 1,
+          }}
+        />
+        <Skeleton
+          variant="circular"
+          width={32}
+          height={32}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          }}
+        />
+        <Skeleton
+          variant="circular"
+          width={32}
+          height={32}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+          }}
+        />
+      </Box>
+    </Box>
+
+    {/* Weekday Headers Skeleton */}
+    <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" mb={2} gap={1}>
+      {Array.from({ length: 7 }).map((_, index) => (
+        <Skeleton
+          key={index}
+          variant="text"
+          width="100%"
+          height={30}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
+            borderRadius: 1,
+          }}
+        />
+      ))}
+    </Box>
+
+    {/* Calendar Days Skeleton */}
+    <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1}>
+      {Array.from({ length: 42 }).map((_, index) => (
+        <Skeleton
+          key={index}
+          variant="rounded"
+          width="100%"
+          height={35}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)",
+            borderRadius: 2,
+          }}
+        />
+      ))}
+    </Box>
+
+    {/* Legend Skeleton */}
+    <Box mt={1.5} pt={1.5} sx={{ borderTop: `1px solid ${styles.border.color}` }}>
+      <Box display="flex" alignItems="center" justifyContent="center">
+        <Skeleton
+          variant="rounded"
+          width={16}
+          height={15}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+            borderRadius: 1,
+            mr: 1,
+          }}
+        />
+        <Skeleton
+          variant="text"
+          width={100}
+          height={20}
+          sx={{
+            bgcolor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
+            borderRadius: 1,
+          }}
+        />
+      </Box>
+    </Box>
+  </Box>
+));
+
+CalendarSkeleton.displayName = "CalendarSkeleton";
 
 const MDCalendar = ({ events = [], loading = false }) => {
   const [controller] = useMaterialUIController();
   const { darkMode, transparentSidenav, sidenavColor, transparentNavbar } = controller;
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Get the complete calendar grid including previous/next month days
+  // Memoized calendar days calculation
   const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }); // Start from Sunday of the week containing 1st
-    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 }); // End on Saturday of the week containing last day
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const goToToday = () => setCurrentMonth(new Date());
-
-  // Process events to create a map of dates to event names
+  // Memoized events by date map
   const eventsByDate = useMemo(() => {
     const map = {};
     events.forEach((event) => {
@@ -49,23 +174,32 @@ const MDCalendar = ({ events = [], loading = false }) => {
     return map;
   }, [events]);
 
-  const hasEvent = (day) => {
-    const dateKey = format(day, "yyyy-MM-dd");
-    return eventsByDate[dateKey] && eventsByDate[dateKey].length > 0;
-  };
+  // Memoized navigation handlers
+  const prevMonth = useCallback(() => setCurrentMonth(subMonths(currentMonth, 1)), [currentMonth]);
+  const nextMonth = useCallback(() => setCurrentMonth(addMonths(currentMonth, 1)), [currentMonth]);
+  const goToToday = useCallback(() => setCurrentMonth(new Date()), []);
 
-  const getEventNames = (day) => {
-    const dateKey = format(day, "yyyy-MM-dd");
-    return eventsByDate[dateKey] || [];
-  };
+  // Memoized helper functions
+  const hasEvent = useCallback(
+    (day) => {
+      const dateKey = format(day, "yyyy-MM-dd");
+      return eventsByDate[dateKey]?.length > 0;
+    },
+    [eventsByDate]
+  );
 
-  // Check if day belongs to current month
-  const isCurrentMonth = (day) => {
-    return isSameMonth(day, currentMonth);
-  };
+  const getEventNames = useCallback(
+    (day) => {
+      const dateKey = format(day, "yyyy-MM-dd");
+      return eventsByDate[dateKey] || [];
+    },
+    [eventsByDate]
+  );
 
-  // Get styles based on theme context
-  const getStyles = () => {
+  const isCurrentMonth = useCallback((day) => isSameMonth(day, currentMonth), [currentMonth]);
+
+  // Memoized styles
+  const styles = useMemo(() => {
     const isTransparent = transparentNavbar || transparentSidenav;
 
     return {
@@ -99,10 +233,6 @@ const MDCalendar = ({ events = [], loading = false }) => {
           transform: "scale(1.05)",
           transition: "all 0.2s ease",
         },
-        selected: {
-          backgroundColor: darkMode ? "#7b1fa2" : "#e1bee7",
-          color: darkMode ? "#ffffff" : "#4a148c",
-        },
       },
       button: {
         color: darkMode ? "#4dd0e1" : "#2196f3",
@@ -114,135 +244,23 @@ const MDCalendar = ({ events = [], loading = false }) => {
         color: darkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.25)",
       },
     };
-  };
+  }, [darkMode, transparentNavbar, transparentSidenav, sidenavColor]);
 
-  const styles = getStyles();
+  // Memoized tooltip styles
+  const tooltipStyles = useMemo(
+    () => ({
+      bgcolor: darkMode ? "grey.800" : "grey.100",
+      color: darkMode ? "grey.100" : "grey.800",
+      boxShadow: darkMode ? "0 4px 20px rgba(0, 0, 0, 0.3)" : "0 4px 20px rgba(0, 0, 0, 0.1)",
+      "& .MuiTooltip-arrow": {
+        color: darkMode ? "grey.800" : "grey.100",
+      },
+    }),
+    [darkMode]
+  );
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          width: "100%",
-          mx: "auto",
-          p: 3,
-          borderRadius: 3,
-          boxShadow: darkMode ? "0 8px 32px rgba(0, 0, 0, 0.24)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
-          backgroundColor: styles.calendar.backgroundColor,
-          border: `1px solid ${styles.border.color}`,
-        }}
-      >
-        {/* Header Skeleton */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={1.5}
-          sx={{
-            borderBottom: `1px solid ${styles.border.color}`,
-            pb: 1.5,
-          }}
-        >
-          <Skeleton
-            variant="rounded"
-            width={75}
-            height={30}
-            sx={{
-              bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-              borderRadius: 1,
-            }}
-          />
-          <Box display="flex" alignItems="center" gap={1}>
-            <Skeleton
-              variant="rounded"
-              width={60}
-              height={32}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-                borderRadius: 1,
-              }}
-            />
-            <Skeleton
-              variant="circular"
-              width={32}
-              height={32}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-              }}
-            />
-            <Skeleton
-              variant="circular"
-              width={32}
-              height={32}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-              }}
-            />
-          </Box>
-        </Box>
-
-        {/* Weekday Headers Skeleton */}
-        <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" mb={2} gap={1}>
-          {Array.from({ length: 7 }).map((_, index) => (
-            <Skeleton
-              key={index}
-              variant="text"
-              width="100%"
-              height={30}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
-                borderRadius: 1,
-              }}
-            />
-          ))}
-        </Box>
-
-        {/* Calendar Days Skeleton */}
-        <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1}>
-          {Array.from({ length: 42 }).map(
-            (
-              _,
-              index // 6 weeks × 7 days = 42
-            ) => (
-              <Skeleton
-                key={index}
-                variant="rounded"
-                width="100%"
-                height={35}
-                sx={{
-                  bgcolor: darkMode ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)",
-                  borderRadius: 2,
-                }}
-              />
-            )
-          )}
-        </Box>
-
-        {/* Legend Skeleton */}
-        <Box mt={1.5} pt={1.5} sx={{ borderTop: `1px solid ${styles.border.color}` }}>
-          <Box display="flex" alignItems="center" justifyContent="center">
-            <Skeleton
-              variant="rounded"
-              width={16}
-              height={15}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-                borderRadius: 1,
-                mr: 1,
-              }}
-            />
-            <Skeleton
-              variant="text"
-              width={100}
-              height={20}
-              sx={{
-                bgcolor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)",
-                borderRadius: 1,
-              }}
-            />
-          </Box>
-        </Box>
-      </Box>
-    );
+    return <CalendarSkeleton darkMode={darkMode} styles={styles} />;
   }
 
   return (
@@ -325,7 +343,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
 
       {/* Weekday Headers */}
       <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" mb={1} gap={1}>
-        {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+        {WEEKDAY_HEADERS.map((day, index) => (
           <Typography
             key={`${day}-${index}`}
             align="center"
@@ -372,16 +390,7 @@ const MDCalendar = ({ events = [], loading = false }) => {
               placement="top"
               componentsProps={{
                 tooltip: {
-                  sx: {
-                    bgcolor: darkMode ? "grey.800" : "grey.100",
-                    color: darkMode ? "grey.100" : "grey.800",
-                    boxShadow: darkMode
-                      ? "0 4px 20px rgba(0, 0, 0, 0.3)"
-                      : "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    "& .MuiTooltip-arrow": {
-                      color: darkMode ? "grey.800" : "grey.100",
-                    },
-                  },
+                  sx: tooltipStyles,
                 },
               }}
             >
@@ -458,19 +467,6 @@ const MDCalendar = ({ events = [], loading = false }) => {
   );
 };
 
-MDCalendar.propTypes = {
-  color: PropTypes.oneOf([
-    "primary",
-    "secondary",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "light",
-    "dark",
-  ]),
-  events: PropTypes.array,
-  loading: PropTypes.bool,
-};
+MDCalendar.displayName = "MDCalendar";
 
-export default MDCalendar;
+export default memo(MDCalendar);

@@ -1,58 +1,73 @@
-import { useState } from "react";
+/**
+ * MDAlert Component
+ * Displays dismissible alert messages with gradient backgrounds
+ * @module components/MDAlert
+ */
 
-// prop-types is a library for typechecking of props
+import { useState, useCallback, useMemo, memo } from "react";
 import PropTypes from "prop-types";
-
-// @mui material components
 import Fade from "@mui/material/Fade";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-
-// Custom styles for the MDAlert
 import MDAlertRoot from "components/MDAlert/MDAlertRoot";
 import MDAlertCloseIcon from "components/MDAlert/MDAlertCloseIcon";
 
-function MDAlert({ color, dismissible, children, ...rest }) {
+const MDAlert = ({ color = "info", dismissible = false, children, ...rest }) => {
   const [alertStatus, setAlertStatus] = useState("mount");
 
-  const handleAlertStatus = () => setAlertStatus("fadeOut");
+  // Memoized close handler
+  const handleAlertStatus = useCallback(() => {
+    setAlertStatus("fadeOut");
+  }, []);
 
-  // The base template for the alert
-  const alertTemplate = (mount = true) => (
-    <Fade in={mount} timeout={300}>
-      <MDAlertRoot ownerState={{ color }} {...rest}>
-        <MDBox display="flex" alignItems="center" color="white">
-          {children}
-        </MDBox>
-        {dismissible ? (
-          <MDAlertCloseIcon onClick={mount ? handleAlertStatus : null}>&times;</MDAlertCloseIcon>
-        ) : null}
-      </MDAlertRoot>
-    </Fade>
+  // Memoized fade timeout
+  const fadeTimeout = useMemo(() => 300, []);
+
+  // Memoized unmount timeout
+  const unmountTimeout = useMemo(() => 400, []);
+
+  // Memoized alert template function
+  const alertTemplate = useCallback(
+    (mount = true) => (
+      <Fade in={mount} timeout={fadeTimeout}>
+        <MDAlertRoot ownerState={{ color }} {...rest}>
+          <MDBox display="flex" alignItems="center" color="white">
+            {children}
+          </MDBox>
+          {dismissible && (
+            <MDAlertCloseIcon
+              onClick={mount ? handleAlertStatus : undefined}
+              role="button"
+              aria-label="Close alert"
+              tabIndex={mount ? 0 : -1}
+              onKeyDown={(e) => {
+                if (mount && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  handleAlertStatus();
+                }
+              }}
+            >
+              &times;
+            </MDAlertCloseIcon>
+          )}
+        </MDAlertRoot>
+      </Fade>
+    ),
+    [color, dismissible, children, handleAlertStatus, fadeTimeout, rest]
   );
 
-  switch (true) {
-    case alertStatus === "mount":
-      return alertTemplate();
-    case alertStatus === "fadeOut":
-      setTimeout(() => setAlertStatus("unmount"), 400);
-      return alertTemplate(false);
-    default:
-      alertTemplate();
-      break;
+  // Handle alert lifecycle
+  if (alertStatus === "mount") {
+    return alertTemplate();
+  }
+
+  if (alertStatus === "fadeOut") {
+    setTimeout(() => setAlertStatus("unmount"), unmountTimeout);
+    return alertTemplate(false);
   }
 
   return null;
-}
-
-// Setting default values for the props of MDAlert
-MDAlert.defaultProps = {
-  color: "info",
-  dismissible: false,
 };
 
-// Typechecking props of the MDAlert
 MDAlert.propTypes = {
   color: PropTypes.oneOf([
     "primary",
@@ -68,4 +83,6 @@ MDAlert.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default MDAlert;
+MDAlert.displayName = "MDAlert";
+
+export default memo(MDAlert);

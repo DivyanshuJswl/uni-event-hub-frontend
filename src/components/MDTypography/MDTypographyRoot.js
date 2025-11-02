@@ -1,43 +1,57 @@
-// @mui material components
+/**
+ * Styled root component for MDTypography
+ * @module components/MDTypography/MDTypographyRoot
+ */
+
 import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
 
-export default styled(Typography)(({ theme, ownerState }) => {
+// Font weight mapping
+const FONT_WEIGHT_MAP = {
+  light: "fontWeightLight",
+  regular: "fontWeightRegular",
+  medium: "fontWeightMedium",
+  bold: "fontWeightBold",
+};
+
+const MDTypographyRoot = styled(Typography)(({ theme, ownerState }) => {
   const { palette, typography, functions } = theme;
   const { color, textTransform, verticalAlign, fontWeight, opacity, textGradient, darkMode } =
     ownerState;
 
   const { gradients, transparent, white } = palette;
-  const { fontWeightLight, fontWeightRegular, fontWeightMedium, fontWeightBold } = typography;
   const { linearGradient } = functions;
 
-  // fontWeight styles
-  const fontWeights = {
-    light: fontWeightLight,
-    regular: fontWeightRegular,
-    medium: fontWeightMedium,
-    bold: fontWeightBold,
-  };
+  // Get font weight value
+  const fontWeightValue =
+    fontWeight && FONT_WEIGHT_MAP[fontWeight] ? typography[FONT_WEIGHT_MAP[fontWeight]] : undefined;
 
-  // styles for the typography with textGradient={true}
-  const gradientStyles = () => ({
-    backgroundImage:
-      color !== "inherit" && color !== "text" && color !== "white" && gradients[color]
-        ? linearGradient(gradients[color].main, gradients[color].state)
-        : linearGradient(gradients.dark.main, gradients.dark.state),
-    display: "inline-block",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: transparent.main,
-    position: "relative",
-    zIndex: 1,
-  });
+  // Gradient styles
+  const gradientStyles = textGradient
+    ? {
+        backgroundImage:
+          color !== "inherit" && color !== "text" && color !== "white" && gradients[color]
+            ? linearGradient(gradients[color].main, gradients[color].state)
+            : linearGradient(gradients.dark.main, gradients.dark.state),
+        display: "inline-block",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: transparent.main,
+        position: "relative",
+        zIndex: 1,
+      }
+    : {};
 
-  // color value
-  let colorValue = color === "inherit" || !palette[color] ? "inherit" : palette[color].main;
+  // Compute color value
+  let colorValue =
+    color === "inherit" || !palette[color] ? "inherit" : palette[color]?.main || "inherit";
 
-  if (darkMode && (color === "inherit" || !palette[color])) {
-    colorValue = "inherit";
-  } else if (darkMode && color === "dark") colorValue = white.main;
+  if (darkMode) {
+    if (color === "inherit" || !palette[color]) {
+      colorValue = "inherit";
+    } else if (color === "dark") {
+      colorValue = white.main;
+    }
+  }
 
   return {
     opacity,
@@ -45,7 +59,11 @@ export default styled(Typography)(({ theme, ownerState }) => {
     verticalAlign,
     textDecoration: "none",
     color: colorValue,
-    fontWeight: fontWeights[fontWeight] && fontWeights[fontWeight],
-    ...(textGradient && gradientStyles()),
+    ...(fontWeightValue && { fontWeight: fontWeightValue }),
+    ...gradientStyles,
   };
 });
+
+MDTypographyRoot.displayName = "MDTypographyRoot";
+
+export default MDTypographyRoot;

@@ -1,8 +1,12 @@
-// @mui material components
+/**
+ * Styled icon component for MDSnackbar
+ * @module components/MDSnackbar/MDSnackbarIconRoot
+ */
+
 import Icon from "@mui/material/Icon";
 import { styled } from "@mui/material/styles";
 
-export default styled(Icon)(({ theme, ownerState }) => {
+const MDSnackbarIconRoot = styled(Icon)(({ theme, ownerState }) => {
   const { palette, functions, typography } = theme;
   const { color, bgWhite } = ownerState;
 
@@ -10,7 +14,7 @@ export default styled(Icon)(({ theme, ownerState }) => {
   const { pxToRem, linearGradient } = functions;
   const { size } = typography;
 
-  // backgroundImage value
+  // Compute background image value
   let backgroundImageValue;
 
   if (bgWhite) {
@@ -30,3 +34,7 @@ export default styled(Icon)(({ theme, ownerState }) => {
     transform: `translateY(${pxToRem(-2)})`,
   };
 });
+
+MDSnackbarIconRoot.displayName = "MDSnackbarIconRoot";
+
+export default MDSnackbarIconRoot;

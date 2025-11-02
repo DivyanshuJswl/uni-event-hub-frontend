@@ -1,5 +1,4 @@
 import { useCallback, useMemo, memo } from "react";
-import PropTypes from "prop-types";
 import { Snackbar, Alert, Box, Typography, IconButton, Slide } from "@mui/material";
 import { Close, Event, Warning, CheckCircle, Info, Error as ErrorIcon } from "@mui/icons-material";
 import { useMaterialUIController } from "context";

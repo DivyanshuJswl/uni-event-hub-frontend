@@ -31,6 +31,7 @@ import Publish from "layouts/certificatepublisher";
 import ExplorePage from "layouts/explorepage";
 import OrganizedEvents from "layouts/organizedevents";
 import CreateEvents from "layouts/createEvents";
+import ComponentTestingPage from "layouts/testPage";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -86,7 +87,14 @@ const routes = [
     component: <VerifyCertificate />,
     hidden: true,
   },
-
+  {
+    type: "collapse",
+    name: "Testing",
+    key: "testing",
+    icon: <Icon fontSize="small">science</Icon>,
+    route: "/test",
+    component: <ComponentTestingPage />,
+  },
   // User routes (visible to users with role 'user')
   {
     type: "collapse",

@@ -1,6 +1,6 @@
 import { useMemo, useCallback, memo } from "react";
 import PropTypes from "prop-types";
-import { Card, Chip, Divider, LinearProgress, Box, CircularProgress } from "@mui/material";
+import { Card, Chip, Divider, Box, CircularProgress } from "@mui/material";
 import {
   EventAvailable as EventAvailableIcon,
   LocationOn as LocationOnIcon,
@@ -11,6 +11,7 @@ import {
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
+import MDProgress from "components/MDProgress";
 import { useMaterialUIController } from "context";
 import { useNavigate } from "react-router-dom";
 
@@ -189,7 +190,7 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading = false }) {
                 {eventMetrics.participationPercentage}%
               </MDTypography>
             </Box>
-            <LinearProgress
+            <MDProgress
               variant="determinate"
               value={eventMetrics.participationPercentage}
               color={
@@ -199,7 +200,6 @@ function ParticipatedEventCard({ event, onUnenroll, unenrollLoading = false }) {
                     ? "warning"
                     : "secondary"
               }
-              sx={{ height: 6, borderRadius: 3 }}
             />
           </Box>
 

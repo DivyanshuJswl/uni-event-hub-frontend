@@ -1,27 +1,16 @@
-import { forwardRef } from "react";
+/**
+ * MDInput Component
+ * Customizable input field with error and success states
+ * @module components/MDInput
+ */
 
-// prop-types is a library for typechecking of props
-import PropTypes from "prop-types";
-
-// Custom styles for MDInput
+import { forwardRef, memo } from "react";
 import MDInputRoot from "components/MDInput/MDInputRoot";
 
-const MDInput = forwardRef(({ error, success, disabled, ...rest }, ref) => (
+const MDInput = forwardRef(({ error = false, success = false, disabled = false, ...rest }, ref) => (
   <MDInputRoot {...rest} ref={ref} ownerState={{ error, success, disabled }} />
 ));
 
-// Setting default values for the props of MDInput
-MDInput.defaultProps = {
-  error: false,
-  success: false,
-  disabled: false,
-};
+MDInput.displayName = "MDInput";
 
-// Typechecking props for the MDInput
-MDInput.propTypes = {
-  error: PropTypes.bool,
-  success: PropTypes.bool,
-  disabled: PropTypes.bool,
-};
-
-export default MDInput;
+export default memo(MDInput);

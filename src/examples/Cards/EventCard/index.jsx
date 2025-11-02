@@ -10,13 +10,13 @@ import {
   Grid,
   Fade,
   Backdrop,
-  LinearProgress,
   Chip,
   Link,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
+import MDProgress from "components/MDProgress";
 import { useMaterialUIController } from "context";
 import { useNotifications } from "context/NotifiContext";
 import { useAuth } from "context/AuthContext";
@@ -263,8 +263,8 @@ function EventCard({ event, isEnrolled = false }) {
                   {eventMetrics.participationPercentage}%
                 </MDTypography>
               </Box>
-              <LinearProgress
-                variant="determinate"
+              <MDProgress
+                variant="contained"
                 value={eventMetrics.participationPercentage}
                 color={
                   eventMetrics.isFull
@@ -273,7 +273,6 @@ function EventCard({ event, isEnrolled = false }) {
                       ? "warning"
                       : "secondary"
                 }
-                sx={{ height: 6, borderRadius: 3 }}
               />
             </Box>
 
@@ -414,8 +413,8 @@ function EventCard({ event, isEnrolled = false }) {
                         {eventMetrics.participationPercentage}% filled
                       </MDTypography>
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
+                    <MDProgress
+                      variant="contained"
                       value={eventMetrics.participationPercentage}
                       color={
                         eventMetrics.isFull
@@ -424,7 +423,6 @@ function EventCard({ event, isEnrolled = false }) {
                             ? "warning"
                             : "secondary"
                       }
-                      sx={{ height: 10, borderRadius: 5 }}
                     />
                   </Box>
                 </Grid>
