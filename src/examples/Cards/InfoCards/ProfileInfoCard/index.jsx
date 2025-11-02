@@ -54,7 +54,13 @@ const modalStyle = () => ({
   outline: "none",
 });
 
-function ProfileInfoCard({ title, description, social, action, shadow, darkMode }) {
+function ProfileInfoCard({
+  title = "",
+  description = "",
+  social = [],
+  action = null,
+  shadow = true,
+}) {
   const { socialMediaColors } = colors;
   const { size } = typography;
   const { updateProfile, user } = useAuth();
@@ -523,15 +529,6 @@ function ProfileInfoCard({ title, description, social, action, shadow, darkMode 
   );
 }
 
-ProfileInfoCard.defaultProps = {
-  shadow: true,
-  action: null,
-  social: [],
-  title: "",
-  description: "",
-  darkMode: false,
-};
-
 ProfileInfoCard.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string.isRequired,
@@ -557,7 +554,6 @@ ProfileInfoCard.propTypes = {
     onRefresh: PropTypes.func,
   }),
   shadow: PropTypes.bool,
-  darkMode: PropTypes.bool,
 };
 
 ProfileInfoCard.displayName = "ProfileInfoCard";

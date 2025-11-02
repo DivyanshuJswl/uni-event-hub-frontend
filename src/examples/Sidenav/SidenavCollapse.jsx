@@ -13,7 +13,7 @@ import {
 } from "examples/Sidenav/styles/sidenavCollapse";
 import { useMaterialUIController } from "context";
 
-function SidenavCollapse({ icon, name, active, ...rest }) {
+function SidenavCollapse({ icon, name, active = false, ...rest }) {
   const [controller] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
 
@@ -68,10 +68,6 @@ function SidenavCollapse({ icon, name, active, ...rest }) {
     </ListItem>
   );
 }
-
-SidenavCollapse.defaultProps = {
-  active: false,
-};
 
 SidenavCollapse.propTypes = {
   icon: PropTypes.node.isRequired,

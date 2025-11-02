@@ -17,7 +17,14 @@ import MDPagination from "components/MDPagination";
 import { useMaterialUIController } from "context";
 
 // DataTableHeadCell Component
-function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }) {
+function DataTableHeadCell({
+  width = "auto",
+  children,
+  sorted = "none",
+  align = "left",
+  darkMode = false,
+  ...rest
+}) {
   const [controller] = useMaterialUIController();
   const { darkMode: contextDarkMode } = controller;
   const isDark = darkMode !== undefined ? darkMode : contextDarkMode;
@@ -110,13 +117,6 @@ function DataTableHeadCell({ width, children, sorted, align, darkMode, ...rest }
   );
 }
 
-DataTableHeadCell.defaultProps = {
-  width: "auto",
-  sorted: "none",
-  align: "left",
-  darkMode: undefined,
-};
-
 DataTableHeadCell.propTypes = {
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.node.isRequired,
@@ -126,7 +126,7 @@ DataTableHeadCell.propTypes = {
 };
 
 // DataTableBodyCell Component
-function DataTableBodyCell({ noBorder, align, children, darkMode }) {
+function DataTableBodyCell({ noBorder = false, align = "left", children, darkMode = "false" }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -182,12 +182,6 @@ function DataTableBodyCell({ noBorder, align, children, darkMode }) {
   );
 }
 
-DataTableBodyCell.defaultProps = {
-  noBorder: false,
-  align: "left",
-  darkMode: undefined,
-};
-
 DataTableBodyCell.propTypes = {
   children: PropTypes.node.isRequired,
   noBorder: PropTypes.bool,
@@ -197,13 +191,13 @@ DataTableBodyCell.propTypes = {
 
 // Main DataTable Component
 function DataTable({
-  entriesPerPage,
-  canSearch,
-  showTotalEntries,
+  entriesPerPage = { defaultValue: 10, entries: [5, 10, 15, 20, 25] },
+  canSearch = false,
+  showTotalEntries = true,
   table,
-  pagination,
-  isSorted,
-  noEndBorder,
+  pagination = { variant: "gradient", color: "info" },
+  isSorted = true,
+  noEndBorder = false,
 }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
@@ -562,15 +556,6 @@ function DataTable({
 DataTable.displayName = "DataTable";
 DataTableHeadCell.displayName = "DataTableHeadCell";
 DataTableBodyCell.displayName = "DataTableBodyCell";
-
-DataTable.defaultProps = {
-  entriesPerPage: { defaultValue: 10, entries: [5, 10, 15, 20, 25] },
-  canSearch: false,
-  showTotalEntries: true,
-  pagination: { variant: "gradient", color: "info" },
-  isSorted: true,
-  noEndBorder: false,
-};
 
 DataTable.propTypes = {
   entriesPerPage: PropTypes.oneOfType([

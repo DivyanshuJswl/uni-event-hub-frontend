@@ -5,7 +5,7 @@ import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function DefaultNavbarLink({ icon, name, route, light }) {
+function DefaultNavbarLink({ icon, name, route, light = false }) {
   // Memoized icon color
   const iconColor = useMemo(
     () =>
@@ -37,10 +37,6 @@ function DefaultNavbarLink({ icon, name, route, light }) {
     </MDBox>
   );
 }
-
-DefaultNavbarLink.defaultProps = {
-  light: false,
-};
 
 DefaultNavbarLink.propTypes = {
   icon: PropTypes.string.isRequired,

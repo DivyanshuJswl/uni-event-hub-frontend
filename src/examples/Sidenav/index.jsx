@@ -21,7 +21,7 @@ import {
 import { useAuth } from "context/AuthContext";
 import { useNotifications } from "context/NotifiContext";
 
-function Sidenav({ color, brand, brandName, routes, ...rest }) {
+function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
@@ -79,7 +79,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     handleMiniSidenav();
 
     return () => window.removeEventListener("resize", handleMiniSidenav);
-  }, [dispatch, transparentSidenav, whiteSidenav]);
+  }, [dispatch, transparentSidenav, whiteSidenav, location]);
 
   // Memoized filtered routes
   const filteredRoutes = useMemo(() => {
@@ -258,11 +258,6 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     </SidenavRoot>
   );
 }
-
-Sidenav.defaultProps = {
-  color: "info",
-  brand: "",
-};
 
 Sidenav.propTypes = {
   color: PropTypes.oneOf(["primary", "secondary", "info", "success", "warning", "error", "dark"]),

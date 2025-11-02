@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import MDBox from "components/MDBox";
 import { useMaterialUIController, setLayout } from "context";
 
-function PageLayout({ background, children }) {
+function PageLayout({ background = "default", children }) {
   const [, dispatch] = useMaterialUIController();
   const { pathname } = useLocation();
 
@@ -27,10 +27,6 @@ function PageLayout({ background, children }) {
 
   return <MDBox sx={layoutStyles}>{children}</MDBox>;
 }
-
-PageLayout.defaultProps = {
-  background: "default",
-};
 
 PageLayout.propTypes = {
   background: PropTypes.oneOf(["white", "light", "default"]),

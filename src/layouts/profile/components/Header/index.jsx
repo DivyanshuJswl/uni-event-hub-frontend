@@ -21,7 +21,7 @@ import { useMaterialUIController } from "context";
 import ImageCropper from "./ImageCropper";
 import PreviewModal from "./PreviewModal";
 
-function Header({ name, avatar, children, onAvatarUpdate }) {
+function Header({ name = "Student name", avatar = "", children = "", onAvatarUpdate = null }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const { role, becomeOrganizer, updateProfilePicture, deleteProfilePicture } = useAuth();
@@ -403,13 +403,6 @@ function Header({ name, avatar, children, onAvatarUpdate }) {
     </MDBox>
   );
 }
-
-Header.defaultProps = {
-  children: "",
-  name: "Student Name",
-  avatar: "",
-  onAvatarUpdate: null,
-};
 
 Header.propTypes = {
   children: PropTypes.node,

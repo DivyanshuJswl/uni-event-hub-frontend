@@ -6,7 +6,15 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useMaterialUIController } from "context";
 
-function NewsCard({ name, source, description, author, publishedAt, image, link }) {
+function NewsCard({
+  name = "",
+  source = "",
+  description = "",
+  author = "",
+  publishedAt = "",
+  image = null,
+  link = "",
+}) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
@@ -146,15 +154,6 @@ NewsCard.propTypes = {
   publishedAt: PropTypes.string,
   image: PropTypes.string,
   link: PropTypes.string,
-};
-
-NewsCard.defaultProps = {
-  source: "",
-  description: "",
-  author: "",
-  publishedAt: "",
-  image: null,
-  link: "",
 };
 
 NewsCard.displayName = "NewsCard";

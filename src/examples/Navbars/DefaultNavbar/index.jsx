@@ -10,7 +10,7 @@ import DefaultNavbarMobile from "examples/Navbars/DefaultNavbar/DefaultNavbarMob
 import breakpoints from "assets/theme/base/breakpoints";
 import { useMaterialUIController } from "context";
 
-function DefaultNavbar({ transparent, light }) {
+function DefaultNavbar({ transparent = false, light = false }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
@@ -148,11 +148,6 @@ function DefaultNavbar({ transparent, light }) {
     </Container>
   );
 }
-
-DefaultNavbar.defaultProps = {
-  transparent: false,
-  light: false,
-};
 
 DefaultNavbar.propTypes = {
   transparent: PropTypes.bool,

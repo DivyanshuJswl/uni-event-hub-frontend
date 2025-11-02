@@ -12,7 +12,7 @@ import MDBox from "components/MDBox";
 import DefaultNavbar from "examples/Navbars/DefaultNavbar";
 import PageLayout from "examples/LayoutContainers/PageLayout";
 
-function CoverLayout({ coverHeight, image, children }) {
+function CoverLayout({ coverHeight = "35vh", image, children }) {
   return (
     <PageLayout>
       <DefaultNavbar transparent light />
@@ -46,11 +46,6 @@ function CoverLayout({ coverHeight, image, children }) {
     </PageLayout>
   );
 }
-
-// Setting default props for the CoverLayout
-CoverLayout.defaultProps = {
-  coverHeight: "35vh",
-};
 
 // Typechecking props for the CoverLayout
 CoverLayout.propTypes = {

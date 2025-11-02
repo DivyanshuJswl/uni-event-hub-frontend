@@ -6,7 +6,17 @@ import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
+function ComplexStatisticsCard({
+  color = "info",
+  title,
+  count,
+  percentage = {
+    color: "success",
+    amount: "",
+    label: "",
+  },
+  icon,
+}) {
   // Memoized icon box styles
   const iconBoxStyles = useMemo(
     () => ({
@@ -67,15 +77,6 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon }) {
     </Card>
   );
 }
-
-ComplexStatisticsCard.defaultProps = {
-  color: "info",
-  percentage: {
-    color: "success",
-    amount: "",
-    label: "",
-  },
-};
 
 ComplexStatisticsCard.propTypes = {
   color: PropTypes.oneOf([

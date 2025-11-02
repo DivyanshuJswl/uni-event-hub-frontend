@@ -6,7 +6,7 @@ import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function Breadcrumbs({ icon, title, route, light }) {
+function Breadcrumbs({ icon, title, route, light = false }) {
   // Memoized routes calculation
   const routes = useMemo(() => {
     return Array.isArray(route) ? route.slice(0, -1) : [];
@@ -73,10 +73,6 @@ function Breadcrumbs({ icon, title, route, light }) {
     </MDBox>
   );
 }
-
-Breadcrumbs.defaultProps = {
-  light: false,
-};
 
 Breadcrumbs.propTypes = {
   icon: PropTypes.node.isRequired,

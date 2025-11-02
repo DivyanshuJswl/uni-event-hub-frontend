@@ -14,7 +14,7 @@ import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
 import { useNavigate } from "react-router-dom";
 
-function ParticipatedEventCard({ event, onUnenroll, unenrollLoading }) {
+function ParticipatedEventCard({ event, onUnenroll, unenrollLoading = false }) {
   const [controller] = useMaterialUIController();
   const { darkMode, sidenavColor } = controller;
   const navigate = useNavigate();
@@ -260,10 +260,6 @@ ParticipatedEventCard.propTypes = {
   }).isRequired,
   onUnenroll: PropTypes.func.isRequired,
   unenrollLoading: PropTypes.bool,
-};
-
-ParticipatedEventCard.defaultProps = {
-  unenrollLoading: false,
 };
 
 ParticipatedEventCard.displayName = "ParticipatedEventCard";

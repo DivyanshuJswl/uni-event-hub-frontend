@@ -31,7 +31,7 @@ import {
 import { useAuth } from "context/AuthContext";
 import { useNotifications } from "context/NotifiContext";
 
-const DashboardNavbar = memo(({ absolute, light, isMini }) => {
+const DashboardNavbar = memo(({ absolute = false, light = false, isMini = false }) => {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const navigate = useNavigate();
@@ -55,27 +55,30 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
   const route = useMemo(() => location.pathname.split("/").slice(1), [location.pathname]);
 
   // Memoized search data
-  const mockSearchData = useMemo(() => [
-    { id: 1, title: "Dashboard", url: "/user-dashboard", type: "page" },
-    { id: 2, title: "Profile", url: "/profile", type: "page" },
-    { id: 3, title: "Events", url: "/explore", type: "page" },
-    { id: 4, title: "My Events", url: "/myevents", type: "page" },
-    { id: 5, title: "Certificates", url: "/my-certificate", type: "page" },
-    { id: 6, title: "Organized Events", url: "/organized-events", type: "page" },
-    { id: 7, title: "Create Event", url: "/create-event", type: "page" },
-    { id: 8, title: "Settings", url: "/settings", type: "page" },
-  ], []);
+  const mockSearchData = useMemo(
+    () => [
+      { id: 1, title: "Dashboard", url: "/user-dashboard", type: "page" },
+      { id: 2, title: "Profile", url: "/profile", type: "page" },
+      { id: 3, title: "Events", url: "/explore", type: "page" },
+      { id: 4, title: "My Events", url: "/myevents", type: "page" },
+      { id: 5, title: "Certificates", url: "/my-certificate", type: "page" },
+      { id: 6, title: "Organized Events", url: "/organized-events", type: "page" },
+      { id: 7, title: "Create Event", url: "/create-event", type: "page" },
+      { id: 8, title: "Settings", url: "/settings", type: "page" },
+    ],
+    []
+  );
 
   // Initialize search data and recent searches
   useEffect(() => {
-    setNavbarState(prev => ({ ...prev, searchData: mockSearchData }));
-    
+    setNavbarState((prev) => ({ ...prev, searchData: mockSearchData }));
+
     const savedSearches = sessionStorage.getItem("recentSearches");
     if (savedSearches) {
       try {
-        setNavbarState(prev => ({ 
-          ...prev, 
-          recentSearches: JSON.parse(savedSearches) 
+        setNavbarState((prev) => ({
+          ...prev,
+          recentSearches: JSON.parse(savedSearches),
         }));
       } catch (error) {
         console.error("Failed to parse recent searches:", error);
@@ -96,22 +99,22 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
   // Handle search with memoization
   useEffect(() => {
     if (!navbarState.searchQuery.trim()) {
-      setNavbarState(prev => ({ ...prev, searchResults: [] }));
+      setNavbarState((prev) => ({ ...prev, searchResults: [] }));
       return;
     }
 
     const results = fuse.search(navbarState.searchQuery);
-    setNavbarState(prev => ({ 
-      ...prev, 
-      searchResults: results.map(result => result.item) 
+    setNavbarState((prev) => ({
+      ...prev,
+      searchResults: results.map((result) => result.item),
     }));
   }, [navbarState.searchQuery, fuse]);
 
   // Navbar type and transparency setup
   useEffect(() => {
-    setNavbarState(prev => ({ 
-      ...prev, 
-      navbarType: fixedNavbar ? "sticky" : "static" 
+    setNavbarState((prev) => ({
+      ...prev,
+      navbarType: fixedNavbar ? "sticky" : "static",
     }));
 
     const handleTransparentNavbar = () => {
@@ -138,51 +141,54 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
   }, [dispatch, darkMode]);
 
   const handleProfileMenuOpen = useCallback((event) => {
-    setNavbarState(prev => ({ ...prev, profileMenuAnchor: event.currentTarget }));
+    setNavbarState((prev) => ({ ...prev, profileMenuAnchor: event.currentTarget }));
   }, []);
 
   const handleProfileMenuClose = useCallback(() => {
-    setNavbarState(prev => ({ ...prev, profileMenuAnchor: null }));
+    setNavbarState((prev) => ({ ...prev, profileMenuAnchor: null }));
   }, []);
 
   const handleSearchChange = useCallback((e) => {
     const value = e.target.value;
-    setNavbarState(prev => ({ 
-      ...prev, 
+    setNavbarState((prev) => ({
+      ...prev,
       searchQuery: value,
-      searchOpen: true 
+      searchOpen: true,
     }));
   }, []);
 
   const handleSearchFocus = useCallback(() => {
     if (navbarState.searchQuery) {
-      setNavbarState(prev => ({ ...prev, searchOpen: true }));
+      setNavbarState((prev) => ({ ...prev, searchOpen: true }));
     }
   }, [navbarState.searchQuery]);
 
   const handleSearchBlur = useCallback(() => {
     setTimeout(() => {
-      setNavbarState(prev => ({ ...prev, searchOpen: false }));
+      setNavbarState((prev) => ({ ...prev, searchOpen: false }));
     }, 200);
   }, []);
 
-  const handleResultClick = useCallback((result) => {
-    const newRecentSearches = [
-      result,
-      ...navbarState.recentSearches.filter(item => item.id !== result.id).slice(0, 4),
-    ];
-    
-    setNavbarState(prev => ({
-      ...prev,
-      recentSearches: newRecentSearches,
-      searchOpen: false,
-      searchQuery: "",
-      searchResults: [],
-    }));
-    
-    sessionStorage.setItem("recentSearches", JSON.stringify(newRecentSearches));
-    navigate(result.url);
-  }, [navbarState.recentSearches, navigate]);
+  const handleResultClick = useCallback(
+    (result) => {
+      const newRecentSearches = [
+        result,
+        ...navbarState.recentSearches.filter((item) => item.id !== result.id).slice(0, 4),
+      ];
+
+      setNavbarState((prev) => ({
+        ...prev,
+        recentSearches: newRecentSearches,
+        searchOpen: false,
+        searchQuery: "",
+        searchResults: [],
+      }));
+
+      sessionStorage.setItem("recentSearches", JSON.stringify(newRecentSearches));
+      navigate(result.url);
+    },
+    [navbarState.recentSearches, navigate]
+  );
 
   const handleLogout = useCallback(async () => {
     handleProfileMenuClose();
@@ -217,16 +223,17 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
   }, [navigate]);
 
   // Memoized styles
-  const iconsStyle = useMemo(() => 
-    ({ palette: { dark, white, text }, functions: { rgba } }) => ({
-      color: () => {
-        let colorValue = light || darkMode ? white.main : dark.main;
-        if (transparentNavbar && !light) {
-          colorValue = darkMode ? rgba(text.main, 0.6) : text.main;
-        }
-        return colorValue;
-      },
-    }),
+  const iconsStyle = useMemo(
+    () =>
+      ({ palette: { dark, white, text }, functions: { rgba } }) => ({
+        color: () => {
+          let colorValue = light || darkMode ? white.main : dark.main;
+          if (transparentNavbar && !light) {
+            colorValue = darkMode ? rgba(text.main, 0.6) : text.main;
+          }
+          return colorValue;
+        },
+      }),
     [light, darkMode, transparentNavbar]
   );
 
@@ -290,7 +297,8 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
                         <MDTypography
                           variant="caption"
                           sx={{
-                            backgroundColor: result.type === "event" ? "primary.main" : "secondary.main",
+                            backgroundColor:
+                              result.type === "event" ? "primary.main" : "secondary.main",
                             px: 1,
                             borderRadius: 1,
                             mt: 0.5,
@@ -325,14 +333,21 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
             </MDBox>
 
             <MDBox color={light ? "white" : "inherit"}>
-              <IconButton sx={navbarIconButton} size="small" disableRipple onClick={handleProfileMenuOpen}>
+              <IconButton
+                sx={navbarIconButton}
+                size="small"
+                disableRipple
+                onClick={handleProfileMenuOpen}
+              >
                 {avatarUrl ? (
                   <Avatar src={avatarUrl} alt="User Avatar" sx={{ width: 32, height: 32 }} />
                 ) : (
-                  <Icon sx={iconsStyle} title="Profile">account_circle</Icon>
+                  <Icon sx={iconsStyle} title="Profile">
+                    account_circle
+                  </Icon>
                 )}
               </IconButton>
-              
+
               <Menu
                 anchorEl={navbarState.profileMenuAnchor}
                 open={Boolean(navbarState.profileMenuAnchor)}
@@ -360,20 +375,48 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
                 )}
               </Menu>
 
-              <IconButton size="small" disableRipple color="inherit" sx={navbarMobileMenu} onClick={handleMiniSidenav}>
-                <Icon sx={iconsStyle} fontSize="medium">{miniSidenav ? "menu_open" : "menu"}</Icon>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarMobileMenu}
+                onClick={handleMiniSidenav}
+              >
+                <Icon sx={iconsStyle} fontSize="medium">
+                  {miniSidenav ? "menu_open" : "menu"}
+                </Icon>
               </IconButton>
 
-              <IconButton size="small" disableRipple color="inherit" sx={navbarIconButton} onClick={handleDarkMode}>
-                <Icon sx={iconsStyle} fontSize="medium">{darkMode ? "light_mode" : "dark_mode"}</Icon>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                onClick={handleDarkMode}
+              >
+                <Icon sx={iconsStyle} fontSize="medium">
+                  {darkMode ? "light_mode" : "dark_mode"}
+                </Icon>
               </IconButton>
 
-              <IconButton size="small" disableRipple color="inherit" sx={navbarIconButton} onClick={handleConfiguratorOpen}>
+              <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarIconButton}
+                onClick={handleConfiguratorOpen}
+              >
                 <Icon sx={iconsStyle}>settings</Icon>
               </IconButton>
 
               {isAuthenticated && (
-                <IconButton size="small" disableRipple color="inherit" sx={navbarIconButton} onClick={handleNavigateToNotifications}>
+                <IconButton
+                  size="small"
+                  disableRipple
+                  color="inherit"
+                  sx={navbarIconButton}
+                  onClick={handleNavigateToNotifications}
+                >
                   <Badge badgeContent={unreadCount} color="error" overlap="circular">
                     <Icon sx={iconsStyle}>notifications</Icon>
                   </Badge>
@@ -388,12 +431,6 @@ const DashboardNavbar = memo(({ absolute, light, isMini }) => {
 });
 
 DashboardNavbar.displayName = "DashboardNavbar";
-
-DashboardNavbar.defaultProps = {
-  absolute: false,
-  light: false,
-  isMini: false,
-};
 
 DashboardNavbar.propTypes = {
   absolute: PropTypes.bool,

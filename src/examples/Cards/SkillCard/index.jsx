@@ -24,7 +24,7 @@ const getTrendLabel = (trend) => {
   return labels[trend] || "Trending";
 };
 
-function SkillCard({ title, description, url, trend, demand, avgSalary }) {
+function SkillCard({ title, description, url, trend = null, demand = null, avgSalary = null }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
@@ -139,12 +139,6 @@ SkillCard.propTypes = {
   trend: PropTypes.oneOf(["high", "rising", "moderate"]),
   demand: PropTypes.string,
   avgSalary: PropTypes.string,
-};
-
-SkillCard.defaultProps = {
-  trend: null,
-  demand: null,
-  avgSalary: null,
 };
 
 SkillCard.displayName = "SkillCard";

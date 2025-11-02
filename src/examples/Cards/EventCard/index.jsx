@@ -542,10 +542,6 @@ EventCard.propTypes = {
   isEnrolled: PropTypes.bool,
 };
 
-EventCard.defaultProps = {
-  isEnrolled: false,
-};
-
 EventCard.displayName = "EventCard";
 
 export default memo(EventCard);

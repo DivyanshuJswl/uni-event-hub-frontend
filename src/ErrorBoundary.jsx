@@ -19,19 +19,25 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState((prev) => ({
-      error,
-      errorInfo,
-      errorCount: prev.errorCount + 1,
-    }));
+    this.setState((prev) => {
+      if (prev.errorCount > 5) {
+        console.error("Too many errors, stopping error boundary");
+        return { ...prev };
+      }
 
-    console.error("Error Boundary caught:", error, errorInfo);
+      console.error("Error Boundary caught:", error, errorInfo);
 
-    // Prevent infinite error loops
-    if (this.state.errorCount > 5) {
-      console.error("Too many errors, stopping error boundary");
-      return;
-    }
+      // Log to error reporting service (e.g., Sentry)
+      if (typeof window !== "undefined" && window.errorReporter) {
+        window.errorReporter.captureException(error, { errorInfo });
+      }
+
+      return {
+        error,
+        errorInfo,
+        errorCount: prev.errorCount + 1,
+      };
+    });
   }
 
   handleRefresh = () => {
@@ -149,12 +155,6 @@ ErrorBoundary.propTypes = {
   showDetails: PropTypes.bool,
   contactSupport: PropTypes.func,
   onReset: PropTypes.func,
-};
-
-ErrorBoundary.defaultProps = {
-  showDetails: process.env.NODE_ENV === "development",
-  contactSupport: null,
-  onReset: null,
 };
 
 export default ErrorBoundary;

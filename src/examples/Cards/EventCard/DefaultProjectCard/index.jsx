@@ -9,7 +9,7 @@ import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import MDAvatar from "components/MDAvatar";
 
-function DefaultProjectCard({ image, label, title, description, action, authors }) {
+function DefaultProjectCard({ image, label, title, description, action, authors = [] }) {
   // Memoized authors rendering
   const renderAuthors = useMemo(() => {
     return authors.map(({ image: media, name }) => (
@@ -109,10 +109,6 @@ function DefaultProjectCard({ image, label, title, description, action, authors 
     </Card>
   );
 }
-
-DefaultProjectCard.defaultProps = {
-  authors: [],
-};
 
 DefaultProjectCard.propTypes = {
   image: PropTypes.string.isRequired,
