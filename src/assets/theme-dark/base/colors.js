@@ -1,13 +1,15 @@
 const colors = {
   background: {
-    default: "#000000", // Dark navy blue (almost black)
-    sidenav: "#050505", // Dark slate blue
-    card: "#0a0a0a", // Dark gunmetal blue
+    // Use deep neutral greys (not pure black) for comfortable contrast on dark UIs
+    default: "#050505",
+    sidenav: "#0E0F11",
+    card: "#1A1A1A",
   },
 
   text: {
-    main: "#EDEDED", // Softer white for readability (not #fff)
-    focus: "#FFFFFF", // Pure white for hover/active emphasis
+    // Off-white for body text on dark surfaces to avoid glare while exceeding AA
+    main: "#E6E6E6",
+    focus: "#FFFFFF",
   },
 
   transparent: {
@@ -25,44 +27,46 @@ const colors = {
     focus: "#000000",
   },
 
+  // Accents tuned for clarity on dark backgrounds, with darker hover/pressed
   primary: {
-    main: "#1E88E5", // Clean Material Blue (cool accent)
-    focus: "#1565C0", // Slightly darker for hover states
+    main: "#3B82F6",
+    focus: "#2563EB",
   },
 
   secondary: {
-    main: "#00A9E0", // Balanced cyan-blue
-    focus: "#00C2FF", // Vibrant hover version
+    main: "#22D3EE",
+    focus: "#06B6D4",
   },
 
   info: {
-    main: "#2196F3",
-    focus: "#1976D2",
+    main: "#42A5F5",
+    focus: "#1E88E5",
   },
 
   success: {
-    main: "#43A047", // Fresh green
-    focus: "#2E7D32", // Deeper green for pressed states
+    main: "#4CAF50",
+    focus: "#2E7D32",
   },
 
   warning: {
-    main: "#FB8C00",
-    focus: "#F57C00",
+    main: "#FFB74D",
+    focus: "#FB8C00",
   },
 
   error: {
-    main: "#E53935",
+    main: "#EF5350",
     focus: "#D32F2F",
   },
 
+  // Subtle elevation overlays for dark surfaces (hover/active)
   light: {
-    main: "rgba(255,255,255,0.08)", // Subtle overlay for surfaces
-    focus: "rgba(255,255,255,0.12)", // Hover overlay
+    main: "rgba(255, 255, 255, 0.08)",
+    focus: "rgba(255, 255, 255, 0.12)",
   },
 
   dark: {
-    main: "#1C1C1E", // Deep neutral dark
-    focus: "#121212", // True dark for hover areas
+    main: "#1C1C1E",
+    focus: "#121212",
   },
 
   grey: {
@@ -78,38 +82,14 @@ const colors = {
   },
 
   gradients: {
-    primary: {
-      main: "#42A5F5",
-      state: "#1976D2",
-    },
-    secondary: {
-      main: "#607D8B",
-      state: "#455A64",
-    },
-    info: {
-      main: "#64B5F6",
-      state: "#1E88E5",
-    },
-    success: {
-      main: "#66BB6A",
-      state: "#388E3C",
-    },
-    warning: {
-      main: "#FFB74D",
-      state: "#FB8C00",
-    },
-    error: {
-      main: "#E57373",
-      state: "#D32F2F",
-    },
-    light: {
-      main: "#2E2E2E",
-      state: "#1C1C1E",
-    },
-    dark: {
-      main: "#2A2A2A",
-      state: "#101010",
-    },
+    primary: { main: "#60A5FA", state: "#2563EB" },
+    secondary: { main: "#67E8F9", state: "#06B6D4" },
+    info: { main: "#64B5F6", state: "#1E88E5" },
+    success: { main: "#66BB6A", state: "#2E7D32" },
+    warning: { main: "#FFCC80", state: "#FB8C00" },
+    error: { main: "#EF9A9A", state: "#D32F2F" },
+    light: { main: "#2E2E2E", state: "#1C1C1E" },
+    dark: { main: "#2A2A2A", state: "#101010" },
   },
 
   socialMediaColors: {
@@ -121,41 +101,19 @@ const colors = {
     github: { main: "#24292E", dark: "#171A1D" },
   },
 
+  // Badge backgrounds deepen; badge text is brightened for clarity
   badgeColors: {
-    primary: {
-      background: "#1E3A8A",
-      text: "#90CAF9",
-    },
-    secondary: {
-      background: "#37474F",
-      text: "#CFD8DC",
-    },
-    info: {
-      background: "#1565C0",
-      text: "#E3F2FD",
-    },
-    success: {
-      background: "#1B5E20",
-      text: "#C8E6C9",
-    },
-    warning: {
-      background: "#E65100",
-      text: "#FFE0B2",
-    },
-    error: {
-      background: "#B71C1C",
-      text: "#FFCDD2",
-    },
-    light: {
-      background: "#2E2E2E",
-      text: "#E0E0E0",
-    },
-    dark: {
-      background: "#101010",
-      text: "#FFFFFF",
-    },
+    primary: { background: "#1E3A8A", text: "#CFE8FF" },
+    secondary: { background: "#37474F", text: "#E2ECEF" },
+    info: { background: "#1565C0", text: "#E3F2FD" },
+    success: { background: "#1B5E20", text: "#D5F5D8" },
+    warning: { background: "#E65100", text: "#FFE6C2" },
+    error: { background: "#B71C1C", text: "#FFD9DC" },
+    light: { background: "#2E2E2E", text: "#E6E6E6" },
+    dark: { background: "#101010", text: "#FFFFFF" },
   },
 
+  // Shadows colored to match accents while remaining legible on dark
   coloredShadows: {
     primary: "#1A73E8",
     secondary: "#263238",
@@ -167,10 +125,11 @@ const colors = {
     dark: "#000000",
   },
 
-  inputBorderColor: "#2E2E2E",
+  // Slightly lighter border for clearer delineation on dark
+  inputBorderColor: "#2A2A2A",
 
   tabs: {
-    indicator: { boxShadow: "#1E88E5" },
+    indicator: { boxShadow: "#3B82F6" },
   },
 };
 
