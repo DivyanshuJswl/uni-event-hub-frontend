@@ -283,7 +283,6 @@ function Cover() {
                   tooltip: {
                     sx: {
                       bgcolor: "error.main",
-                      color: "white",
                       "& .MuiTooltip-arrow": {
                         color: "error.main",
                       },

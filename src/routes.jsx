@@ -23,7 +23,6 @@
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
 import Notifications from "layouts/notifications";
-import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import MyEvents from "layouts/myevents";
@@ -40,6 +39,8 @@ import DashboardOrg from "layouts/dashboardorganizer";
 import EventDetailsPage from "layouts/event-details";
 import ResetPasswordPage from "layouts/authentication/resetPassword";
 import VerifyCertificate from "layouts/verifycertificate";
+import CompleteProfile from "./layouts/completeProfile/index.";
+import UnifiedProfile from "./layouts/profile/index";
 
 const routes = [
   {
@@ -116,6 +117,15 @@ const routes = [
     hidden: true, // This hides it from the sidebar navigation
   },
   {
+    type: "route",
+    name: "Complete Profile",
+    key: "complete-profile",
+    route: "/complete-profile",
+    component: <CompleteProfile />,
+    authenticated: true,
+    hidden: true,
+  },
+  {
     type: "collapse",
     name: "Get Certificates",
     key: "my-certificate",
@@ -163,13 +173,14 @@ const routes = [
     roles: ["organizer"],
   },
   {
-    type: "collapse",
+    type: "route", // Hidden from sidebar
     name: "Profile",
-    key: "profile",
+    key: "profile-username",
     icon: <Icon fontSize="small">person</Icon>,
-    route: "/profile",
-    component: <Profile />,
-    authenticated: true,
+    route: "/profile/:username",
+    component: <UnifiedProfile />,
+    public: true, // Allow both authenticated and unauthenticated access
+    hidden: true,
   },
   {
     type: "collapse",

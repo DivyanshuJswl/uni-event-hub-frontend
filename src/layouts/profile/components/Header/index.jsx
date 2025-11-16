@@ -21,7 +21,13 @@ import { useMaterialUIController } from "context";
 import ImageCropper from "./ImageCropper";
 import PreviewModal from "./PreviewModal";
 
-function Header({ name = "Student name", avatar = "", children = "", onAvatarUpdate = null }) {
+function Header({
+  name = "Student name",
+  avatar = "",
+  children = "",
+  onAvatarUpdate = null,
+  isOwnProfile = false,
+}) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const { role, becomeOrganizer, updateProfilePicture, deleteProfilePicture } = useAuth();
@@ -282,12 +288,14 @@ function Header({ name = "Student name", avatar = "", children = "", onAvatarUpd
               open={Boolean(headerState.avatarMenu)}
               onClose={handleAvatarMenuClose}
             >
-              <MenuItem onClick={handleFileInputClick}>
-                <Icon sx={{ mr: 1, color: "info.main" }}>photo_camera</Icon>
-                <MDTypography variant="button" fontWeight="medium">
-                  Upload Photo
-                </MDTypography>
-              </MenuItem>
+              {isOwnProfile && (
+                <MenuItem onClick={handleFileInputClick}>
+                  <Icon sx={{ mr: 1, color: "info.main" }}>photo_camera</Icon>
+                  <MDTypography variant="button" fontWeight="medium">
+                    Upload Photo
+                  </MDTypography>
+                </MenuItem>
+              )}
               {avatar && (
                 <>
                   <MenuItem onClick={handlePreviewClick}>
@@ -296,12 +304,14 @@ function Header({ name = "Student name", avatar = "", children = "", onAvatarUpd
                       Preview Photo
                     </MDTypography>
                   </MenuItem>
-                  <MenuItem onClick={handleDeletePhoto}>
-                    <Icon sx={{ mr: 1, color: "error.main" }}>delete</Icon>
-                    <MDTypography variant="button" fontWeight="medium" color="error">
-                      Remove Photo
-                    </MDTypography>
-                  </MenuItem>
+                  {isOwnProfile && (
+                    <MenuItem onClick={handleDeletePhoto}>
+                      <Icon sx={{ mr: 1, color: "error.main" }}>delete</Icon>
+                      <MDTypography variant="button" fontWeight="medium" color="error">
+                        Remove Photo
+                      </MDTypography>
+                    </MenuItem>
+                  )}
                 </>
               )}
             </Menu>
@@ -330,7 +340,8 @@ function Header({ name = "Student name", avatar = "", children = "", onAvatarUpd
                 <MDTypography variant="h5" fontWeight="medium">
                   {name}
                 </MDTypography>
-                {!headerState.isOrganizer ? (
+                
+                {!headerState.isOrganizer && isOwnProfile ? (
                   <MDButton
                     variant="gradient"
                     color="info"

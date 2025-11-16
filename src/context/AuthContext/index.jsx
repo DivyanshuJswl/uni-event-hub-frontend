@@ -137,6 +137,10 @@ export const AuthProvider = ({ children }) => {
     role: null,
     isLoading: true,
   });
+  
+  useEffect(() => {
+    console.log("Auth changed:", authState);
+  }, [authState]);
 
   // Initialize authentication on mount
   useEffect(() => {

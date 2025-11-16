@@ -22,7 +22,7 @@ const tooltip = {
   styleOverrides: {
     tooltip: {
       maxWidth: pxToRem(200),
-      backgroundColor: black.main,
+      backgroundColor: black.light,
       color: white.main,
       fontSize: size.sm,
       fontWeight: fontWeightRegular,
@@ -33,7 +33,7 @@ const tooltip = {
     },
 
     arrow: {
-      color: black.main,
+      color: black.light,
     },
   },
 };

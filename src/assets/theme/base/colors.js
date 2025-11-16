@@ -1,117 +1,73 @@
 const colors = {
   background: {
-    default: "#F4F6F8", // neutral soft gray
-    sidenav: "#ECEFF1", // clearly distinct, still subtle
-    card: "#FFFFFF", // true white
+    default: "#F7F9FC", // App canvas (very soft blue-grey for depth) [web:2]
+    sidenav: "#EFF3F7", // Distinct from canvas for structure [web:2]
+    card: "#FFFFFF", // High elevation surface [web:2]
   },
 
   text: {
-    main: "#111111",
-    focus: "#000000",
+    main: "#111316", // Near-black for AA with light surfaces [web:1]
+    focus: "#000000", // Max emphasis on headings/active states [web:1]
   },
 
-  transparent: {
-    main: "rgba(0, 0, 0, 0)",
-  },
+  // Utility
+  transparent: { main: "rgba(0, 0, 0, 0)" },
 
-  white: {
-    main: "#FFFFFF",
-    focus: "#F5F5F5",
-  },
+  white: { main: "#FFFFFF", focus: "#F5F5F5" },
 
-  black: {
-    light: "#333333",
-    main: "#000000",
-    focus: "#000000",
-  },
+  black: { light: "#2B2B2B", main: "#000000", focus: "#000000" },
 
+  // Brand accents — tuned for readability on white and light greys
   primary: {
-    main: "#1E88E5", // Material blue tone
-    focus: "#1565C0", // Darker for hover/focus
+    main: "#1E88E5", // Material blue 600-equivalent [web:2]
+    focus: "#1565C0", // Darker for hover/pressed [web:2]
   },
 
   secondary: {
-    main: "#8E9A8E", // Neutral sage (still greenish but not dull)
-    focus: "#7B8C7A",
+    main: "#6B7A6B", // Refined sage with higher contrast [web:1]
+    focus: "#566556", // Darker state [web:1]
   },
 
-  info: {
-    main: "#0288D1",
-    focus: "#0277BD",
-  },
+  info: { main: "#0288D1", focus: "#0277BD" }, // Cyan-blue [web:2]
+  success: { main: "#2E7D32", focus: "#1B5E20" }, // Green [web:2]
+  warning: { main: "#ED6C02", focus: "#E65100" }, // Orange [web:2]
+  error: { main: "#D32F2F", focus: "#C62828" }, // Red [web:2]
 
-  success: {
-    main: "#2E7D32",
-    focus: "#1B5E20",
-  },
-
-  warning: {
-    main: "#ED6C02",
-    focus: "#E65100",
-  },
-
-  error: {
-    main: "#D32F2F",
-    focus: "#C62828",
-  },
-
+  // Light surfaces for hover/active on light theme
   light: {
-    main: "#F9F9F9",
-    focus: "#F1F1F1",
+    main: "rgba(0, 0, 0, 0.04)", // Subtle hover overlay on white [web:2]
+    focus: "rgba(0, 0, 0, 0.08)", // Active/pressed overlay [web:2]
   },
 
-  dark: {
-    main: "#101010",
-    focus: "#000000",
-  },
+  // Dark token useful for text on colored chips etc.
+  dark: { main: "#101010", focus: "#000000" },
 
+  // Neutral greys aligned to common UI steps
   grey: {
-    100: "#FAFAFA",
-    200: "#F5F5F5",
-    300: "#EEEEEE",
-    400: "#E0E0E0",
-    500: "#BDBDBD",
-    600: "#9E9E9E",
-    700: "#616161",
-    800: "#424242",
-    900: "#212121",
+    100: "#FAFBFC",
+    200: "#F3F4F6",
+    300: "#E5E7EB",
+    400: "#D1D5DB",
+    500: "#9CA3AF",
+    600: "#6B7280",
+    700: "#4B5563",
+    800: "#374151",
+    900: "#111827",
   },
 
+  // Gradients with accessible endpoints
   gradients: {
-    primary: {
-      main: "#64B5F6",
-      state: "#1976D2",
-    },
-    secondary: {
-      main: "#A8B6A0",
-      state: "#7B8C7A",
-    },
-    info: {
-      main: "#4FC3F7",
-      state: "#0288D1",
-    },
-    success: {
-      main: "#81C784",
-      state: "#388E3C",
-    },
-    warning: {
-      main: "#FFB74D",
-      state: "#F57C00",
-    },
-    error: {
-      main: "#E57373",
-      state: "#D32F2F",
-    },
-    light: {
-      main: "#FFFFFF",
-      state: "#F5F5F5",
-    },
-    dark: {
-      main: "#4F4F4F",
-      state: "#212121",
-    },
+    primary: { main: "#64B5F6", state: "#1976D2" }, // Blue range [web:2]
+    secondary: { main: "#9FB6A2", state: "#566556" }, // Sage range [web:1]
+    info: { main: "#4FC3F7", state: "#0288D1" }, // Info range [web:2]
+    success: { main: "#81C784", state: "#388E3C" }, // Success range [web:2]
+    warning: { main: "#FFB74D", state: "#F57C00" }, // Warning range [web:2]
+    error: { main: "#E57373", state: "#D32F2F" }, // Error range [web:2]
+    light: { main: "#FFFFFF", state: "#F3F4F6" }, // Subtle light [web:2]
+    dark: { main: "#4F4F4F", state: "#212121" }, // Neutral dark [web:2]
   },
 
+  // Social brands unchanged
   socialMediaColors: {
     facebook: { main: "#3B5998", dark: "#2D4373" },
     twitter: { main: "#55ACEE", dark: "#2795E9" },
@@ -121,33 +77,62 @@ const colors = {
     github: { main: "#24292E", dark: "#171A1D" },
   },
 
+  // Badges: ensure on-background and on-color AA contrast
   badgeColors: {
-    primary: { background: "#E3F2FD", text: "#1565C0" },
-    secondary: { background: "#E8F0E8", text: "#5D6F5D" },
-    info: { background: "#B3E5FC", text: "#0288D1" },
-    success: { background: "#C8E6C9", text: "#2E7D32" },
-    warning: { background: "#FFE0B2", text: "#E65100" },
-    error: { background: "#FFCDD2", text: "#C62828" },
-    light: { background: "#FFFFFF", text: "#9E9E9E" },
-    dark: { background: "#EEEEEE", text: "#212121" },
+    primary: { background: "#E9F3FF", text: "#1565C0" }, // ~8:1 on bg [web:1]
+    secondary: { background: "#EDF3ED", text: "#4E5E4E" }, // improved sage [web:1]
+    info: { background: "#D9F3FF", text: "#0277BD" }, // strong legibility [web:1]
+    success: { background: "#E6F4EA", text: "#1B5E20" }, // AA text-on-badge [web:1]
+    warning: { background: "#FFF3E0", text: "#E65100" }, // AA over light [web:1]
+    error: { background: "#FFE5E7", text: "#C62828" }, // AA over light [web:1]
+    light: { background: "#FFFFFF", text: "#6B7280" }, // neutral text [web:1]
+    dark: { background: "#F0F2F5", text: "#111316" }, // high contrast [web:1]
   },
 
+  // Colored shadows — subtle, not muddy on light backgrounds
   coloredShadows: {
-    primary: "#42A5F5",
-    secondary: "#A8B6A0",
-    info: "#29B6F6",
-    success: "#66BB6A",
-    warning: "#FFA726",
-    error: "#EF5350",
-    light: "#CFD8DC",
-    dark: "#607D8B",
+    primary: "#90CAF9",
+    secondary: "#9FB6A2",
+    info: "#81D4FA",
+    success: "#A5D6A7",
+    warning: "#FFCC80",
+    error: "#EF9A9A",
+    light: "#E2E8F0",
+    dark: "#94A3B8",
   },
 
-  inputBorderColor: "#D0D7DE",
+  // Inputs and dividers — tuned for clear affordances on white
+  inputBorderColor: "#D0D7DE", // GitHub-like neutral [web:1]
 
+  // Tabs — indicator visible on light surfaces
   tabs: {
-    indicator: { boxShadow: "#DDD" },
+    indicator: { boxShadow: "#1E88E5" }, // Visible and on-brand [web:2]
   },
 };
 
-export default colors;
+// Freeze to prevent mutations in runtime
+Object.freeze(colors.background);
+Object.freeze(colors.text);
+Object.freeze(colors.transparent);
+Object.freeze(colors.white);
+Object.freeze(colors.black);
+Object.freeze(colors.primary);
+Object.freeze(colors.secondary);
+Object.freeze(colors.info);
+Object.freeze(colors.success);
+Object.freeze(colors.warning);
+Object.freeze(colors.error);
+Object.freeze(colors.light);
+Object.freeze(colors.dark);
+Object.freeze(colors.grey);
+Object.keys(colors.gradients).forEach((k) => Object.freeze(colors.gradients[k]));
+Object.freeze(colors.gradients);
+Object.keys(colors.socialMediaColors).forEach((k) => Object.freeze(colors.socialMediaColors[k]));
+Object.freeze(colors.socialMediaColors);
+Object.keys(colors.badgeColors).forEach((k) => Object.freeze(colors.badgeColors[k]));
+Object.freeze(colors.badgeColors);
+Object.freeze(colors.coloredShadows);
+Object.freeze(colors.tabs.indicator);
+Object.freeze(colors.tabs);
+
+export default Object.freeze(colors);

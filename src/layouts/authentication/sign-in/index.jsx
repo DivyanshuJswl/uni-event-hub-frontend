@@ -117,7 +117,7 @@ function Basic() {
     try {
       setUiState((prev) => ({ ...prev, isLoading: true }));
       const result = await login({
-        email: formData.email,
+        identifier: formData.email.trim(),
         password: formData.password,
         captchaToken: captchaState.token,
       });
@@ -249,8 +249,8 @@ function Basic() {
             <MDBox mb={2}>
               <MDInput
                 onChange={(e) => updateFormField("email", e.target.value)}
-                type="email"
-                label="Email"
+                type="text"
+                label="Email or Username"
                 fullWidth
                 value={formData.email}
               />

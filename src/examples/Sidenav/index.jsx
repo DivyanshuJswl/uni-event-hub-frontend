@@ -26,7 +26,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const navigate = useNavigate();
-  const { token, role, logout } = useAuth();
+  const { user, token, role, logout } = useAuth();
   const { showToast } = useNotifications();
 
   // Memoized values
@@ -84,6 +84,9 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   // Memoized filtered routes
   const filteredRoutes = useMemo(() => {
     return routes.filter((route) => {
+      // Skip hidden routes in sidebar
+      if (route.hidden) return false;
+
       // Custom show function has highest priority
       if (route.show) {
         return route.show(userRole ? { role: userRole } : null);
@@ -182,6 +185,11 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
     );
   }, [darkMode, whiteSidenav, transparentSidenav]);
 
+  // Check if current page is profile page
+  const isProfileActive = useMemo(() => {
+    return location.pathname.includes("/profile/");
+  }, [location.pathname]);
+
   return (
     <SidenavRoot
       {...rest}
@@ -217,6 +225,15 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
       </MDBox>
       <Divider light={dividerLight} />
       <List>{renderRoutes}</List>
+      {user && user.username && (
+        <NavLink to={`/profile/${user.username}`}>
+          <SidenavCollapse
+            name="Profile"
+            icon={<Icon fontSize="small">person</Icon>}
+            active={isProfileActive}
+          />
+        </NavLink>
+      )}
       <MDBox p={2} mt="auto" display="flex" flexDirection="column">
         {isAuthenticated && (
           <MDButton

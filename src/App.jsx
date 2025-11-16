@@ -25,11 +25,17 @@ import ResetPasswordPage from "layouts/authentication/resetPassword";
 import { ChatProvider } from "context/ChatContext";
 import FloatingChatButton from "components/FloatingChatButton";
 import ChatWindow from "components/ChatWindow";
+import UsernameSetupModal from "examples/SetUsername";
+import axios from "axios";
+import { useNotifications } from "context/NotifiContext";
 
 // Main App Content Component (for better organization)
 const AppContent = () => {
-  const { role, user } = useAuth();
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const { role, user, token, updateUser } = useAuth();
   const [controller, dispatch] = useMaterialUIController();
+  const { showToast } = useNotifications();
+
   const {
     miniSidenav,
     direction,
@@ -42,6 +48,45 @@ const AppContent = () => {
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
+
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameLoading, setUsernameLoading] = useState(false);
+
+  const handleUsernameSubmit = async (newUsername) => {
+    setUsernameLoading(true);
+    setUsernameError("");
+    try {
+      const res = await axios.patch(
+        `${BASE_URL}/api/auth/set-username`,
+        { username: newUsername },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          timeout: 10000,
+        }
+      );
+      if (res?.data?.success) {
+        updateUser({ username: newUsername });
+        showToast("Congrats for new username", "success", "Username created successfully");
+        setShowUsernameModal(false);
+      } else {
+        setUsernameError(res.data?.message || "Username setup failed");
+      }
+    } catch (e) {
+      // e.response is only defined for HTTP errors, catch generic network errors too
+      if (e.response) {
+        setUsernameError(e.response.data?.message || "Server error");
+      } else if (e.request) {
+        setUsernameError("No response from server. Check your connection.");
+      } else {
+        setUsernameError(e.message || "Network/server error");
+      }
+      console.log(e);
+    } finally {
+      setUsernameLoading(false);
+    }
+  };
 
   // Memoized brand image
   const brandImage = useMemo(() => {
@@ -130,7 +175,12 @@ const AppContent = () => {
     <ChatProvider>
       {/* Unified Notification Toast - Available Throughout App */}
       <NotificationToast />
-
+      <UsernameSetupModal
+        open={showUsernameModal}
+        onSubmit={handleUsernameSubmit}
+        loading={usernameLoading}
+        error={usernameError}
+      />
       {layout === "dashboard" && (
         <>
           <Sidenav
