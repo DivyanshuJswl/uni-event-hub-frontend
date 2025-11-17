@@ -201,14 +201,6 @@ ProfileInfoCard.propTypes = {
   info: PropTypes.object,
 };
 
-ProfileInfoCard.defaultProps = {
-  title: "",
-  description: "",
-  social: [],
-  shadow: true,
-  info: {},
-};
-
 ProfileInfoCard.displayName = "ProfileInfoCard";
 
 export default memo(ProfileInfoCard);

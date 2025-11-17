@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     role: null,
     isLoading: true,
   });
-  
+
   useEffect(() => {
     console.log("Auth changed:", authState);
   }, [authState]);
@@ -226,38 +226,48 @@ export const AuthProvider = ({ children }) => {
 
   // Memoized Google login
   const googleLogin = useCallback(
-    async (credentialResponse) => {
+    async (credential) => {
       try {
-        if (!credentialResponse?.credential) {
+        if (!credential) {
           return { success: false, message: "No credential received from Google" };
         }
 
         const response = await axios.post(
           `${BASE_URL}/api/auth/google`,
           {
-            credential: credentialResponse.credential,
+            credential: credential,
           },
           { timeout: 10000 }
         );
-
         if (!response?.data?.token) {
           return { success: false, message: "Invalid response from server" };
         }
+        if (response.data.status === "success") {
+          const { token: authToken, data, isNewUser, needsProfile, accountMerged } = response.data;
+          const userRole = data.role;
 
-        const { token: authToken, data, isNewUser } = response.data;
-        const { student } = data;
-        const userRole = student?.role;
+          localStorage.setItem("token", authToken);
 
-        localStorage.setItem("token", authToken);
+          setAuthState({
+            token: authToken,
+            user: data.student,
+            role: userRole,
+            isLoading: false,
+          });
 
-        setAuthState({
-          token: authToken,
-          user: student,
-          role: userRole,
-          isLoading: false,
-        });
-
-        return { success: true, data: response.data, isNewUser, role: userRole };
+          return {
+            success: true,
+            data: response.data,
+            isNewUser: isNewUser || false,
+            needsProfile: needsProfile || false,
+            role: userRole,
+            accountMerged: accountMerged || false,
+          };
+        }
+        return {
+          success: false,
+          message: response.data.message || "Google authentication failed",
+        };
       } catch (error) {
         console.error("Google login error:", error);
 

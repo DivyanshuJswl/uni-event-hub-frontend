@@ -1,28 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useId, useTransition, useMemo } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
-// @mui material components
 import Card from "@mui/material/Card";
 import Switch from "@mui/material/Switch";
 import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
-
-// @mui icons
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import { useMaterialUIController } from "context";
-// Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 import { useNotifications } from "context/NotifiContext";
-
 import { Divider, Icon, InputAdornment } from "@mui/material";
 import ResetPasswordModal from "../forgotPassword";
 import HCaptchaComponent from "./hCaptcha";
@@ -36,6 +29,13 @@ function Basic() {
   const { showToast } = useNotifications();
   const { login, googleLogin } = useAuth();
   const production = import.meta.env.VITE_NODE_ENV === "production";
+
+  // Generate unique IDs for accessibility
+  const emailId = useId();
+  const passwordId = useId();
+
+  // Use transition for non-blocking UI updates
+  const [isPending, startTransition] = useTransition();
 
   // Consolidated form data state
   const [formData, setFormData] = useState({
@@ -66,7 +66,7 @@ function Basic() {
       if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
       if (savedPassword) setFormData((prev) => ({ ...prev, password: savedPassword }));
     }
-  }, []);
+  }, [uiState.rememberMe]);
 
   // Memoized handlers for form data updates
   const updateFormField = useCallback((field, value) => {
@@ -77,7 +77,6 @@ function Basic() {
     (email) => {
       console.log("Reset password for:", email);
       showToast("Reset password link sent to " + email, "success", "Reset link sent!");
-      // Close modal after 3 seconds to allow user to see success message
       setTimeout(() => {
         setUiState((prev) => ({ ...prev, resetOpen: false }));
       }, 3000);
@@ -134,41 +133,70 @@ function Basic() {
       }
     } catch (err) {
       setCaptchaState((prev) => ({ ...prev, reset: !prev.reset, token: null }));
-      console.log(err);
+      console.error(err);
       showToast("An unexpected error occurred", "error");
     } finally {
       setUiState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const result = await googleLogin(credentialResponse);
-
-      if (result.success) {
-        const { isNewUser, role } = result;
-
-        showToast(
-          isNewUser ? "Welcome! Account created successfully." : "Login successful! Redirecting...",
-          "success"
-        );
-
-        setTimeout(() => {
-          navigate(
-            isNewUser && role === "participant"
-              ? "/complete-profile"
-              : role === "participant"
-                ? "/user-dashboard"
-                : "/organizer-dashboard"
-          );
-        }, 700);
-      } else {
-        showToast(result.message, "error");
+  const handleGoogleLogin = useCallback(
+    async (credentialResponse) => {
+      if (!credentialResponse?.credential) {
+        showToast("Google login failed - no credential received", "error");
+        return;
       }
-    } catch (error) {
-      showToast("Google login failed", "error");
-    }
-  };
+
+      try {
+        setUiState((prev) => ({ ...prev, isLoading: true }));
+
+        const result = await googleLogin(credentialResponse.credential);
+
+        if (result.success) {
+          const { isNewUser, role, needsProfile, accountMerged } = result;
+
+          startTransition(() => {
+            // Show appropriate success message
+            if (accountMerged) {
+              showToast(
+                "Your Google account has been linked successfully! 🎉",
+                "success",
+                "Account Merged"
+              );
+            } else if (isNewUser) {
+              showToast("Welcome! Account created successfully.", "success");
+            } else {
+              showToast("Login successful! Redirecting...", "success");
+            }
+            // Route based on user state
+            setTimeout(
+              () => {
+                if (needsProfile) {
+                  // User needs to complete profile (set username)
+                  navigate("/complete-profile");
+                } else {
+                  // User has complete profile, go to dashboard
+                  navigate(role === "participant" ? "/user-dashboard" : "/organizer-dashboard");
+                }
+              },
+              accountMerged ? 1500 : 700
+            ); // Longer delay for merged accounts to show message
+          });
+        } else {
+          showToast(result.message || "Google login failed", "error");
+        }
+      } catch (error) {
+        console.error("Google login error:", error);
+        showToast(
+          error?.response?.data?.message || "Google login failed. Please try again.",
+          "error"
+        );
+      } finally {
+        setUiState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [googleLogin, navigate, showToast]
+  );
 
   const togglePasswordVisibility = useCallback(() => {
     setUiState((prev) => ({ ...prev, showPassword: !prev.showPassword }));
@@ -200,6 +228,12 @@ function Basic() {
       error: "Captcha expired - please verify again",
     }));
   }, []);
+
+  // Memoized disabled state
+  const isSubmitDisabled = useMemo(
+    () => uiState.isLoading || isPending,
+    [uiState.isLoading, isPending]
+  );
 
   return (
     <BasicLayout image={bgImage}>
@@ -238,25 +272,33 @@ function Basic() {
                 }}
                 variant="body1"
                 color="white"
+                sx={{ cursor: "pointer" }}
               >
                 <GoogleIcon color="inherit" />
               </MDTypography>
             </Grid>
           </Grid>
         </MDBox>
+
         <MDBox pt={4} pb={3} px={3}>
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
+                id={emailId}
                 onChange={(e) => updateFormField("email", e.target.value)}
                 type="text"
                 label="Email or Username"
                 fullWidth
                 value={formData.email}
+                inputProps={{
+                  "aria-label": "Email or Username",
+                }}
               />
             </MDBox>
+
             <MDBox mb={2}>
               <MDInput
+                id={passwordId}
                 onChange={(e) => updateFormField("password", e.target.value)}
                 type={uiState.showPassword ? "text" : "password"}
                 label="Password"
@@ -268,14 +310,20 @@ function Basic() {
                       <Icon
                         sx={{ cursor: "pointer", color: darkMode ? "#fff" : {} }}
                         onClick={togglePasswordVisibility}
+                        role="button"
+                        aria-label={uiState.showPassword ? "Hide password" : "Show password"}
                       >
                         {uiState.showPassword ? "visibility_off" : "visibility"}
                       </Icon>
                     </InputAdornment>
                   ),
                 }}
+                inputProps={{
+                  "aria-label": "Password",
+                }}
               />
             </MDBox>
+
             <MDBox
               display="flex"
               alignItems="center"
@@ -289,6 +337,7 @@ function Basic() {
                   checked={uiState.rememberMe}
                   onChange={handleSetRememberMe}
                   color="info"
+                  inputProps={{ "aria-label": "Remember me" }}
                 />
                 <MDTypography
                   variant="button"
@@ -300,6 +349,7 @@ function Basic() {
                   Remember me
                 </MDTypography>
               </MDBox>
+
               <MDTypography
                 variant="button"
                 color="info"
@@ -308,12 +358,14 @@ function Basic() {
               >
                 Forgot password?
               </MDTypography>
+
               <ResetPasswordModal
                 open={uiState.resetOpen}
                 onClose={() => setUiState((prev) => ({ ...prev, resetOpen: false }))}
                 onSubmit={handleResetSubmit}
               />
             </MDBox>
+
             {production && (
               <HCaptchaComponent
                 onVerify={handleCaptchaVerify}
@@ -322,6 +374,7 @@ function Basic() {
                 reset={captchaState.reset}
               />
             )}
+
             {captchaState.error && (
               <MDTypography
                 variant="caption"
@@ -340,18 +393,21 @@ function Basic() {
                 <div>{captchaState.error}</div>
               </MDTypography>
             )}
+
             <MDBox mt={2} mb={1}>
               <MDButton
                 type="submit"
                 variant="gradient"
                 color="info"
                 fullWidth
-                disabled={uiState.isLoading}
+                disabled={isSubmitDisabled}
               >
                 {uiState.isLoading ? "Signing in..." : "Sign in"}
               </MDButton>
             </MDBox>
+
             <Divider />
+
             <MDBox
               mt={2}
               mb={1}
@@ -360,35 +416,37 @@ function Basic() {
               alignItems="center"
               textAlign="center"
             >
-              <>
-                <div style={{ display: "none" }}>
-                  <GoogleLogin
-                    onSuccess={handleGoogleLogin}
-                    onError={() => {
-                      showToast("Google login failed. Please try again.", "error");
-                    }}
-                  />
-                </div>
-                <MDButton
-                  variant="outlined"
-                  color="info"
-                  fullWidth
-                  startIcon={<GoogleIcon />}
-                  onClick={() => {
-                    // Trigger the hidden Google button
-                    const googleBtn = document.querySelector('[aria-labelledby*="button-label"]');
-                    if (googleBtn) googleBtn.click();
+              <div style={{ display: "none" }}>
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => {
+                    showToast("Google login failed. Please try again.", "error");
                   }}
-                  sx={{
-                    textTransform: "none",
-                    fontSize: "0.95rem",
-                    padding: "10px 24px",
-                  }}
-                >
-                  Sign in with Google
-                </MDButton>
-              </>
+                  useOneTap={false}
+                  auto_select={false}
+                />
+              </div>
+
+              <MDButton
+                variant="outlined"
+                color="info"
+                fullWidth
+                startIcon={<GoogleIcon />}
+                onClick={() => {
+                  const googleBtn = document.querySelector('[aria-labelledby*="button-label"]');
+                  if (googleBtn) googleBtn.click();
+                }}
+                disabled={isSubmitDisabled}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.95rem",
+                  padding: "10px 24px",
+                }}
+              >
+                Sign in with Google
+              </MDButton>
             </MDBox>
+
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
                 Don&apos;t have an account?{" "}

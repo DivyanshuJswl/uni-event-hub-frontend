@@ -205,7 +205,7 @@ const DashboardNavbar = memo(({ absolute = false, light = false, isMini = false 
 
   const handleNavigateToProfile = useCallback(() => {
     handleProfileMenuClose();
-    navigate("/profile");
+    navigate(`/profile/${user.username}`);
   }, [navigate, handleProfileMenuClose]);
 
   const handleNavigateToSignIn = useCallback(() => {
