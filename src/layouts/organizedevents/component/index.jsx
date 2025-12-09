@@ -16,7 +16,7 @@ import {
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
-
+import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import EventSkeleton from "components/EventSkeleton";
 import { useMaterialUIController } from "context";
